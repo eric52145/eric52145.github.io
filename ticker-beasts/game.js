@@ -689,13 +689,45 @@
 
   function runOutcomeAfterDeath(opts) {
     const o = opts || {};
+    let livingCount;
+    if (typeof o.livingAllies === "number") livingCount = Math.max(0, o.livingAllies);
+    else livingCount = livingCombatants(o.units || o.players || []).length;
+    const floorsCleared = Math.max(0, o.floorsCleared || 0);
+    if (livingCount > 0) {
+      return {
+        end: false,
+        kind: "wipe",
+        floorsCleared,
+        mustRelist: false,
+        canContinue: true,
+      };
+    }
     return {
       end: true,
-      kind: "death",
-      floorsCleared: Math.max(0, o.floorsCleared || 0),
+      kind: "wipeout",
+      floorsCleared,
       mustRelist: true,
       canContinue: false,
     };
+  }
+
+  function canAffordNextRound(opts) {
+    const o = opts || {};
+    const stocks = o.stocks || [];
+    const cash = o.cash || 0;
+    const prices = stocks.map((s) => Number(s.price) || 0).filter((p) => p > 0);
+    const floor = prices.length ? Math.min.apply(null, prices) : Infinity;
+    const held = stocks.some((s) => (s.shares || 0) > 0);
+    return cash >= floor || held;
+  }
+
+  function runOutcomeAfterBankruptcy(opts) {
+    const o = opts || {};
+    const floorsCleared = Math.max(0, o.floorsCleared || 0);
+    if (canAffordNextRound(o)) {
+      return { end: false, kind: null, floorsCleared, mustRelist: false, canContinue: true };
+    }
+    return { end: true, kind: "bust", floorsCleared, mustRelist: true, canContinue: false };
   }
 
   function shouldOfferWealthWin(opts) {
@@ -997,7 +1029,7 @@
   }
 
   function canAffordAnything() {
-    return state.cash >= cheapest() || hasHoldings();
+    return canAffordNextRound({ cash: state.cash, stocks: state.stocks });
   }
 
   function canTrade() {
@@ -1534,7 +1566,7 @@
         ? "換倉空隙約 25 秒，行情持續。倒數完先出下一浪；準備好可提早開打。"
         : "至少持有 1 股先可以迎戰。行情仍然繼續。";
     } else if (state.phase === "battle") {
-      hint = "交戰中仍然可以買賣。醫療牧師會為未倒下嘅隊友回血；陣亡會即時清倉。";
+      hint = "交戰中仍然可以買賣。醫療牧師會為未倒下嘅隊友回血；陣亡會即時清倉該股，其餘繼續出陣。全軍覆沒或破產先完局。";
     }
     const hintEl = $("team-hint");
     if (hintEl) hintEl.textContent = hint;
@@ -2336,12 +2368,26 @@
       state.lastWipeNote = { id: s.id, text: result.note };
       note = result.note;
     }
-    setLog(note + "。呢局完結，要重新掛牌再開一局。");
     flyFromEl($("unit-" + u.id), note, "wipe");
     refreshUnitEl(u);
+    if (typeof renderMast === "function") renderMast();
+    if (typeof renderBoard === "function") renderBoard();
+    if (typeof updateAccountBar === "function") updateAccountBar();
+    if (typeof updatePositionsLive === "function") updatePositionsLive();
+    if (typeof updateTicketLive === "function") updateTicketLive();
+    const allies = (state.fight && state.fight.players) || [u];
+    const outcome = runOutcomeAfterDeath({
+      floorsCleared: state.floorsCleared || 0,
+      units: allies,
+    });
+    if (outcome.canContinue) {
+      setLog(note + "，該股持倉已全部清走。");
+      return { note, cash: state.cash, canContinue: true, end: false };
+    }
+    setLog(note + "。全軍覆沒，呢局完結，要重新掛牌再開一局。");
     state.fatalDeath = true;
-    endRun("death");
-    return { note, cash: state.cash, canContinue: false };
+    endRun("wipeout");
+    return { note, cash: state.cash, canContinue: false, end: true };
   }
 
   function strikeTarget(atk, tgt, rawDmg, crit) {
@@ -3089,10 +3135,10 @@
       title = "破產收市";
       body = "現金同持倉都再買唔起下一手。呢局完結，要重新掛牌。";
       sfx.lose();
-    } else if (kind === "death") {
-      kicker = "陣亡";
-      title = "出陣失敗";
-      body = `有怪獸陣亡清倉，呢局即刻完結，剩低現金唔可以再重組。今轉清到第 ${floors} 層。`;
+    } else if (kind === "death" || kind === "wipeout") {
+      kicker = "出陣失敗";
+      title = "全軍覆沒";
+      body = `出陣怪獸都已陣亡清倉。呢局完結，剩低現金唔可以再重組。今轉清到第 ${floors} 層。`;
       sfx.lose();
     } else {
       title = "收市結算";
@@ -3384,6 +3430,8 @@
     pickBossRewards,
     applyRunBuff,
     runOutcomeAfterDeath,
+    canAffordNextRound,
+    runOutcomeAfterBankruptcy,
     shouldOfferWealthWin,
     BATTLE_OPEN_MS,
     BATTLE_STRIKE_MS,
