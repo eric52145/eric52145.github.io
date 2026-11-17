@@ -295,6 +295,210 @@
     return bits.join("；");
   }
 
+
+  const GRID_ROWS = 4;
+  const GRID_COLS = 3;
+  const GRID_SLOTS = GRID_ROWS * GRID_COLS;
+  const FRONT_JOBS = ["守城", "聖騎士", "騎士", "守護"];
+  const MID_JOBS = ["狂戰士", "控制", "遊俠", "補給"];
+  const BACK_JOBS = ["法師", "牧師"];
+
+  function emptyFormation() {
+    return { slots: Array(GRID_SLOTS).fill(null), bench: [], manual: {} };
+  }
+
+  function cloneFormation(form) {
+    const src = form || emptyFormation();
+    return {
+      slots: (src.slots || Array(GRID_SLOTS).fill(null)).slice(0, GRID_SLOTS).concat(Array(GRID_SLOTS).fill(null)).slice(0, GRID_SLOTS),
+      bench: (src.bench || []).slice(),
+      manual: Object.assign({}, src.manual || {}),
+    };
+  }
+
+  function preferredLane(job) {
+    if (FRONT_JOBS.indexOf(job) >= 0) return "front";
+    if (BACK_JOBS.indexOf(job) >= 0) return "back";
+    return "mid";
+  }
+
+  function frontColumn(side) {
+    return side === "enemy" ? 0 : GRID_COLS - 1;
+  }
+
+  function backColumn(side) {
+    return side === "enemy" ? GRID_COLS - 1 : 0;
+  }
+
+  function columnLane(side, col) {
+    if (col === frontColumn(side)) return 0;
+    if (col === 1) return 1;
+    return 2;
+  }
+
+  function laneOf(u) {
+    if (!u) return 0;
+    if (u.lane != null && u.lane !== "") return Number(u.lane) || 0;
+    if (u.col == null) return 0;
+    return columnLane(u.side, u.col);
+  }
+
+  function columnOrder(side, job) {
+    const front = frontColumn(side);
+    const mid = 1;
+    const back = backColumn(side);
+    const lane = preferredLane(job);
+    if (lane === "front") return [front, mid, back];
+    if (lane === "back") return [back, mid, front];
+    return [mid, front, back];
+  }
+
+  function firstEmptyInColumns(slots, cols) {
+    const list = slots || [];
+    for (let c = 0; c < (cols || []).length; c++) {
+      const col = cols[c];
+      for (let row = 0; row < GRID_ROWS; row++) {
+        const i = row * GRID_COLS + col;
+        if (!list[i]) return i;
+      }
+    }
+    return -1;
+  }
+
+  function formationHasId(form, id) {
+    if (!form || !id) return false;
+    if ((form.slots || []).indexOf(id) >= 0) return true;
+    return (form.bench || []).indexOf(id) >= 0;
+  }
+
+  function clearFormationId(formation, id) {
+    const form = formation || emptyFormation();
+    if (!form.slots) form.slots = Array(GRID_SLOTS).fill(null);
+    if (!form.bench) form.bench = [];
+    if (!form.manual) form.manual = {};
+    for (let i = 0; i < GRID_SLOTS; i++) {
+      if (form.slots[i] === id) form.slots[i] = null;
+    }
+    form.bench = form.bench.filter((x) => x !== id);
+    if (form.manual[id]) delete form.manual[id];
+    return form;
+  }
+
+  function autoPlaceHoldings(formation, units, side) {
+    const form = formation || emptyFormation();
+    if (!form.slots || form.slots.length !== GRID_SLOTS) {
+      form.slots = ((form.slots || []).slice(0, GRID_SLOTS)).concat(Array(GRID_SLOTS).fill(null)).slice(0, GRID_SLOTS);
+    }
+    if (!form.bench) form.bench = [];
+    if (!form.manual) form.manual = {};
+    const held = (units || []).filter((u) => u && u.id);
+    const heldIds = {};
+    for (const u of held) heldIds[u.id] = u;
+    for (let i = 0; i < GRID_SLOTS; i++) {
+      const id = form.slots[i];
+      if (id && !heldIds[id]) form.slots[i] = null;
+    }
+    form.bench = form.bench.filter((id) => !!heldIds[id]);
+    const placeOne = (unit) => {
+      if (!unit || !unit.id || formationHasId(form, unit.id)) return;
+      const slot = firstEmptyInColumns(form.slots, columnOrder(side, unit.job));
+      if (slot >= 0) form.slots[slot] = unit.id;
+      else form.bench.push(unit.id);
+    };
+    for (const unit of held) placeOne(unit);
+    const leftover = [];
+    for (const id of form.bench) {
+      const unit = heldIds[id];
+      if (form.manual[id]) {
+        leftover.push(id);
+        continue;
+      }
+      const slot = firstEmptyInColumns(form.slots, columnOrder(side, unit && unit.job));
+      if (slot >= 0) form.slots[slot] = id;
+      else leftover.push(id);
+    }
+    form.bench = leftover;
+    return form;
+  }
+
+  function canArrangeFormation(phase) {
+    return phase === "build" || phase === "gap";
+  }
+
+  function moveFormation(formation, from, to, phase) {
+    const form = formation || emptyFormation();
+    if (!canArrangeFormation(phase)) return { ok: false, locked: true, formation: form };
+    if (!form.slots) form.slots = Array(GRID_SLOTS).fill(null);
+    if (!form.bench) form.bench = [];
+    if (!form.manual) form.manual = {};
+    const src = from || {};
+    const dst = to || {};
+    let fromId = null;
+    if (src.bench || src.fromBench) {
+      fromId = src.id || src.stockId;
+      if (!fromId || form.bench.indexOf(fromId) < 0) return { ok: false, locked: false, formation: form };
+    } else if (src.slot != null) {
+      fromId = form.slots[src.slot];
+      if (!fromId) return { ok: false, locked: false, formation: form };
+    }
+    if (!fromId) return { ok: false, locked: false, formation: form };
+    if (dst.bench || dst.toBench) {
+      if (src.slot != null) form.slots[src.slot] = null;
+      form.bench = form.bench.filter((id) => id !== fromId);
+      form.bench.push(fromId);
+      form.manual[fromId] = true;
+      return { ok: true, locked: false, formation: form };
+    }
+    if (dst.slot == null || dst.slot < 0 || dst.slot >= GRID_SLOTS) {
+      return { ok: false, locked: false, formation: form };
+    }
+    if (src.slot != null && src.slot === dst.slot) return { ok: true, locked: false, formation: form };
+    const destId = form.slots[dst.slot];
+    if (src.bench || src.fromBench) {
+      form.bench = form.bench.filter((id) => id !== fromId);
+      form.slots[dst.slot] = fromId;
+      if (destId) {
+        form.bench.push(destId);
+        form.manual[destId] = true;
+      }
+    } else {
+      form.slots[src.slot] = destId || null;
+      form.slots[dst.slot] = fromId;
+      if (destId) form.manual[destId] = true;
+    }
+    form.manual[fromId] = true;
+    return { ok: true, locked: false, formation: form };
+  }
+
+  function actOrder(units, rnd) {
+    const r = rnd || Math.random;
+    return livingCombatants(units).slice().sort((a, b) => {
+      const la = laneOf(a);
+      const lb = laneOf(b);
+      if (la !== lb) return la - lb;
+      const sa = a.speed || 0;
+      const sb = b.speed || 0;
+      if (sb !== sa) return sb - sa;
+      return r() - 0.5;
+    });
+  }
+
+  function chooseTarget(targets, rnd) {
+    const list = livingCombatants(targets);
+    if (!list.length) return null;
+    const r = rnd || Math.random;
+    const tanks = list.filter((u) => (u.taunt || 0) > 0);
+    if (tanks.length && r() < Math.max.apply(null, tanks.map((u) => u.taunt))) {
+      return tanks.slice().sort((a, b) => b.taunt - a.taunt || b.hp - a.hp)[0];
+    }
+    const nearest = Math.min.apply(null, list.map((u) => laneOf(u)));
+    const col = list.filter((u) => laneOf(u) === nearest);
+    if (r() < 0.6) {
+      return col.slice().sort((a, b) => a.hp - b.hp)[0];
+    }
+    return col[Math.floor(r() * col.length)] || col[0];
+  }
+
   const EVENTS = [
     { headline: "科技股齊升", tone: "good", impacts: { 科技: [0.14, 0.24], 銀行: [0.02, 0.06], 地產: [-0.03, 0.03], 飲食: [0, 0.04], 能源: [-0.05, 0.03], 醫療: [0, 0.05], 保險: [0, 0.04] } },
     { headline: "晶片訂單爆滿", tone: "good", impacts: { 科技: [0.16, 0.26], 能源: [0.02, 0.08], 銀行: [0, 0.04] } },
@@ -380,6 +584,8 @@
     phoneTab: "quotes",
     didAutoArena: false,
     fatalDeath: false,
+    formation: emptyFormation(),
+    formPick: null,
     ticketTouchedAt: 0,
     ticketPointer: false,
   };
@@ -1582,18 +1788,159 @@
     updateStatusFoot();
   }
 
+  function syncPlayerFormation(stocks, formation) {
+    if (!state.formation) state.formation = emptyFormation();
+    const form = formation || state.formation;
+    const list = (stocks || state.stocks || []).filter((s) => (s.shares || 0) > 0).map((s) => ({ id: s.id, job: s.job || "" }));
+    autoPlaceHoldings(form, list, "player");
+    if (!formation) state.formation = form;
+    return form;
+  }
+
+  function positionUnit(u, slot, side) {
+    if (!u) return u;
+    u.slot = slot;
+    u.row = Math.floor(slot / GRID_COLS);
+    u.col = slot % GRID_COLS;
+    if (side) u.side = side;
+    u.lane = columnLane(u.side, u.col);
+    u.onBench = false;
+    return u;
+  }
+
+  function arrangeAllowed() {
+    return canArrangeFormation(state.phase);
+  }
+
+  function finePointerDrag() {
+    return typeof window !== "undefined" && window.matchMedia && window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+  }
+
+  function unitHpText(u) {
+    if (!u) return "";
+    if (u.wiped) return "陣亡清倉";
+    const sh = u.shield || 0;
+    return "HP " + Math.max(0, Math.round(u.hp || 0)) + "/" + Math.max(1, Math.round(u.maxHp || 1)) + (sh ? " 盾 " + Math.round(sh) : "");
+  }
+
   function renderIdleArmy() {
-    const box = $("player-units");
-    const held = state.stocks.filter((s) => s.shares > 0);
-    if (!held.length) {
-      box.innerHTML = `<div class="unit" style="opacity:.5"><div class="unit-name">未有持倉</div><div class="unit-sub">先買入股票</div></div>`;
-    } else {
-      box.innerHTML = held.map((s) => unitHTML(playerUnit(s), false)).join("");
+    syncPlayerFormation();
+    const arranging = arrangeAllowed();
+    const pit = $("pit");
+    if (pit) {
+      pit.classList.toggle("locked", !arranging);
+      pit.classList.toggle("arranging", arranging);
     }
+    renderFormGrid($("player-units"), "player", playerUnitsBySlot(), { arranging, picked: state.formPick, spawn: false });
+    renderBench();
+    updateFormHint(arranging);
     const waiting = state.phase === "gap" || state.phase === "start" || state.phase === "build";
     if (waiting) {
-      $("enemy-units").innerHTML = `<div class="unit" style="opacity:.45"><div class="unit-name">沽空軍團</div><div class="unit-sub">${state.phase === "build" ? "等候開市" : "等候下一浪"}</div></div>`;
+      renderFormGrid($("enemy-units"), "enemy", Array(GRID_SLOTS).fill(null), { arranging: false, waiting: true });
     }
+  }
+
+  function playerUnitsBySlot() {
+    const form = syncPlayerFormation();
+    const arr = Array(GRID_SLOTS).fill(null);
+    const fight = state.phase === "battle" && state.fight ? state.fight.players : null;
+    for (let i = 0; i < GRID_SLOTS; i++) {
+      const id = form.slots[i];
+      if (!id) continue;
+      if (fight) {
+        const live = fight.find((p) => p.stockId === id && !p.wiped);
+        if (live) {
+          arr[i] = positionUnit(live, i, "player");
+          continue;
+        }
+      }
+      const s = state.stocks.find((x) => x.id === id && x.shares > 0);
+      if (s) arr[i] = positionUnit(playerUnit(s), i, "player");
+    }
+    return arr;
+  }
+
+  function enemyUnitsBySlot(enemies, formation) {
+    const arr = Array(GRID_SLOTS).fill(null);
+    const form = formation || (state.fight && state.fight.enemyFormation) || emptyFormation();
+    const list = enemies || (state.fight && state.fight.enemies) || [];
+    for (let i = 0; i < GRID_SLOTS; i++) {
+      const id = form.slots[i];
+      if (!id) continue;
+      const u = list.find((e) => e.id === id);
+      if (u) arr[i] = positionUnit(u, i, "enemy");
+    }
+    return arr;
+  }
+
+  function renderFormGrid(el, side, unitsBySlot, opts) {
+    if (!el) return;
+    const o = opts || {};
+    const cells = [];
+    for (let i = 0; i < GRID_SLOTS; i++) {
+      cells.push(slotHTML(side, i, (unitsBySlot && unitsBySlot[i]) || null, o));
+    }
+    el.innerHTML = cells.join("");
+    el.classList.add("form-grid");
+  }
+
+  function renderBench() {
+    const el = $("player-bench");
+    if (!el) return;
+    const form = state.formation || emptyFormation();
+    const arranging = arrangeAllowed();
+    const units = (form.bench || []).map((id) => {
+      const s = state.stocks.find((x) => x.id === id && x.shares > 0);
+      if (!s) return null;
+      const u = playerUnit(s);
+      u.onBench = true;
+      return u;
+    }).filter(Boolean);
+    if (!units.length) {
+      el.hidden = true;
+      el.innerHTML = "";
+      return;
+    }
+    el.hidden = false;
+    el.innerHTML = `<div class="bench-label">後備席</div><div class="bench-row">${units.map((u) => unitHTML(u, false, { arranging, picked: state.formPick, bench: true })).join("")}</div>`;
+  }
+
+  function updateFormHint(arranging) {
+    const el = $("form-hint");
+    if (!el) return;
+    if (state.phase === "battle") el.textContent = "交戰中，陣型已鎖定。前排（靠敵）先出手。";
+    else el.textContent = "建倉同空隙可以排陣，前排（靠敵）先出手，多數放坦。";
+    const enemyLab = $("enemy-wait-note");
+    if (enemyLab) {
+      if (state.phase === "build") enemyLab.textContent = "等候開市";
+      else if (state.phase === "gap" || state.phase === "start") enemyLab.textContent = "等候下一浪";
+      else enemyLab.textContent = "";
+    }
+  }
+
+  function renderBattleGrids(opts) {
+    const o = opts || {};
+    const pit = $("pit");
+    if (pit) {
+      pit.classList.add("locked");
+      pit.classList.remove("arranging");
+    }
+    const players = (state.fight && state.fight.players) || [];
+    const enemies = (state.fight && state.fight.enemies) || [];
+    renderFormGrid($("player-units"), "player", playerUnitsBySlot(), { arranging: false, picked: null, spawn: !!o.spawn });
+    renderFormGrid($("enemy-units"), "enemy", enemyUnitsBySlot(enemies, state.fight && state.fight.enemyFormation), { arranging: false, spawn: !!o.spawn });
+    renderBench();
+    updateFormHint(false);
+    players.forEach(refreshUnitEl);
+    enemies.forEach(refreshUnitEl);
+  }
+
+  function placeUnitInSlot(side, slot, unit, spawn) {
+    const root = $(side === "enemy" ? "enemy-units" : "player-units");
+    if (!root) return;
+    const cell = root.querySelector('.form-slot[data-slot="' + slot + '"]');
+    if (!cell) return;
+    cell.outerHTML = slotHTML(side, slot, unit, { arranging: side === "player" && arrangeAllowed(), picked: state.formPick, spawn: !!spawn });
   }
 
   function playerUnit(s) {
@@ -1622,26 +1969,143 @@
       speed: s.speed,
       side: "player",
       change: s.change,
+      slot: null,
+      col: null,
+      row: null,
+      lane: null,
+      onBench: false,
     };
   }
 
-  function unitHTML(u, spawn) {
+  function unitHTML(u, spawn, opts) {
+    const o = opts || {};
     const hpPct = Math.max(0, Math.round(((u.hp || 0) / Math.max(1, u.maxHp || 1)) * 100));
     const sh = u.shield || 0;
     const shPct = Math.min(100, Math.round((sh / Math.max(1, u.maxHp || 1)) * 100));
-    const clickable = u.side === "player" && u.stockId;
-    const jobBit = u.job ? u.job + " · " : "";
-    const hpBit = u.side === "player"
-      ? ("HP " + Math.max(0, Math.round(u.hp || 0)) + "/" + Math.max(1, Math.round(u.maxHp || 1)) + (sh ? " 盾 " + Math.round(sh) : ""))
-      : ((u.ticker || u.en) + " · 戰力 " + (u.power || 0).toLocaleString("en-US"));
-    const deadNote = u.wiped ? "陣亡清倉" : hpBit;
-    return `<div class="unit ${u.side === "enemy" ? "enemy" : "player"}${u.hp <= 0 ? " dead" : ""}${u.wiped ? " wiped" : ""}${spawn ? " spawn" : ""}${clickable ? " clickable" : ""}" id="unit-${u.id}"${clickable ? ` data-stock="${u.stockId}" role="button" tabindex="0" aria-label="查看 ${u.name} 檔案"` : ""}>
+    const arranging = !!o.arranging && u.side === "player" && u.stockId;
+    const inspect = u.side === "player" && u.stockId && !arranging;
+    const picked = !!(o.picked && u.stockId && o.picked === u.stockId);
+    const drag = arranging && finePointerDrag();
+    const hpBit = unitHpText(u);
+    const aria = arranging ? ("選擇 " + u.name + " 排陣") : (inspect ? ("查看 " + u.name + " 檔案") : (u.name || ""));
+    return `<div class="unit ${u.side === "enemy" ? "enemy" : "player"}${u.hp <= 0 ? " dead" : ""}${u.wiped ? " wiped" : ""}${spawn ? " spawn" : ""}${inspect ? " clickable" : ""}${arranging ? " arrange" : ""}${picked ? " picked" : ""}${u.onBench ? " bench-unit" : ""}" id="unit-${u.id}"${u.stockId ? ` data-stock="${u.stockId}"` : ""}${u.slot != null ? ` data-slot="${u.slot}"` : ""}${arranging || inspect ? ` role="button" tabindex="0" aria-label="${aria}"` : ""}${drag ? ` draggable="true"` : ""}>
       ${portrait(u.portrait)}
       <div class="unit-name">${u.name}</div>
-      <div class="unit-job">${u.side === "player" && u.job ? u.job : ""}</div>
-      <div class="unit-sub">${u.wiped ? "陣亡清倉" : (jobBit + deadNote)}</div>
+      <div class="unit-job">${u.job || ""}</div>
+      <div class="unit-sub unit-hp">${hpBit}</div>
       <div class="hp-bar"><div class="hp-fill" style="width:${hpPct}%"></div><div class="shield-fill" style="width:${shPct}%"></div></div>
     </div>`;
+  }
+
+  function slotHTML(side, index, unit, opts) {
+    const o = opts || {};
+    const col = index % GRID_COLS;
+    const row = Math.floor(index / GRID_COLS);
+    const arranging = !!o.arranging && side === "player";
+    const picked = !!(unit && o.picked && unit.stockId === o.picked);
+    const lane = columnLane(side, col);
+    const laneLabel = lane === 0 ? "前排" : lane === 1 ? "中排" : "後排";
+    const cls = ["form-slot", unit ? "filled" : "empty", picked ? "picked" : "", arranging ? "open" : "", lane === 0 ? "front-slot" : ""].filter(Boolean).join(" ");
+    const aria = arranging ? (unit ? ("調動 " + unit.name) : ("空位 " + laneLabel)) : (unit ? unit.name : laneLabel + "空位");
+    return `<div class="${cls}" data-side="${side}" data-slot="${index}" data-row="${row}" data-col="${col}" data-lane="${lane}"${arranging ? ` role="button" tabindex="0" aria-label="${aria}"` : ""}>${unit ? unitHTML(unit, o.spawn, o) : `<span class="slot-ghost">${lane === 0 ? "前" : ""}</span>`}</div>`;
+  }
+
+  function bindFormationUi() {
+    const arena = document.querySelector(".arena");
+    if (!arena || arena.dataset.formBound) return;
+    arena.dataset.formBound = "1";
+    let dragInfo = null;
+    let dragged = false;
+    arena.addEventListener("click", (e) => {
+      if (dragged) {
+        dragged = false;
+        return;
+      }
+      const unit = e.target.closest(".unit[data-stock]");
+      const slot = e.target.closest("#player-units .form-slot");
+      const benchWrap = e.target.closest("#player-bench");
+      if (!arrangeAllowed()) {
+        if (unit && unit.dataset.stock && unit.closest(".player-side, #player-bench")) openDetail(unit.dataset.stock);
+        return;
+      }
+      if (e.target.closest(".enemy-side")) return;
+      const pick = state.formPick;
+      if (!pick) {
+        if (unit && unit.dataset.stock && unit.closest(".player-side, #player-bench")) {
+          state.formPick = unit.dataset.stock;
+          renderIdleArmy();
+        }
+        return;
+      }
+      if (unit && unit.dataset.stock === pick && !slot && !benchWrap) {
+        state.formPick = null;
+        renderIdleArmy();
+        return;
+      }
+      let dest;
+      if (benchWrap && (!slot)) dest = { toBench: true };
+      else if (slot) dest = { slot: Number(slot.getAttribute("data-slot")) };
+      else if (unit && unit.closest("#player-bench")) dest = { toBench: true };
+      else if (unit && unit.dataset.stock) {
+        state.formPick = unit.dataset.stock;
+        renderIdleArmy();
+        return;
+      } else return;
+      const form = state.formation || emptyFormation();
+      const fromSlot = (form.slots || []).indexOf(pick);
+      const from = fromSlot >= 0 ? { slot: fromSlot } : { fromBench: true, id: pick };
+      const res = moveFormation(form, from, dest, state.phase);
+      if (res.ok) {
+        state.formation = res.formation;
+        state.formPick = null;
+        renderIdleArmy();
+      }
+    });
+    arena.addEventListener("dragstart", (e) => {
+      if (!arrangeAllowed() || !finePointerDrag()) return;
+      const unit = e.target.closest(".unit[data-stock]");
+      if (!unit || !unit.closest(".player-side, #player-bench")) return;
+      const id = unit.dataset.stock;
+      const form = state.formation || emptyFormation();
+      const fromSlot = (form.slots || []).indexOf(id);
+      dragInfo = fromSlot >= 0 ? { slot: fromSlot, id } : { fromBench: true, id };
+      dragged = false;
+      state.formPick = id;
+      if (e.dataTransfer) {
+        e.dataTransfer.setData("text/plain", id);
+        e.dataTransfer.effectAllowed = "move";
+      }
+      unit.classList.add("dragging");
+    });
+    arena.addEventListener("dragover", (e) => {
+      if (!dragInfo || !arrangeAllowed()) return;
+      const slot = e.target.closest("#player-units .form-slot");
+      const bench = e.target.closest("#player-bench");
+      if (!slot && !bench) return;
+      e.preventDefault();
+      if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
+      arena.querySelectorAll(".drop-ok").forEach((n) => n.classList.remove("drop-ok"));
+      if (slot) slot.classList.add("drop-ok");
+      else if (bench) bench.classList.add("drop-ok");
+    });
+    arena.addEventListener("drop", (e) => {
+      if (!dragInfo || !arrangeAllowed()) return;
+      const slot = e.target.closest("#player-units .form-slot");
+      const bench = e.target.closest("#player-bench");
+      if (!slot && !bench) return;
+      e.preventDefault();
+      dragged = true;
+      const dest = bench && !slot ? { toBench: true } : { slot: Number(slot.getAttribute("data-slot")) };
+      const res = moveFormation(state.formation || emptyFormation(), dragInfo, dest, state.phase);
+      if (res.ok) state.formation = res.formation;
+      state.formPick = null;
+      dragInfo = null;
+      renderIdleArmy();
+    });
+    arena.addEventListener("dragend", () => {
+      dragInfo = null;
+      arena.querySelectorAll(".dragging, .drop-ok").forEach((n) => n.classList.remove("dragging", "drop-ok"));
+    });
   }
 
   function renderAll() {
@@ -2221,6 +2685,7 @@
         atk: Math.max(16, Math.round(power * (t[5] ? 0.24 : 0.21))),
         speed: t[3],
         side: "enemy",
+        job: (t[5] || String(t[2] || "").indexOf("wolf") < 0) ? "守城" : "狂戰士",
         change: 0,
         boss: t[4] || null,
         telegraphing: false,
@@ -2244,19 +2709,6 @@
     return units.filter((u) => u.hp > 0);
   }
 
-  function chooseTarget(targets) {
-    const list = living(targets);
-    if (!list.length) return null;
-    const tanks = list.filter((u) => (u.taunt || 0) > 0);
-    if (tanks.length && Math.random() < Math.max(...tanks.map((u) => u.taunt))) {
-      return tanks.slice().sort((a, b) => b.taunt - a.taunt || b.hp - a.hp)[0];
-    }
-    if (Math.random() < 0.6) {
-      return list.slice().sort((a, b) => a.hp - b.hp)[0];
-    }
-    return pick(list);
-  }
-
   function attackLog(atk, tgt, dmg, knocked) {
     const moveBit = atk.side === "player" && atk.move ? `使出「${atk.move}」，` : "";
     if (knocked) return `${atk.name} ${moveBit}擊倒 ${tgt.name}！`;
@@ -2268,17 +2720,10 @@
     if (!el) return;
     updateUnitEl(u);
     const jobEl = el.querySelector(".unit-job");
-    if (jobEl) jobEl.textContent = u.side === "player" && u.job ? u.job : "";
+    if (jobEl) jobEl.textContent = u.job || "";
     const sub = el.querySelector(".unit-sub");
-    if (sub) {
-      if (u.wiped) sub.textContent = "陣亡清倉";
-      else if (u.side === "player") {
-        const sh = u.shield || 0;
-        sub.textContent = (u.job ? u.job + " · " : "") + "HP " + Math.max(0, Math.round(u.hp || 0)) + "/" + Math.max(1, Math.round(u.maxHp || 1)) + (sh ? " 盾 " + Math.round(sh) : "");
-      } else {
-        sub.textContent = (u.ticker || u.en) + " · 戰力 " + u.power.toLocaleString("en-US");
-      }
-    }
+    if (sub) sub.textContent = unitHpText(u);
+    el.classList.toggle("picked", !!(state.formPick && u.stockId && state.formPick === u.stockId));
   }
 
 
@@ -2368,17 +2813,29 @@
       state.lastWipeNote = { id: s.id, text: result.note };
       note = result.note;
     }
-    flyFromEl($("unit-" + u.id), note, "wipe");
+    const unitEl = $("unit-" + u.id);
+    flyFromEl(unitEl, note, "wipe");
     refreshUnitEl(u);
+    if (u.stockId) {
+      const deadSlot = u.slot != null ? u.slot : ((state.formation && state.formation.slots) || []).indexOf(u.stockId);
+      state.formation = clearFormationId(state.formation || emptyFormation(), u.stockId);
+      if (deadSlot != null && deadSlot >= 0) placeUnitInSlot("player", deadSlot, null, false);
+    }
+    renderBench();
     if (typeof renderMast === "function") renderMast();
     if (typeof renderBoard === "function") renderBoard();
     if (typeof updateAccountBar === "function") updateAccountBar();
     if (typeof updatePositionsLive === "function") updatePositionsLive();
     if (typeof updateTicketLive === "function") updateTicketLive();
     const allies = (state.fight && state.fight.players) || [u];
+    const benchAlive = ((state.formation && state.formation.bench) || []).filter((id) => {
+      const s = state.stocks.find((x) => x.id === id);
+      return s && s.shares > 0;
+    }).length;
     const outcome = runOutcomeAfterDeath({
       floorsCleared: state.floorsCleared || 0,
       units: allies,
+      livingAllies: livingCombatants(allies).length + benchAlive,
     });
     if (outcome.canContinue) {
       setLog(note + "，該股持倉已全部清走。");
@@ -2424,7 +2881,7 @@
   function syncPlayerUnits() {
     if (state.phase !== "battle" || !state.fight) return;
     const fight = state.fight;
-    const box = $("player-units");
+    const form = syncPlayerFormation();
     for (const u of fight.players) {
       const s = state.stocks.find((x) => x.id === u.stockId);
       if (u.wiped) {
@@ -2432,6 +2889,7 @@
         u.hp = 0;
         u.shield = 0;
         u.maxHp = Math.max(1, u.maxHp || 1);
+        if (u.stockId) clearFormationId(form, u.stockId);
         refreshUnitEl(u);
         continue;
       }
@@ -2440,6 +2898,11 @@
         u.hp = 0;
         u.maxHp = 1;
         u.shield = 0;
+        if (u.stockId) {
+          const slot = u.slot;
+          clearFormationId(form, u.stockId);
+          if (slot != null) placeUnitInSlot("player", slot, null, false);
+        }
         refreshUnitEl(u);
         continue;
       }
@@ -2466,10 +2929,13 @@
     for (const s of state.stocks) {
       if (s.shares <= 0) continue;
       if (fight.players.some((u) => u.stockId === s.id)) continue;
-      const u = playerUnit(s);
+      const slot = (form.slots || []).indexOf(s.id);
+      if (slot < 0) continue;
+      const u = positionUnit(playerUnit(s), slot, "player");
       fight.players.push(u);
-      if (box) box.insertAdjacentHTML("beforeend", unitHTML(u, true));
+      placeUnitInSlot("player", slot, u, true);
     }
+    renderBench();
   }
 
   async function pauseForHurt(u) {
@@ -2483,16 +2949,43 @@
     if (el) el.classList.remove("hurt");
   }
 
+  function formFightPlayers() {
+    const form = syncPlayerFormation();
+    const players = [];
+    for (let i = 0; i < GRID_SLOTS; i++) {
+      const id = form.slots[i];
+      if (!id) continue;
+      const s = state.stocks.find((x) => x.id === id && x.shares > 0);
+      if (!s) continue;
+      players.push(positionUnit(playerUnit(s), i, "player"));
+    }
+    return players;
+  }
+
+  function formEnemyArmy(enemies) {
+    const list = enemies || [];
+    const seed = emptyFormation();
+    autoPlaceHoldings(seed, list.map((e) => ({ id: e.id, job: e.job || "守城" })), "enemy");
+    for (let i = 0; i < GRID_SLOTS; i++) {
+      const id = seed.slots[i];
+      if (!id) continue;
+      const u = list.find((e) => e.id === id);
+      if (u) positionUnit(u, i, "enemy");
+    }
+    return seed;
+  }
+
   async function runBattle() {
-    const players = state.stocks.filter((s) => s.shares > 0).map(playerUnit);
+    state.formPick = null;
+    const players = formFightPlayers();
     const budget = enemyBudgetFor(state.wave);
     const enemies = makeEnemies(state.wave, budget);
+    const enemyFormation = formEnemyArmy(enemies);
     const enemyPower = enemies.reduce((a, e) => a + e.power, 0);
-    state.fight = { players, enemies };
-
-    $("player-units").innerHTML = players.map((u) => unitHTML(u, true)).join("");
-    $("enemy-units").innerHTML = enemies.map((u) => unitHTML(u, true)).join("");
-    $("vs-mark").textContent = "VS";
+    state.fight = { players, enemies, enemyFormation };
+    renderBattleGrids({ spawn: true });
+    const vs = $("vs-mark");
+    if (vs) vs.textContent = "VS";
     const kind = bossKind(state.wave);
     let openLog = (kind === "major" ? "大Boss戰 · " : kind === "minor" ? "小Boss戰 · " : "") + `第 ${state.wave} 層開打 · 組合戰力 ${totalPower().toLocaleString("en-US")} vs 沽空 ${enemyPower.toLocaleString("en-US")}`;
     if (state.concentrationActive) {
@@ -2517,7 +3010,7 @@
           break;
         }
       }
-      const order = living([...players, ...enemies]).slice().sort((a, b) => b.speed - a.speed || Math.random() - 0.5);
+      const order = actOrder([...players, ...enemies]);
       for (const atk of order) {
         if (state.phase !== "battle") return { win: false, hpRatio: 0, aborted: true };
         if (atk.hp <= 0 || atk.wiped) continue;
@@ -3093,6 +3586,8 @@
     state.wealthOffered = false;
     state.didAutoArena = false;
     state.fatalDeath = false;
+    state.formation = emptyFormation();
+    state.formPick = null;
     state.ticketTouchedAt = 0;
     state.ticketPointer = false;
     closeDetail();
@@ -3293,13 +3788,7 @@
       qtyInput.addEventListener("change", () => { touchTicket(); setTicketQty(qtyInput.value); });
     }
 
-    const arena = document.querySelector(".arena");
-    if (arena) {
-      arena.addEventListener("click", (e) => {
-        const unit = e.target.closest(".unit[data-stock]");
-        if (unit) openDetail(unit.dataset.stock);
-      });
-    }
+    bindFormationUi();
 
     const detailOverlay = $("overlay-detail");
     if (detailOverlay) {
@@ -3433,6 +3922,23 @@
     canAffordNextRound,
     runOutcomeAfterBankruptcy,
     shouldOfferWealthWin,
+    GRID_ROWS,
+    GRID_COLS,
+    GRID_SLOTS,
+    FRONT_JOBS,
+    MID_JOBS,
+    BACK_JOBS,
+    emptyFormation,
+    autoPlaceHoldings,
+    moveFormation,
+    clearFormationId,
+    canArrangeFormation,
+    actOrder,
+    chooseTarget,
+    columnLane,
+    preferredLane,
+    frontColumn,
+    backColumn,
     BATTLE_OPEN_MS,
     BATTLE_STRIKE_MS,
     BATTLE_CRIT_MS,
