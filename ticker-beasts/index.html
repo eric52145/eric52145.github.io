@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover, user-scalable=no" />
+  <meta name="theme-color" content="#ead7ad" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <title>行情出陣 Ticker Beasts</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect fill='%16160e08' width='64' height='64' rx='8'/%3E%3Ctext x='32' y='46' text-anchor='middle' font-size='40' font-weight='900' fill='%23f0c14b'%3E行%3C/text%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Noto+Serif+TC:wght@700;900&family=Oswald:wght@500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="shake-root">
+    <div id="app">
+      <header class="masthead">
+        <div class="mast-left">
+          <div class="edition">夜報 · 怪獸行情</div>
+          <h1>行情出陣</h1>
+          <div class="subtitle">TICKER BEASTS</div>
+        </div>
+        <div class="mast-stats" id="mast-stats">
+          <div class="stat">
+            <span class="stat-label">浪數</span>
+            <span class="stat-value" id="stat-wave">1 / 8</span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">目標</span>
+            <span class="stat-value" id="stat-goal">$3,500</span>
+          </div>
+        </div>
+        <button type="button" class="icon-btn" id="btn-mute" title="靜音" aria-label="靜音">♪</button>
+      </header>
+
+      <div class="tape-wrap" aria-hidden="true">
+        <div class="tape" id="tape"></div>
+      </div>
+
+      <main class="stage">
+        <section class="market" aria-label="市場看板">
+          <div class="account-bar" id="account-bar">
+            <div class="acct">
+              <span class="acct-label">現金</span>
+              <span class="acct-value gold" id="acct-cash">$1,000</span>
+            </div>
+            <div class="acct">
+              <span class="acct-label">總資產</span>
+              <span class="acct-value gold" id="acct-equity">$1,000</span>
+            </div>
+            <div class="acct">
+              <span class="acct-label">今日盈虧</span>
+              <span class="acct-value" id="acct-day">$0</span>
+            </div>
+            <div class="acct">
+              <span class="acct-label">總盈虧</span>
+              <span class="acct-value" id="acct-total">$0</span>
+            </div>
+          </div>
+          <div class="book-scroll">
+            <div class="positions-block">
+              <div class="block-head">
+                <h2>持倉</h2>
+                <div class="block-sub" id="positions-sub">尚未持倉</div>
+              </div>
+              <div class="positions" id="positions"></div>
+            </div>
+            <div class="quotes-block">
+              <div class="block-head">
+                <h2>行情</h2>
+                <div class="block-sub">撳名稱睇檔案 · 撳報價放入訂單</div>
+              </div>
+              <div class="board" id="board"></div>
+            </div>
+          </div>
+          <div class="market-foot">
+            <div class="ticket" id="ticket">
+              <div class="ticket-empty" id="ticket-empty">喺行情表或持倉揀一隻怪下單</div>
+              <div class="ticket-body" id="ticket-body" hidden>
+                <div class="ticket-id">
+                  <div class="ticket-name" id="ticket-name"></div>
+                  <div class="ticket-last" id="ticket-last"></div>
+                </div>
+                <div class="ticket-qty" id="ticket-qty-wrap">
+                  <button type="button" data-ticket="qty-minus" aria-label="減少數量">−</button>
+                  <input id="ticket-qty" type="number" inputmode="numeric" min="1" step="1" value="1" aria-label="下單股數" />
+                  <button type="button" data-ticket="qty-plus" aria-label="增加數量">+</button>
+                  <button type="button" class="ticket-max" data-ticket="qty-max">最多</button>
+                </div>
+                <div class="ticket-actions">
+                  <button type="button" class="ticket-buy" id="ticket-buy" data-ticket="buy">買入</button>
+                  <button type="button" class="ticket-sell" id="ticket-sell" data-ticket="sell">賣出</button>
+                </div>
+                <div class="ticket-note" id="ticket-note" hidden></div>
+              </div>
+            </div>
+            <div class="build-bar" id="build-bar" hidden>
+              <div class="build-bar-copy">
+                <div class="build-bar-kicker">建倉 · 開市報價凍結</div>
+                <div class="build-bar-text" id="build-bar-text">無時限。至少買入 1 股，先可以撳「確認開市」。</div>
+              </div>
+              <button type="button" class="btn-open btn-confirm-open" id="btn-open-market" disabled hidden aria-label="確認開市" title="至少持有 1 股先可以開市">
+                <span class="btn-open-kicker">OPEN</span>
+                <span class="btn-open-label">確認開市</span>
+              </button>
+            </div>
+            <div class="foot-row">
+              <div class="power-box">
+                <div class="power-label">組合戰力</div>
+                <div class="power-value" id="team-power">0</div>
+                <div class="power-hint" id="team-hint">行情會自己行。揀一隻怪下單，或撳名稱睇 K 線。</div>
+                <div class="conc-warn" id="conc-warn" hidden>連續兩浪同一持倉，下一浪會有過度集中懲罰</div>
+              </div>
+              <div class="wave-status" id="wave-status">
+                <span class="btn-open-kicker" id="status-kicker">LIVE</span>
+                <span class="status-label" id="status-label">等候開局</span>
+                <span class="status-sub" id="status-sub"></span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="arena" aria-label="戰場">
+          <div class="headline-slot" id="headline-slot">
+            <div class="headline-idle" id="headline-idle">建倉中 · 開市報價凍結</div>
+          </div>
+          <div class="pit" id="pit">
+            <div class="side player-side">
+              <div class="side-label">你的持倉</div>
+              <div class="units" id="player-units"></div>
+            </div>
+            <div class="vs-mark" id="vs-mark">VS</div>
+            <div class="side enemy-side">
+              <div class="side-label">沽空軍團</div>
+              <div class="units" id="enemy-units"></div>
+            </div>
+          </div>
+          <div class="arena-log" id="arena-log">先建倉，撳「確認開市」之後行情先會開始行。</div>
+        </section>
+      </main>
+    </div>
+
+    <div class="float-layer" id="float-layer"></div>
+  </div>
+
+  <div class="overlay show" id="overlay-start">
+    <div class="paper-card start-card">
+      <div class="start-kicker">夜報號外</div>
+      <h1>行情出陣</h1>
+      <p class="start-sub">TICKER BEASTS</p>
+      <ul class="rules">
+        <li>你買入嘅股票，就係你嘅怪獸。同一個板塊有兩隻性格唔同嘅虛構怪獸，一隻較急、一隻較穩。每個板塊對應一種職業（法師、補給、狂戰士、守城、騎士、牧師、聖騎士、守護等）。</li>
+        <li>撳「開始掛牌」之後進入無時限建倉：開市報價凍結，唔會跳價、唔會出推動行情嘅頭條，亦唔會出浪。慢慢買好第一批，至少持有 1 股之後撳「確認開市」，行情先會開始行，然後第一浪出陣。只買入唔會自動開市。</li>
+        <li>確認開市之後，大約每 5 秒跳一次價，隔一陣會有頭條。沽空會分浪自動出陣；打完有短空隙可以換倉，呢段期間行情會繼續行。戰鬥途中都可以用下單票買賣。</li>
+        <li>持倉表會顯示股數、成本、現價、市值同浮動盈虧。帳戶列永遠睇到現金、總資產、今日盈虧同總盈虧。</li>
+        <li>撳名稱或肖像可以睇檔案、職業同互動 K 線（有價格線）；撳報價就放入下單票。</li>
+        <li>戰力 ≈ 持股 × 現價，再按職業表現：例如醫療牧師會為場上未倒下嘅隊友回血，聖騎士較坦、會抵擋同加薄護盾。升就變強，跌就變弱。連續兩浪持有同一批股票，下一浪會有「過度集中」懲罰。</li>
+        <li>怪獸陣亡會即時清倉，唔會套現，只確認該股盈虧。該股之後仍然可以再買，但唔會喺當浪即刻復活。</li>
+        <li>建議用大部分資金買入 2 至 3 隻。八浪之內，總資產達到 $3,500 即勝；破產則敗。</li>
+        <li id="rule-unlock">首次達標會解鎖新板塊「保險」，下轉可以再玩。</li>
+      </ul>
+      <button type="button" class="btn-open start-go" id="btn-start">
+        <span class="btn-open-kicker">NEW LISTING</span>
+        <span class="btn-open-label">開始掛牌</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="overlay" id="overlay-end">
+    <div class="paper-card end-card" id="end-card"></div>
+  </div>
+
+  <div class="overlay" id="overlay-detail">
+    <div class="paper-card detail-card" id="detail-card" role="dialog" aria-modal="true" aria-labelledby="detail-name"></div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
