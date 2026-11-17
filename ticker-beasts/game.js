@@ -53,6 +53,7 @@
     狂戰士: { hp: 0.9, atk: 0.28, armor: 0, teamArmor: 0, taunt: 0, heal: 0, supply: 0, shield: 0, tag: "berserk" },
     刺客: { hp: 0.8, atk: 0.32, armor: 0, teamArmor: 0, taunt: 0, heal: 0, supply: 0, shield: 0, tag: "assassin" },
     守城: { hp: 1.4, atk: 0.16, armor: 0.18, teamArmor: 0.04, taunt: 0, heal: 0, supply: 0, shield: 0, tag: "fort" },
+    坦克: { hp: 1.4, atk: 0.16, armor: 0.18, teamArmor: 0.04, taunt: 0, heal: 0, supply: 0, shield: 0, tag: "fort" },
     掌控: { hp: 1.0, atk: 0.28, armor: 0, teamArmor: 0, taunt: 0, heal: 0, supply: 0, shield: 0, tag: "controller" },
     控制: { hp: 0.95, atk: 0.24, armor: 0, teamArmor: 0, taunt: 0, heal: 0, supply: 0, shield: 0, tag: "striker" },
     牧師: { hp: 1.0, atk: 0.16, armor: 0, teamArmor: 0, taunt: 0, heal: 0.12, supply: 0, shield: 0, tag: "healer" },
@@ -307,7 +308,7 @@
       if (!list.length) return;
       const bySrc = {};
       for (const e of list) {
-        const key = (e.job ? e.job + "·" : "") + e.source;
+        const key = (e.job ? jobLabel(e.job) + "·" : "") + e.source;
         bySrc[key] = (bySrc[key] || 0) + e.amount;
       }
       bits.push(Object.keys(bySrc).map((k) => k + " " + verb + " +" + bySrc[k]).join("，"));
@@ -322,7 +323,7 @@
   const GRID_ROWS = 4;
   const GRID_COLS = 3;
   const GRID_SLOTS = GRID_ROWS * GRID_COLS;
-  const FRONT_JOBS = ["守城", "聖騎士", "騎士", "守護", "結界師"];
+  const FRONT_JOBS = ["守城", "坦克", "聖騎士", "騎士", "守護", "結界師"];
 
   const JOB_LABELS = { 守城: "坦克" };
   function jobLabel(job) {
@@ -1986,7 +1987,7 @@
     const el = $("form-hint");
     if (!el) return;
     if (state.phase === "battle") el.textContent = "交戰中，陣型已鎖定。前排（靠敵）先出手。";
-    else el.textContent = "建倉同空隙可以排陣，前排（靠敵）先出手，多數放坦。";
+    else el.textContent = "建倉同空隙可以排陣，前排（靠敵）先出手，多數放坦克。";
     const enemyLab = $("enemy-wait-note");
     if (enemyLab) {
       if (state.phase === "build") enemyLab.textContent = "等候開市";
@@ -2824,9 +2825,9 @@
       const u = state.fight && state.fight.players ? state.fight.players.find((x) => x.id === e.unitId) : null;
       const el = u ? $("unit-" + u.id) : null;
       const target = el && (el.querySelector(".portrait") || el);
-      if (e.type === "heal") flyFromEl(target, (e.job || "牧師") + " 回血 +" + e.amount, "heal");
-      else if (e.type === "supply") flyFromEl(target, (e.job || "補師") + " 補給 +" + e.amount, "heal");
-      else if (e.type === "shield") flyFromEl(target, (e.job || "騎士") + " 護盾 +" + e.amount, "shield");
+      if (e.type === "heal") flyFromEl(target, (jobLabel(e.job) || "牧師") + " 回血 +" + e.amount, "heal");
+      else if (e.type === "supply") flyFromEl(target, (jobLabel(e.job) || "補師") + " 補給 +" + e.amount, "heal");
+      else if (e.type === "shield") flyFromEl(target, (jobLabel(e.job) || "騎士") + " 護盾 +" + e.amount, "shield");
     }
     const line = supportLog(events);
     if (line) setLog(line);
@@ -2942,7 +2943,7 @@
       void tEl.offsetWidth;
       tEl.classList.add("hit");
       const port = tEl.querySelector(".portrait") || tEl;
-      if (result.blocked > 0) flyFromEl(port, (tgt.job || "聖騎士") + " 抵擋", "shield");
+      if (result.blocked > 0) flyFromEl(port, (jobLabel(tgt.job) || "聖騎士") + " 抵擋", "shield");
       else flyFromEl(port, (crit ? "暴擊 " : "") + result.dmg, crit ? "crit" : "dmg");
     }
     updateUnitEl(tgt);
@@ -2951,7 +2952,7 @@
     if (crit && result.blocked <= 0) sfx.crit();
     else sfx.hit();
     const knocked = tgt.hp <= 0;
-    setLog(attackLog(atk, tgt, result.dmg, knocked) + (result.blocked ? "（" + (tgt.job || "坦") + " 抵擋 " + result.blocked + "）" : ""));
+    setLog(attackLog(atk, tgt, result.dmg, knocked) + (result.blocked ? "（" + (jobLabel(tgt.job) || "坦克") + " 抵擋 " + result.blocked + "）" : ""));
     return result;
   }
 
@@ -4024,6 +4025,8 @@
     GRID_COLS,
     GRID_SLOTS,
     FRONT_JOBS,
+    JOB_LABELS,
+    jobLabel,
     MID_JOBS,
     BACK_JOBS,
     emptyFormation,
