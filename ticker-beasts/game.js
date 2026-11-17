@@ -25,36 +25,53 @@
   const SECTOR_ORDER = ["科技", "飲食", "能源", "地產", "銀行", "醫療", "保險"];
 
   const STOCKS = [
-    { id: "voltshark", name: "翠算", en: "Viridraw", ticker: "VDRW", sector: "科技", temperament: "急躁", job: "法師", role: "高爆發玻璃大炮，輸出高但身板薄。", price: 88, vol: 1.45, speed: 3, move: "綠光搶算", blurb: "坐唔定嘅綠色運算磚，螢光卡扇一轉、算力需求一旺就暴衝。職業係高爆發法師，輸出高但身板薄。" },
-    { id: "glasscrit", name: "銀片", en: "Silversheet", ticker: "SVST", sector: "科技", temperament: "沉穩", job: "法師", role: "持續法術輸出，傷害穩、較少大起大落。", price: 126, vol: 0.74, speed: 1, move: "掌上薄璃", blurb: "沉穩嘅銀色薄璃手板，靠新品同軟件慢慢疊力。職業係持續輸出法師，少見大起大落。" },
-    { id: "brothbeast", name: "樂堂", en: "Joycanteen", ticker: "JCTN", sector: "飲食", temperament: "穩陣", job: "補給", role: "輸出穩定，每回合為隊友提供少量補給。", price: 120, vol: 0.72, speed: 1, move: "出餐轉檯", blurb: "街坊食堂式出餐獸，橙托盤轉檯快、客路穩。職業係補給，輸出穩，會為隊友提供少量補給，但唔及牧師回血。" },
-    { id: "nectartide", name: "黃窗", en: "Amberwin", ticker: "AMWN", sector: "飲食", temperament: "跟風", job: "遊俠", role: "宣傳或升勢期間加快攻擊。", price: 94, vol: 1.42, speed: 3, move: "窗燈出堡", blurb: "琥珀窗燈一亮就出盒裝堡同薯條，優惠一浪接一浪。職業係遊俠，宣傳期會加快輸出。" },
-    { id: "flarewhale", name: "閃駒", en: "Flashcourser", ticker: "FLCR", sector: "能源", temperament: "衝動", job: "狂戰士", role: "打得猛，行情一轉就大幅擺動。", price: 136, vol: 1.35, speed: 3, move: "閃轍出閘", blurb: "性急嘅閃轍跑車，電動熱潮一到就衝出閘。職業係狂戰士，打得猛，行情一轉就大幅擺動。" },
-    { id: "hubspire", name: "城電", en: "Metrolamp", ticker: "MTLP", sector: "能源", temperament: "沉實", job: "狂戰士", role: "中線穩定輸出，身板較厚。", price: 112, vol: 0.7, speed: 1, move: "全城穩壓", blurb: "撐住全城供電嘅穩壓獸，少有暴利，勝在捱得。職業係中線狂戰士，輸出穩定。" },
-    { id: "cloudao", name: "埠廈", en: "Pierhold", ticker: "PRHD", sector: "地產", temperament: "保守", job: "守城", role: "高生命、受傷較少的守城單位。", price: 154, vol: 0.8, speed: 1, move: "長約收租", blurb: "守住海港碼頭同寫字樓嘅保守收租獸，租約長、步子慢。職業係守城，身板厚、受傷較少。" },
-    { id: "sandspire", name: "盤門", en: "Estategate", ticker: "ETGT", sector: "地產", temperament: "投機", job: "守城", role: "旺市身板厚，跌市變得脆弱。", price: 91, vol: 1.4, speed: 3, move: "開盤搶籌", blurb: "售樓大廳開閘搶籌嘅投機沙盤，開盤一熱就扯上，信貸一緊就可以塌。職業係高風險守城，跌市時會變得好脆。" },
-    { id: "goldhorn", name: "洋庫", en: "Merivault", ticker: "MRVT", sector: "銀行", temperament: "審慎", job: "騎士", role: "為隊友加上薄護盾。", price: 100, vol: 0.95, speed: 2, move: "兩岸庫門", blurb: "謹慎嘅舊式雙岸金庫大廳，靠穩陣生意抵禦風浪。職業係騎士，會為隊友加上薄護盾。" },
-    { id: "leverhorn", name: "旺生", en: "Thrivewell", ticker: "THWL", sector: "銀行", temperament: "進取", job: "控制", role: "升勢或高息時打得更重。", price: 82, vol: 1.33, speed: 3, move: "高息招存", blurb: "以高息招徠存款嘅進取零售庫，存摺向上揚。職業係控制，高息勢頭向上時打得更重。" },
-    { id: "grovehall", name: "雙護", en: "Twinsoothe", ticker: "TNSO", sector: "醫療", temperament: "穩守", job: "牧師", role: "每回合為未倒下的隊友回血。", price: 118, vol: 0.76, speed: 1, move: "施劑護脈", blurb: "穩守嘅雙瓶成藥診療獸，靠門診同家用藥慢慢養倉。職業係牧師，持倉期間會為場上未倒下嘅隊友回血。" },
-    { id: "wardplate", name: "鎧院", en: "Wardplate", ticker: "WDPL", sector: "醫療", temperament: "剛毅", job: "聖騎士", role: "高生命並嘲諷敵方，可抵擋並為隊友加上薄護盾。", price: 109, vol: 0.84, speed: 2, move: "披甲守院", blurb: "披甲守院嘅醫療聖騎士，身板厚、容易吸火。職業係聖騎士，可抵擋傷害並為隊友加上薄護盾（增益）。" },
-    { id: "safecanopy", name: "寰傘", en: "Aegiscanopy", ticker: "AGCP", sector: "保險", temperament: "穩健", job: "守護", role: "在場時減輕隊友所受傷害。", price: 134, vol: 0.76, speed: 1, move: "長約撐傘", blurb: "為整座城撐起長約保護傘嘅穩健壽險獸。職業係守護，在場時可減輕隊友所受傷害。", unlock: "insurance" },
-    { id: "calamtide", name: "楓庭", en: "Maplegrove", ticker: "MPGR", sector: "保險", temperament: "緊張", job: "守護", role: "偏坦，波動大時攻擊抽高。", price: 97, vol: 1.38, speed: 3, move: "門市拉保", blurb: "門市拉保、案量一高就大幅擺動嘅庭院保險獸。職業係守護偏坦，波動大時輸出會突然抽高。", unlock: "insurance" },
+    { id: "voltshark", name: "達摩斯", title: "輝光算力領主・達摩斯", en: "Damos", ticker: "DMRS", sector: "科技", temperament: "急躁", job: "法師", role: "高爆發玻璃大炮，輸出高但身板薄。", price: 88, vol: 1.45, speed: 3, move: "暉核召爆", blurb: "手握「暉核魔導書」，能瞬間召喚「千縷光算爆」轟炸全場，並為隊友加上算力加持。職業係頂級法師，輸出高但身板薄。" },
+    { id: "glasscrit", name: "珀林", title: "晶界結界師・珀林", en: "Porlin", ticker: "PRLN", sector: "科技", temperament: "沉穩", job: "結界師", role: "防禦型輔助，展開結界為全隊減傷並加上護盾。", price: 126, vol: 0.74, speed: 1, move: "珀晶守域", blurb: "擅長展開「珀晶守域」，域內隊友裝備相連、防禦大增，敵人一旦踏入就難以脫身。職業係結界師，屬防禦型輔助。" },
+    { id: "brothbeast", name: "樂魂", title: "樂堂聖廚・樂魂", en: "Joyhearth", ticker: "JYHT", sector: "飲食", temperament: "穩陣", job: "補師", role: "輸出穩定，每回合為隊友提供少量補給並消除疲勞。", price: 120, vol: 0.72, speed: 1, move: "鐵板焗飯", blurb: "背住巨型鐵板同焗爐，轉眼派出「鐵板焗飯」同「紅豆冰砂」，幫全隊回復並消除疲勞。職業係全能補師，補給穩定但唔及牧師回血。" },
+    { id: "nectartide", name: "燈堡", title: "窗燈連擊士・燈堡", en: "Lampfort", ticker: "LPFT", sector: "飲食", temperament: "跟風", job: "狂戰士", role: "高速連擊狂戰士，升勢時打得更兇。", price: 94, vol: 1.42, speed: 3, move: "窗燈連擊", blurb: "擁有極速出招嘅被動，攻擊一浪接一浪，大絕召喚無數「窗燈套餐」同「層堡」壓垮對手。職業係高速連擊狂戰士。" },
+    { id: "flarewhale", name: "驟雷", title: "閃霆特攻・驟雷號", en: "Surgebolt", ticker: "SGBT", sector: "能源", temperament: "衝動", job: "刺客", role: "高機動刺客，攻速快、單體殺傷銳利。", price: 136, vol: 1.35, speed: 3, move: "霆弧穿陣", blurb: "駕駛自走機甲以極速穿梭戰場，釋放高壓電弧並召出機械扈從作戰。職業係高機動刺客，身板較薄但出手銳利。" },
+    { id: "hubspire", name: "電霸", title: "城樞雷神・電霸", en: "Voltward", ticker: "VLWD", sector: "能源", temperament: "沉實", job: "守城", role: "坦克：生命高、擋傷，並為全隊提供能量護盾，可降下落雷。", price: 112, vol: 0.7, speed: 1, move: "全城落雷", blurb: "身上纏繞極穩定嘅高壓電網，為全隊提供源源不絕嘅能量護盾；一旦發怒會降下覆蓋全城嘅落雷。職業係坦克，身板厚、負責擋傷。" },
+    { id: "cloudao", name: "影廈", title: "埠線操盤・影廈", en: "Shadehold", ticker: "SDHD", sector: "地產", temperament: "保守", job: "刺客", role: "策略型刺客，先佈局再於關鍵時刻一擊收割。", price: 154, vol: 0.8, speed: 2, move: "暗線收割", blurb: "擅長佈下時間陷阱，表面上按兵不動，實際上早已鎖死戰場地脈，關鍵時刻發動「全場收割」。職業係策略型刺客。" },
+    { id: "sandspire", name: "基石", title: "盤門壁壘・基石巨像", en: "Keycoloss", ticker: "KYCL", sector: "地產", temperament: "厚重", job: "守城", role: "坦克：防禦極高，可召喚巨塔砸向敵人。", price: 91, vol: 0.82, speed: 1, move: "拔地巨塔", blurb: "能從地底召喚「盤門劍塔」同「基石巨樓」砸向敵人，防禦力極高，係團隊最堅實嘅後盾。職業係坦克，身板極厚、負責擋傷。" },
+    { id: "goldhorn", name: "豐獅", title: "洋金庫門・豐獅", en: "Tidevault", ticker: "TDVT", sector: "銀行", temperament: "審慎", job: "掌控", role: "高爆發掌控，以大範圍金幣轟擊壓制全場。", price: 100, vol: 0.95, speed: 2, move: "金庫嵐雨", blurb: "鎮守洋金庫門嘅金庫巨獸，擅長用「洋潮風暴」同「金幣暴雨」進行大範圍轟擊。職業係經濟掌控者。" },
+    { id: "leverhorn", name: "生門", title: "旺市招潮・生門", en: "Tidegate", ticker: "TDGT", sector: "銀行", temperament: "進取", job: "控制", role: "升勢或高息時打得更重。", price: 82, vol: 1.33, speed: 3, move: "旺潮招存", blurb: "以高息同旺市氣勢招來資金潮水，存潮一湧就壓制對手節奏。職業係控制，勢頭向上時打得更重。" },
+    { id: "grovehall", name: "脈庭", title: "雙護施劑・脈庭", en: "Pulsehall", ticker: "PLHL", sector: "醫療", temperament: "穩守", job: "牧師", role: "每回合為未倒下的隊友回血。", price: 118, vol: 0.76, speed: 1, move: "雙劑護脈", blurb: "穩守嘅雙劑施術者，以脈庭藥劑為未倒下嘅隊友續力回血。職業係牧師，持倉期間會為場上未倒下嘅隊友回血。" },
+    { id: "wardplate", name: "甲光", title: "鎧院守門・甲光", en: "Wardplate", ticker: "WDPL", sector: "醫療", temperament: "剛毅", job: "聖騎士", role: "高生命並嘲諷敵方，可抵擋並為隊友加上薄護盾。", price: 109, vol: 0.84, speed: 2, move: "甲光守門", blurb: "披甲守住鎧院大門，身板厚、容易吸火，並為隊友加上薄護盾。職業係聖騎士，可抵擋傷害並為隊友加上護盾（增益）。" },
+    { id: "safecanopy", name: "蓋庭", title: "寰傘長約・蓋庭", en: "Canopyhall", ticker: "AGCP", sector: "保險", temperament: "穩健", job: "守護", role: "在場時減輕隊友所受傷害。", price: 134, vol: 0.76, speed: 1, move: "長約寰蓋", blurb: "以長約傘蓋罩住整座城，在場時減輕隊友所受傷害。職業係守護，穩健而耐久。", unlock: "insurance" },
+    { id: "calamtide", name: "驚潮", title: "楓庭門保・驚潮", en: "Startide", ticker: "MPGR", sector: "保險", temperament: "緊張", job: "守護", role: "偏坦，波動大時攻擊抽高。", price: 97, vol: 1.38, speed: 3, move: "驚潮門保", blurb: "門庭一緊、案潮高漲就大幅擺動嘅守護獸，波動大時輸出會突然抽高。職業係守護，偏坦但情緒起伏大。", unlock: "insurance" },
   ];
 
   const HEAL_RATIO = 0.12;
   const SUPPLY_RATIO = 0.03;
   const MAX_TEAM_ARMOR = 0.35;
 
+  const JOB_STATS = {
+    法師: { hp: 0.8, atk: 0.3, armor: 0, teamArmor: 0, taunt: 0, heal: 0, supply: 0, shield: 0, tag: "burst" },
+    結界師: { hp: 1.08, atk: 0.18, armor: 0.06, teamArmor: 0.1, taunt: 0, heal: 0, supply: 0, shield: 0.1, tag: "warder" },
+    補師: { hp: 1.05, atk: 0.2, armor: 0, teamArmor: 0, taunt: 0, heal: 0, supply: 0.03, shield: 0, tag: "supply" },
+    補給: { hp: 1.05, atk: 0.2, armor: 0, teamArmor: 0, taunt: 0, heal: 0, supply: 0.03, shield: 0, tag: "supply" },
+    狂戰士: { hp: 0.9, atk: 0.28, armor: 0, teamArmor: 0, taunt: 0, heal: 0, supply: 0, shield: 0, tag: "berserk" },
+    刺客: { hp: 0.8, atk: 0.32, armor: 0, teamArmor: 0, taunt: 0, heal: 0, supply: 0, shield: 0, tag: "assassin" },
+    守城: { hp: 1.4, atk: 0.16, armor: 0.18, teamArmor: 0.04, taunt: 0, heal: 0, supply: 0, shield: 0, tag: "fort" },
+    掌控: { hp: 1.0, atk: 0.28, armor: 0, teamArmor: 0, taunt: 0, heal: 0, supply: 0, shield: 0, tag: "controller" },
+    控制: { hp: 0.95, atk: 0.24, armor: 0, teamArmor: 0, taunt: 0, heal: 0, supply: 0, shield: 0, tag: "striker" },
+    牧師: { hp: 1.0, atk: 0.16, armor: 0, teamArmor: 0, taunt: 0, heal: 0.12, supply: 0, shield: 0, tag: "healer" },
+    聖騎士: { hp: 1.5, atk: 0.18, armor: 0.15, teamArmor: 0.05, taunt: 0.7, heal: 0, supply: 0, shield: 0.08, tag: "paladin" },
+    守護: { hp: 1.15, atk: 0.17, armor: 0, teamArmor: 0.1, taunt: 0, heal: 0, supply: 0, shield: 0, tag: "canopy" },
+    騎士: { hp: 1.15, atk: 0.18, armor: 0, teamArmor: 0, taunt: 0, heal: 0, supply: 0, shield: 0.1, tag: "protector" },
+    遊俠: { hp: 0.95, atk: 0.22, armor: 0, teamArmor: 0, taunt: 0, heal: 0, supply: 0, shield: 0, tag: "ranger" },
+  };
+
   const COMBAT_TRAITS = {
     voltshark: { hp: 0.75, atk: 0.34, armor: 0, teamArmor: 0, taunt: 0, heal: 0, supply: 0, shield: 0, tag: "burst" },
-    glasscrit: { hp: 0.9, atk: 0.26, armor: 0, teamArmor: 0, taunt: 0, heal: 0, supply: 0, shield: 0, tag: "sustained" },
+    glasscrit: { hp: 1.1, atk: 0.18, armor: 0.06, teamArmor: 0.1, taunt: 0, heal: 0, supply: 0, shield: 0.1, tag: "warder" },
     brothbeast: { hp: 1.05, atk: 0.2, armor: 0, teamArmor: 0, taunt: 0, heal: 0, supply: 0.03, shield: 0, tag: "supply" },
-    nectartide: { hp: 0.95, atk: 0.22, armor: 0, teamArmor: 0, taunt: 0, heal: 0, supply: 0, shield: 0, tag: "ranger" },
-    flarewhale: { hp: 0.85, atk: 0.3, armor: 0, teamArmor: 0, taunt: 0, heal: 0, supply: 0, shield: 0, tag: "berserk" },
-    hubspire: { hp: 1.15, atk: 0.22, armor: 0, teamArmor: 0, taunt: 0, heal: 0, supply: 0, shield: 0, tag: "bruiser" },
-    cloudao: { hp: 1.4, atk: 0.16, armor: 0.2, teamArmor: 0, taunt: 0, heal: 0, supply: 0, shield: 0, tag: "fort" },
-    sandspire: { hp: 1.3, atk: 0.22, armor: 0, teamArmor: 0, taunt: 0, heal: 0, supply: 0, shield: 0, tag: "speculative" },
-    goldhorn: { hp: 1.15, atk: 0.18, armor: 0, teamArmor: 0, taunt: 0, heal: 0, supply: 0, shield: 0.1, tag: "protector" },
+    nectartide: { hp: 0.92, atk: 0.27, armor: 0, teamArmor: 0, taunt: 0, heal: 0, supply: 0, shield: 0, tag: "berserk" },
+    flarewhale: { hp: 0.8, atk: 0.33, armor: 0, teamArmor: 0, taunt: 0, heal: 0, supply: 0, shield: 0, tag: "assassin" },
+    hubspire: { hp: 1.45, atk: 0.16, armor: 0.16, teamArmor: 0.08, taunt: 0, heal: 0, supply: 0, shield: 0.06, tag: "fort" },
+    cloudao: { hp: 0.85, atk: 0.3, armor: 0, teamArmor: 0, taunt: 0, heal: 0, supply: 0, shield: 0, tag: "trapper" },
+    sandspire: { hp: 1.55, atk: 0.17, armor: 0.22, teamArmor: 0.04, taunt: 0, heal: 0, supply: 0, shield: 0, tag: "fort" },
+    goldhorn: { hp: 1.0, atk: 0.28, armor: 0, teamArmor: 0, taunt: 0, heal: 0, supply: 0, shield: 0, tag: "controller" },
     leverhorn: { hp: 0.95, atk: 0.24, armor: 0, teamArmor: 0, taunt: 0, heal: 0, supply: 0, shield: 0, tag: "striker" },
     safecanopy: { hp: 1.15, atk: 0.17, armor: 0, teamArmor: 0.1, taunt: 0, heal: 0, supply: 0, shield: 0, tag: "canopy" },
     calamtide: { hp: 1.25, atk: 0.2, armor: 0.06, teamArmor: 0, taunt: 0, heal: 0, supply: 0, shield: 0, tag: "offtank" },
@@ -63,7 +80,10 @@
   };
 
   function traitsOf(s) {
-    return (s && COMBAT_TRAITS[s.id]) || { hp: 1, atk: 0.22, armor: 0, teamArmor: 0, taunt: 0, heal: 0, supply: 0, shield: 0, tag: "basic" };
+    const job = (s && s.job) || "";
+    const base = JOB_STATS[job] || { hp: 1, atk: 0.22, armor: 0, teamArmor: 0, taunt: 0, heal: 0, supply: 0, shield: 0, tag: "basic" };
+    const over = (s && COMBAT_TRAITS[s.id]) || {};
+    return Object.assign({}, base, over);
   }
 
   function atkFactor(s, t) {
@@ -74,6 +94,9 @@
     if (t.tag === "striker" && ch > 0.0005) f *= 1.28;
     if (t.tag === "offtank" && Math.abs(ch) >= 0.08) f *= 1.25;
     if (t.tag === "sustained") f *= 1.05;
+    if (t.tag === "assassin") f *= 1.18;
+    if (t.tag === "controller") f *= 1.08;
+    if (t.tag === "trapper") f *= 1.12;
     return f;
   }
 
@@ -91,7 +114,7 @@
     let hpMul = hpFactor(s, t) * (fx.hp || 1);
     if (b.priceWard && s && s.change < -0.0005) hpMul *= 1.12;
     let atkMul = atkFactor(s, t);
-    if (s && s.job === "法師") atkMul *= fx.burst || 1;
+    if (s && (s.job === "法師" || s.job === "刺客" || s.job === "掌控")) atkMul *= fx.burst || 1;
     if ((s && (s.job === "狂戰士" || s.job === "控制")) && s.change > 0.0005) atkMul *= fx.surge || 1;
     let taunt = t.taunt || 0;
     if (b.tauntUp && taunt > 0) taunt = Math.min(0.95, taunt * 1.35);
@@ -299,9 +322,15 @@
   const GRID_ROWS = 4;
   const GRID_COLS = 3;
   const GRID_SLOTS = GRID_ROWS * GRID_COLS;
-  const FRONT_JOBS = ["守城", "聖騎士", "騎士", "守護"];
-  const MID_JOBS = ["狂戰士", "控制", "遊俠", "補給"];
-  const BACK_JOBS = ["法師", "牧師"];
+  const FRONT_JOBS = ["守城", "聖騎士", "騎士", "守護", "結界師"];
+
+  const JOB_LABELS = { 守城: "坦克" };
+  function jobLabel(job) {
+    return JOB_LABELS[job] || job || "";
+  }
+
+  const MID_JOBS = ["狂戰士", "控制", "遊俠", "補師", "補給", "掌控"];
+  const BACK_JOBS = ["法師", "牧師", "刺客"];
 
   function emptyFormation() {
     return { slots: Array(GRID_SLOTS).fill(null), bench: [], manual: {} };
@@ -499,6 +528,38 @@
     return col[Math.floor(r() * col.length)] || col[0];
   }
 
+  function aoeRatio(u) {
+    if (!u) return 0;
+    if (u.job === "掌控" || u.tag === "controller") return 0.4;
+    return 0;
+  }
+
+  function followUpRatio(u) {
+    if (!u) return 0;
+    if (u.job === "狂戰士" || u.tag === "berserk") return 0.35;
+    return 0;
+  }
+
+  function trapperDamage(atk, dmg) {
+    let out = dmg;
+    if (!atk || atk.tag !== "trapper") return out;
+    atk.acted = (atk.acted || 0) + 1;
+    if (atk.acted <= 1) return Math.round(out * 0.75);
+    return Math.round(out * 1.35);
+  }
+
+  function applySplashDamage(atk, primary, foes, rawDmg, stocks) {
+    const ratio = aoeRatio(atk);
+    const events = [];
+    if (ratio <= 0 || !primary) return events;
+    const list = livingCombatants(foes).filter((u) => u && u.id !== primary.id);
+    for (const u of list) {
+      const result = applyIncomingDamage(u, Math.round((rawDmg || 0) * ratio), foes, stocks || [], {});
+      events.push({ target: u, result });
+    }
+    return events;
+  }
+
   const EVENTS = [
     { headline: "科技股齊升", tone: "good", impacts: { 科技: [0.14, 0.24], 銀行: [0.02, 0.06], 地產: [-0.03, 0.03], 飲食: [0, 0.04], 能源: [-0.05, 0.03], 醫療: [0, 0.05], 保險: [0, 0.04] } },
     { headline: "晶片訂單爆滿", tone: "good", impacts: { 科技: [0.16, 0.26], 能源: [0.02, 0.08], 銀行: [0, 0.04] } },
@@ -615,8 +676,12 @@
 
   const SYNERGY_DEFS = [
     { id: "healpal", jobs: ["牧師", "聖騎士"], title: "聖愈連攜", line: "牧師＋聖騎士：額外隊盾" },
-    { id: "dualmage", jobs: ["法師"], count: 2, title: "雙法齊轟", line: "兩名法師：疊加爆發" },
-    { id: "fortknight", jobs: ["守城", "騎士"], title: "城門聯防", line: "守城＋騎士：全隊更坦" },
+    { id: "techward", jobs: ["法師", "結界師"], title: "科技領域", line: "法師＋結界師：爆發加防護" },
+    { id: "fortctrl", jobs: ["守城", "掌控"], title: "基建更坦", line: "坦克＋掌控：全隊更坦" },
+    { id: "dualfort", jobs: ["守城"], count: 2, title: "雙坦合壁", line: "兩名坦克：全隊更坦" },
+    { id: "feastfury", jobs: ["補師", "狂戰士"], title: "民生連攜", line: "補師＋狂戰士：補給與追擊" },
+    { id: "ambush", jobs: ["刺客", "掌控"], title: "突襲連攜", line: "刺客＋掌控：爆發突襲" },
+    { id: "dualassassin", jobs: ["刺客"], count: 2, title: "雙刺齊出", line: "兩名刺客：突襲加傷" },
     { id: "berserkctrl", jobs: ["狂戰士", "控制"], title: "追擊連攜", line: "狂戰士＋控制：升勢加傷" },
   ];
 
@@ -843,14 +908,22 @@
 
   function synergyEffects(synergies, buffs) {
     const amp = ((buffs && buffs.synAmp) || 1) * ((buffs && buffs.metaSynBoost) || 1);
-    const fx = { shield: 0, burst: 1, armor: 0, hp: 1, surge: 1 };
+    const fx = { shield: 0, burst: 1, armor: 0, hp: 1, surge: 1, supply: 1 };
     for (const s of synergies || []) {
       if (s.id === "healpal") fx.shield += 0.08 * amp;
-      if (s.id === "dualmage") fx.burst *= 1 + 0.2 * amp;
-      if (s.id === "fortknight") {
+      if (s.id === "techward") {
+        fx.burst *= 1 + 0.16 * amp;
+        fx.armor += 0.06 * amp;
+      }
+      if (s.id === "fortctrl" || s.id === "dualfort") {
         fx.armor += 0.08 * amp;
         fx.hp *= 1 + 0.1 * amp;
       }
+      if (s.id === "feastfury") {
+        fx.surge *= 1 + 0.12 * amp;
+        fx.supply *= 1 + 0.2 * amp;
+      }
+      if (s.id === "ambush" || s.id === "dualassassin") fx.burst *= 1 + 0.14 * amp;
       if (s.id === "berserkctrl") fx.surge *= 1 + 0.15 * amp;
     }
     return fx;
@@ -1254,6 +1327,10 @@
     return (s.ticker ? s.ticker + " · " : "") + s.en;
   }
 
+  function stockTitle(s) {
+    return (s && (s.title || s.name)) || "";
+  }
+
   function insurancePairText() {
     return STOCKS.filter((s) => s.unlock === "insurance")
       .map((s) => s.name + "（" + s.ticker + " · " + s.temperament + "）")
@@ -1326,20 +1403,20 @@
   }
 
     const PORTRAITS = {
-    voltshark: `<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg"><rect width="160" height="160" fill="#04160c"/><g stroke="#0a4a28" stroke-width="1" opacity=".45"><path d="M0 40h160M0 80h160M0 120h160M40 0v160M80 0v160M120 0v160"/></g><rect x="14" y="36" width="132" height="88" rx="7" fill="#0a3a20" stroke="#7cff6a" stroke-width="2.5"/><path d="M22 52h26M22 62h16M128 52h-22M128 64h-14" stroke="#1f7a44" stroke-width="1.6" fill="none"/><g fill="#062414" stroke="#9aff7a" stroke-width="2"><circle cx="50" cy="80" r="22"/><circle cx="98" cy="80" r="22"/></g><g fill="#7cff6a"><path d="M50 80l7-15 5 3zM50 80l15 7-3 5zM50 80l-7 15-5-3zM50 80l-15-7 3-5zM50 80l12 12-5 3zM50 80l-12-12 5-3z"/><path d="M98 80l7-15 5 3zM98 80l15 7-3 5zM98 80l-7 15-5-3zM98 80l-15-7 3-5zM98 80l12 12-5 3zM98 80l-12-12 5-3z"/></g><circle cx="50" cy="80" r="5" fill="#d8ff9a"/><circle cx="98" cy="80" r="5" fill="#d8ff9a"/><rect x="122" y="48" width="16" height="20" rx="2" fill="#7cff6a"/><rect x="124" y="74" width="12" height="12" rx="1.5" fill="#b8ff6a"/><rect x="22" y="126" width="116" height="12" fill="#c9a227"/><g fill="#3a2a08"><rect x="26" y="128" width="3" height="8"/><rect x="32" y="128" width="3" height="8"/><rect x="38" y="128" width="3" height="8"/><rect x="44" y="128" width="3" height="8"/><rect x="50" y="128" width="3" height="8"/><rect x="56" y="128" width="3" height="8"/><rect x="62" y="128" width="3" height="8"/><rect x="68" y="128" width="3" height="8"/><rect x="74" y="128" width="3" height="8"/><rect x="80" y="128" width="3" height="8"/><rect x="86" y="128" width="3" height="8"/><rect x="92" y="128" width="3" height="8"/><rect x="98" y="128" width="3" height="8"/><rect x="104" y="128" width="3" height="8"/><rect x="110" y="128" width="3" height="8"/><rect x="116" y="128" width="3" height="8"/><rect x="122" y="128" width="3" height="8"/><rect x="128" y="128" width="3" height="8"/></g></svg>`,
-    glasscrit: `<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg"><rect width="160" height="160" fill="#1a1c20"/><rect x="38" y="16" width="84" height="128" rx="16" fill="#c8ced6" stroke="#8a929c" stroke-width="2"/><rect x="44" y="26" width="72" height="104" rx="8" fill="#16181c"/><path d="M48 30h50" stroke="#3a4048" stroke-width="3" opacity=".7"/><rect x="48" y="22" width="28" height="16" rx="5" fill="#b4bac2"/><circle cx="56" cy="30" r="4.2" fill="#2a3038" stroke="#d8dee6" stroke-width="1"/><circle cx="66" cy="30" r="3.4" fill="#2a3038" stroke="#d8dee6" stroke-width="1"/><circle cx="75" cy="30" r="2.4" fill="#dfe6b8"/><path d="M52 40h56l-8 70H60z" fill="#2a3340" opacity=".35"/><rect x="66" y="128" width="28" height="4" rx="2" fill="#8a9098"/></svg>`,
-    brothbeast: `<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg"><rect width="160" height="160" fill="#3a2214"/><rect x="0" y="96" width="160" height="64" fill="#5a3820"/><rect x="8" y="20" width="144" height="70" fill="#6a4030" stroke="#2a160c" stroke-width="2"/><g fill="#1a1008"><rect x="16" y="28" width="36" height="28"/><rect x="62" y="28" width="36" height="28"/><rect x="108" y="28" width="36" height="28"/></g><g fill="#e8893a" stroke="#7a3a10" stroke-width="1.5"><rect x="18" y="72" width="34" height="10" rx="2"/><rect x="64" y="72" width="34" height="10" rx="2"/><rect x="110" y="72" width="34" height="10" rx="2"/></g><g fill="#f0c14b"><circle cx="30" cy="76" r="3"/><circle cx="42" cy="76" r="3"/><rect x="72" y="74" width="10" height="6" rx="1"/><circle cx="126" cy="76" r="3"/></g><ellipse cx="40" cy="128" rx="22" ry="8" fill="#c47838"/><ellipse cx="120" cy="132" rx="22" ry="8" fill="#c47838"/><rect x="8" y="88" width="144" height="8" fill="#2a160c"/><g fill="none" stroke="#f4e0c0" stroke-width="1.6" opacity=".8"><path d="M30 54c0-8 6-10 6-16"/><path d="M76 54c2-8 8-9 6-16"/><path d="M124 54c0-7 7-11 5-16"/></g></svg>`,
-    nectartide: `<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg"><rect width="160" height="160" fill="#2a1808"/><rect x="18" y="18" width="124" height="88" fill="#5a2e10" stroke="#f3c14a" stroke-width="4"/><rect x="28" y="28" width="104" height="68" fill="#f3c14a"/><g fill="#ffe9a0"><rect x="34" y="34" width="14" height="16"/><rect x="54" y="34" width="14" height="16"/><rect x="74" y="34" width="14" height="16"/><rect x="94" y="34" width="14" height="16"/><rect x="114" y="34" width="14" height="16"/></g><ellipse cx="80" cy="128" rx="36" ry="8" fill="#6a3a14"/><rect x="48" y="116" width="64" height="8" rx="2" fill="#d8b060"/><ellipse cx="80" cy="104" rx="22" ry="10" fill="#c47828"/><rect x="62" y="86" width="36" height="16" rx="4" fill="#f0c14b"/><circle cx="70" cy="80" r="5" fill="#3a2010"/><circle cx="90" cy="80" r="5" fill="#3a2010"/><rect x="72" y="108" width="6" height="10" fill="#e8d080"/><rect x="82" y="108" width="6" height="10" fill="#e8d080"/></svg>`,
-    flarewhale: `<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg"><rect width="160" height="160" fill="#101820"/><path d="M20 96c18-28 44-40 70-40 18 0 34 6 48 16l10 24H28z" fill="#c8d0d8" stroke="#3a4450" stroke-width="2"/><path d="M42 64c18-8 40-10 58-4" fill="none" stroke="#8ab4d0" stroke-width="3"/><circle cx="48" cy="108" r="14" fill="#1a1a1a" stroke="#ffe45a" stroke-width="3"/><circle cx="118" cy="108" r="14" fill="#1a1a1a" stroke="#ffe45a" stroke-width="3"/><circle cx="48" cy="108" r="5" fill="#888"/><circle cx="118" cy="108" r="5" fill="#888"/><path d="M86 18l-8 28h16l-12 28 28-32h-16z" fill="#ffe45a" stroke="#f0c14b" stroke-width="1.5"/><path d="M28 100h18" stroke="#3ad0e0" stroke-width="3"/><rect x="14" y="98" width="12" height="6" rx="1" fill="#3ad0e0"/><path d="M22 140h116" stroke="#3a4450" stroke-width="4"/></svg>`,
-    hubspire: `<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg"><rect width="160" height="160" fill="#142028"/><path d="M0 120h160v40H0z" fill="#1c2a30"/><g fill="#3a4a52"><rect x="10" y="96" width="16" height="24"/><rect x="30" y="88" width="14" height="32"/><rect x="118" y="92" width="18" height="28"/><rect x="138" y="100" width="12" height="20"/></g><g fill="#c8d0d4" stroke="#6a7880" stroke-width="1"><path d="M46 128L58 36h8l12 92z"/><path d="M94 128L106 40h8l12 88z"/></g><path d="M62 44h48M58 70h56M54 96h60" stroke="#f0c14b" stroke-width="2" fill="none"/><circle cx="80" cy="28" r="6" fill="#ffe45a"/><rect x="72" y="116" width="16" height="16" fill="#f0c14b"/></svg>`,
-    cloudao: `<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg"><rect width="160" height="160" fill="#1c2830"/><path d="M0 108h160v52H0z" fill="#2a4a58"/><path d="M0 108c18 8 36-6 54 2 20 8 34-8 52 0 16 8 32-4 54 2v48H0z" fill="#3a6a78"/><g fill="#6a5a40"><rect x="8" y="100" width="8" height="28"/><rect x="24" y="100" width="8" height="28"/><rect x="40" y="100" width="8" height="28"/></g><rect x="70" y="24" width="52" height="96" fill="#c8b894" stroke="#5a4a30" stroke-width="2"/><g fill="#3a4a58"><rect x="78" y="34" width="10" height="10"/><rect x="94" y="34" width="10" height="10"/><rect x="110" y="34" width="8" height="10"/><rect x="78" y="50" width="10" height="10"/><rect x="94" y="50" width="10" height="10"/><rect x="110" y="50" width="8" height="10"/><rect x="78" y="66" width="10" height="10"/><rect x="94" y="66" width="10" height="10"/></g><path d="M58 70h16v28H62l-4-8z" fill="#f0c14b" stroke="#8a7018" stroke-width="1.5"/><circle cx="66" cy="82" r="3" fill="#3a2a08"/></svg>`,
-    sandspire: `<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg"><rect width="160" height="160" fill="#3a2a18"/><rect x="10" y="70" width="140" height="70" fill="#e8d2a0" stroke="#8a6a30" stroke-width="2"/><path d="M20 70l20-28h80l20 28z" fill="#d8b878" stroke="#8a6a30" stroke-width="2"/><rect x="58" y="86" width="44" height="36" fill="#fff8e8" stroke="#6a4e28" stroke-width="2"/><rect x="28" y="108" width="104" height="22" fill="#c4a060"/><g fill="#8a6a40"><rect x="36" y="96" width="16" height="14"/><rect x="108" y="96" width="16" height="14"/><rect x="70" y="92" width="10" height="18"/><rect x="82" y="98" width="8" height="12"/></g><path d="M48 70v-18h12v18M100 70v-18h12v18" fill="#6a4e28"/><rect x="44" y="36" width="72" height="10" fill="#c41c2c"/><ellipse cx="80" cy="148" rx="60" ry="8" fill="#c4a060"/></svg>`,
-    goldhorn: `<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg"><rect width="160" height="160" fill="#1c1810"/><rect x="0" y="100" width="160" height="60" fill="#2a3040"/><path d="M0 112h68c6-16 18-24 28-24s22 8 28 24h36v48H0z" fill="#3a4860"/><rect x="8" y="48" width="52" height="64" fill="#e8d8b0" stroke="#8a7018" stroke-width="2"/><rect x="100" y="48" width="52" height="64" fill="#e8d8b0" stroke="#8a7018" stroke-width="2"/><g fill="#c8b888"><rect x="16" y="56" width="8" height="48"/><rect x="36" y="56" width="8" height="48"/><rect x="116" y="56" width="8" height="48"/><rect x="136" y="56" width="8" height="48"/></g><circle cx="80" cy="100" r="26" fill="#c9a227" stroke="#8a7018" stroke-width="3"/><circle cx="80" cy="100" r="10" fill="#6a5010"/><g fill="none" stroke="#6a5010" stroke-width="2"><circle cx="80" cy="100" r="18"/></g><rect x="54" y="28" width="52" height="14" fill="#e8d8b0"/></svg>`,
-    leverhorn: `<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg"><rect width="160" height="160" fill="#201810"/><rect x="10" y="88" width="140" height="52" fill="#6a3a22"/><rect x="18" y="96" width="36" height="28" fill="#fff8e8"/><rect x="62" y="96" width="36" height="28" fill="#fff8e8"/><rect x="106" y="96" width="36" height="28" fill="#fff8e8"/><rect x="44" y="36" width="52" height="64" rx="3" fill="#f0e0b8" stroke="#8a7018" stroke-width="2" transform="rotate(-18 70 68)"/><path d="M58 86l36-48 8 6-36 48z" fill="#f0c14b"/><path d="M28 140h20v-16h20v-16h20v-16h20v-16h24" fill="none" stroke="#e05030" stroke-width="4"/><circle cx="128" cy="60" r="6" fill="#e05030"/></svg>`,
-    grovehall: `<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg"><rect width="160" height="160" fill="#e8f0e8"/><rect x="86" y="40" width="60" height="80" fill="#d8e4d4" stroke="#4a6a50" stroke-width="2"/><rect x="102" y="78" width="20" height="42" fill="#6a5a40"/><rect x="94" y="50" width="14" height="14" fill="#8ab4c8"/><rect x="116" y="50" width="14" height="14" fill="#8ab4c8"/><g stroke="#2f6a3a" stroke-width="2" fill="#4a8a4a"><ellipse cx="30" cy="70" rx="16" ry="22"/><ellipse cx="58" cy="78" rx="14" ry="20"/><path d="M30 90v30M58 96v24"/></g><rect x="18" y="64" width="18" height="44" rx="6" fill="#f4f0e0" stroke="#6a5a30" stroke-width="2"/><rect x="42" y="58" width="18" height="50" rx="6" fill="#e8d8c0" stroke="#6a5a30" stroke-width="2"/><rect x="22" y="70" width="10" height="8" fill="#6aa0c8"/><rect x="46" y="66" width="10" height="8" fill="#c86a6a"/><rect x="0" y="120" width="160" height="40" fill="#c8d4c0"/></svg>`,
-    wardplate: `<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg"><rect width="160" height="160" fill="#1c2024"/><rect x="36" y="28" width="88" height="100" fill="#8a9098" stroke="#3a4048" stroke-width="2"/><g fill="#6a7078"><rect x="44" y="40" width="20" height="14"/><rect x="70" y="40" width="20" height="14"/><rect x="96" y="40" width="20" height="14"/><rect x="44" y="60" width="20" height="14"/><rect x="70" y="60" width="20" height="14"/><rect x="96" y="60" width="20" height="14"/></g><path d="M80 70l28 12v22c0 16-12 28-28 36-16-8-28-20-28-36V82z" fill="#c8d0d4" stroke="#3a4048" stroke-width="2.5"/><path d="M80 84v36" stroke="#5a6070" stroke-width="2"/><rect x="28" y="20" width="104" height="14" fill="#8a9098"/><rect x="22" y="128" width="116" height="16" fill="#4a5058"/></svg>`,
-    safecanopy: `<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg"><rect width="160" height="160" fill="#102028"/><g fill="#3a4a52"><rect x="28" y="100" width="18" height="36"/><rect x="52" y="88" width="22" height="48"/><rect x="86" y="96" width="16" height="40"/><rect x="110" y="84" width="24" height="52"/></g><path d="M80 28c-32 0-58 18-66 40 20-10 42-14 66-14s46 4 66 14c-8-22-34-40-66-40z" fill="#d8e8f0" stroke="#8aa0b0" stroke-width="2"/><path d="M20 68c18-8 40-12 60-12s42 4 60 12" fill="none" stroke="#8aa0b0" stroke-width="2"/><rect x="76" y="68" width="8" height="72" fill="#8aa0b0"/><circle cx="80" cy="26" r="5" fill="#8aa0b0"/></svg>`,
-    calamtide: `<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg"><rect width="160" height="160" fill="#2a2418"/><rect x="0" y="88" width="160" height="72" fill="#4a3a28"/><rect x="12" y="100" width="40" height="36" fill="#efe0b8"/><rect x="60" y="100" width="40" height="36" fill="#efe0b8"/><rect x="108" y="100" width="40" height="36" fill="#efe0b8"/><rect x="20" y="108" width="24" height="16" fill="#6a5a40"/><rect x="68" y="108" width="24" height="16" fill="#6a5a40"/><rect x="116" y="108" width="24" height="16" fill="#6a5a40"/><g fill="#3a6a38"><ellipse cx="80" cy="48" rx="22" ry="16"/><ellipse cx="64" cy="56" rx="14" ry="10"/><ellipse cx="98" cy="54" rx="14" ry="10"/></g><path d="M80 52v36" stroke="#5a3a18" stroke-width="4"/><path d="M74 44l6-16 6 16-16-6 20-2z" fill="#6a8a40" opacity=".85"/></svg>`,
+    voltshark: `<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg"><rect width="160" height="160" fill="#07141a"/><g opacity=".5" fill="none" stroke="#7ee0ff" stroke-width="1.2"><circle cx="80" cy="78" r="28"/><circle cx="80" cy="78" r="44"/><circle cx="80" cy="78" r="60"/></g><path d="M80 18l6 28-6 4-6-4zM132 78l-28 6-4-6 4-6zM80 138l-6-28 6-4 6 4zM28 78l28-6 4 6-4 6z" fill="#9be7ff" opacity=".85"/><path d="M80 38c18 0 30 16 30 36 0 8-4 16-8 22l8 36H50l8-36c-4-6-8-14-8-22 0-20 12-36 30-36z" fill="#0c3a44" stroke="#7ee0ff" stroke-width="2"/><circle cx="80" cy="70" r="10" fill="#c8f6ff"/><path d="M68 62c4-8 20-8 24 0" fill="#0a2a30"/><rect x="54" y="96" width="52" height="28" rx="3" fill="#102830" stroke="#d4f6ff" stroke-width="2"/><path d="M80 96v28" stroke="#7ee0ff" stroke-width="2"/><path d="M60 104h16M60 112h14M84 104h16M84 112h12" stroke="#9be7ff" stroke-width="1.4"/><circle cx="36" cy="40" r="2.4" fill="#fff8c8"/><circle cx="124" cy="36" r="2" fill="#fff8c8"/><circle cx="118" cy="120" r="1.8" fill="#b8ff9a"/></svg>`,
+    glasscrit: `<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg"><rect width="160" height="160" fill="#10161f"/><path d="M22 118c8-48 30-78 58-78s50 30 58 78" fill="#1c2a3c" stroke="#b8e0ff" stroke-width="2.4"/><path d="M36 118c6-38 22-62 44-62s38 24 44 62" fill="none" stroke="#8ec8f0" stroke-width="1.2" opacity=".8"/><path d="M80 18l10 22-10 6-10-6z" fill="#d8f0ff" stroke="#8ab4d8" stroke-width="1"/><path d="M28 56l14 8-4 14-12-6z" fill="#c0e0f8"/><path d="M132 56l-14 8 4 14 12-6z" fill="#c0e0f8"/><ellipse cx="80" cy="96" rx="16" ry="20" fill="#243044" stroke="#d0e8ff" stroke-width="2"/><circle cx="80" cy="78" r="9" fill="#f2f7ff"/><circle cx="80" cy="100" r="22" fill="none" stroke="#9fd4ff" stroke-width="2"/><circle cx="80" cy="100" r="6" fill="#9fd4ff"/><ellipse cx="80" cy="128" rx="46" ry="10" fill="none" stroke="#b8e0ff" stroke-width="2"/></svg>`,
+    brothbeast: `<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg"><rect width="160" height="160" fill="#2a160c"/><rect x="18" y="86" width="44" height="46" rx="4" fill="#3a2414" stroke="#e8893a" stroke-width="2"/><rect x="26" y="96" width="28" height="22" rx="2" fill="#c45a18"/><circle cx="40" cy="107" r="6" fill="#ffd27a"/><rect x="96" y="70" width="48" height="10" rx="2" fill="#6a6a70" stroke="#d8d8de" stroke-width="1.5"/><rect x="104" y="58" width="32" height="14" rx="2" fill="#4a4a50"/><ellipse cx="80" cy="108" rx="28" ry="24" fill="#c45a18" stroke="#f2c48a" stroke-width="2"/><rect x="62" y="28" width="36" height="22" rx="8" fill="#f4f0e6" stroke="#d8d0c0"/><rect x="58" y="48" width="44" height="10" fill="#f4f0e6" stroke="#d8d0c0"/><circle cx="80" cy="72" r="16" fill="#f3d2a8"/><ellipse cx="80" cy="80" rx="7" ry="4" fill="#c45a18"/><ellipse cx="80" cy="124" rx="18" ry="7" fill="#e8e0d0" stroke="#c9a27a"/><ellipse cx="80" cy="122" rx="12" ry="5" fill="#e8893a"/><path d="M70 54c0-8 8-8 8-16M90 54c0-8 8-8 8-16" fill="none" stroke="#f8e6c8" stroke-width="2"/></svg>`,
+    nectartide: `<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg"><rect width="160" height="160" fill="#24180a"/><rect x="18" y="48" width="18" height="70" fill="#7a4a10" stroke="#f3c14a" stroke-width="1.6"/><rect x="124" y="40" width="18" height="78" fill="#7a4a10" stroke="#f3c14a" stroke-width="1.6"/><circle cx="27" cy="44" r="8" fill="#ffe9a0" stroke="#f3c14a"/><circle cx="133" cy="36" r="8" fill="#ffe9a0" stroke="#f3c14a"/><ellipse cx="80" cy="110" rx="24" ry="22" fill="#c46818"/><circle cx="80" cy="76" r="14" fill="#f3d2a8"/><rect x="68" y="58" width="24" height="8" fill="#3a2010"/><g fill="#f3c14a" stroke="#8a5a10" stroke-width="1"><rect x="48" y="92" width="16" height="12" transform="rotate(-18 56 98)"/><rect x="96" y="88" width="16" height="12" transform="rotate(16 104 94)"/><rect x="58" y="36" width="14" height="11" transform="rotate(-10 65 41)"/><rect x="92" y="30" width="14" height="11" transform="rotate(12 99 35)"/></g><path d="M40 84h24M108 80h22M44 128h28" stroke="#ffe9a0" stroke-width="2" opacity=".7"/><circle cx="80" cy="100" r="6" fill="#fff3c0"/></svg>`,
+    flarewhale: `<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg"><rect width="160" height="160" fill="#0b1020"/><path d="M8 40h40M8 52h28M8 88h36M8 104h24" stroke="#6ad0ff" stroke-width="2" opacity=".55"/><path d="M120 24l8 16-14 8 18 14-8 12" fill="none" stroke="#ffe45a" stroke-width="2.4"/><path d="M28 120l18-8 8 14 16-10" fill="none" stroke="#7ee0ff" stroke-width="2"/><path d="M54 58h52l10 28-16 36H60L44 86z" fill="#1c2a44" stroke="#9ad8ff" stroke-width="2"/><rect x="70" y="66" width="36" height="14" rx="3" fill="#081018" stroke="#7ee0ff" stroke-width="1.6"/><path d="M74 73h28" stroke="#ffe45a" stroke-width="3"/><path d="M64 122l-8 22h16l4-22M96 122l8 22H88l-4-22" fill="#243356" stroke="#9ad8ff" stroke-width="1.6"/><circle cx="80" cy="96" r="8" fill="#083040" stroke="#ffe45a" stroke-width="2"/><circle cx="80" cy="96" r="3" fill="#fff3a0"/><rect x="44" y="62" width="16" height="12" rx="2" fill="#2a3c5c" stroke="#9ad8ff"/><rect x="100" y="62" width="16" height="12" rx="2" fill="#2a3c5c" stroke="#9ad8ff"/></svg>`,
+    hubspire: `<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg"><rect width="160" height="160" fill="#0c1220"/><g fill="#1a2438"><rect x="14" y="108" width="16" height="28"/><rect x="34" y="98" width="14" height="38"/><rect x="112" y="100" width="16" height="36"/><rect x="132" y="110" width="12" height="26"/></g><path d="M86 8l-10 28 16 2-18 32 14-10 8 28" fill="#ffe45a" stroke="#fff3a0" stroke-width="1"/><path d="M50 16l8 18-12 4 16 22" fill="none" stroke="#7ee0ff" stroke-width="2"/><ellipse cx="80" cy="108" rx="36" ry="28" fill="#243044" stroke="#7ee0ff" stroke-width="2.4"/><path d="M50 100c10 8 20 8 30 0s20-8 30 0" fill="none" stroke="#ffe45a" stroke-width="2.2"/><path d="M50 112c10 8 20 8 30 0s20-8 30 0" fill="none" stroke="#7ee0ff" stroke-width="2"/><rect x="66" y="92" width="28" height="10" rx="2" fill="#081018" stroke="#7ee0ff"/><ellipse cx="80" cy="110" rx="50" ry="34" fill="none" stroke="#9ad8ff" stroke-width="2" opacity=".7"/><circle cx="80" cy="118" r="6" fill="#ffe45a"/></svg>`,
+    cloudao: `<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg"><rect width="160" height="160" fill="#101418"/><g stroke="#3a4a50" stroke-width="1" opacity=".7"><path d="M16 120h128M16 132h128M16 144h128"/><path d="M32 112v36M56 112v36M80 112v36M104 112v36M128 112v36"/></g><rect x="40" y="124" width="20" height="12" fill="#1c3034" stroke="#7ae0d0"/><rect x="88" y="124" width="28" height="12" fill="#1c3034" stroke="#7ae0d0"/><path d="M80 36c14 0 24 12 24 28 0 10-6 18-10 22l12 40H54l12-40c-4-4-10-12-10-22 0-16 10-28 24-28z" fill="#1a2428" stroke="#7ae0d0" stroke-width="1.8"/><rect x="70" y="58" width="20" height="6" rx="2" fill="#7ae0d0"/><path d="M28 48 L132 100" stroke="#d8fff4" stroke-width="2.2"/><path d="M36 44 L128 96" stroke="#7ae0d0" stroke-width="1" opacity=".6"/><circle cx="28" cy="100" r="3" fill="#7ae0d0"/><circle cx="132" cy="88" r="3" fill="#7ae0d0"/></svg>`,
+    sandspire: `<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg"><rect width="160" height="160" fill="#24180e"/><path d="M0 130h160l-20 30H20z" fill="#5a3a1c"/><path d="M30 128v-20h20v-16h16v-16h16v52H30z" fill="#8a6a3a" stroke="#e6c48a" stroke-width="1.6"/><path d="M96 128V72h28v56z" fill="#7a5a30" stroke="#e6c48a" stroke-width="1.6"/><circle cx="110" cy="64" r="14" fill="#c9a27a" stroke="#e6c48a" stroke-width="2"/><path d="M58 70h44l8 40-16 20H66L50 110z" fill="#6a4a24" stroke="#f0d2a0" stroke-width="2"/><circle cx="80" cy="58" r="14" fill="#c9a27a"/><path d="M58 80 L22 100 28 110 62 90" fill="#8a6a3a" stroke="#e6c48a"/><path d="M102 80 L138 100 132 110 98 90" fill="#8a6a3a" stroke="#e6c48a"/></svg>`,
+    goldhorn: `<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg"><rect width="160" height="160" fill="#1a1408"/><g fill="#e6c15a" stroke="#8a6a20" stroke-width="1"><circle cx="28" cy="24" r="5"/><circle cx="50" cy="16" r="4"/><circle cx="74" cy="22" r="5"/><circle cx="98" cy="14" r="4"/><circle cx="120" cy="24" r="5"/><circle cx="140" cy="18" r="4"/><circle cx="36" cy="46" r="4"/><circle cx="128" cy="46" r="4"/></g><circle cx="80" cy="100" r="40" fill="#3a2e16" stroke="#e6c15a" stroke-width="3"/><circle cx="80" cy="100" r="28" fill="#2a220f" stroke="#c9a227" stroke-width="2"/><path d="M52 78l-16-22 22 12M108 78l16-22-22 12" fill="#e6c15a"/><circle cx="68" cy="96" r="4" fill="#ffe45a"/><circle cx="92" cy="96" r="4" fill="#ffe45a"/><circle cx="80" cy="112" r="8" fill="#1a1408" stroke="#e6c15a" stroke-width="2"/><path d="M80 104v16M72 112h16" stroke="#e6c15a" stroke-width="1.6"/></svg>`,
+    leverhorn: `<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg"><rect width="160" height="160" fill="#0e1a24"/><path d="M36 132V52h16v-16h56v16h16v80" fill="none" stroke="#d4b46a" stroke-width="3"/><rect x="52" y="36" width="56" height="12" fill="#d4b46a"/><path d="M16 120c16-16 28-8 44-20 16-12 28-4 44-16 14-10 24-6 40-14v52H16z" fill="#1c5a70" stroke="#7ad0e0" stroke-width="2"/><path d="M16 136c18-10 30-4 48-14 18-10 28-2 46-12 14-8 22-4 34-10v24H16z" fill="#2a7a8c"/><rect x="66" y="64" width="28" height="36" rx="2" fill="#f2e6c8" stroke="#d4b46a"/><path d="M70 94l8-12 6 6 10-14" fill="none" stroke="#c45a18" stroke-width="2"/></svg>`,
+    grovehall: `<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg"><rect width="160" height="160" fill="#122016"/><path d="M28 132V72c0-28 24-48 52-48s52 20 52 48v60" fill="#1c3020" stroke="#7cbc7a" stroke-width="2"/><rect x="48" y="60" width="22" height="52" rx="6" fill="#e8f8e8" stroke="#2f6a3a" stroke-width="2"/><rect x="90" y="60" width="22" height="52" rx="6" fill="#e8f8e8" stroke="#2f6a3a" stroke-width="2"/><rect x="50" y="86" width="18" height="24" rx="4" fill="#3aaa6a"/><rect x="92" y="80" width="18" height="30" rx="4" fill="#6ad0a0"/><rect x="52" y="52" width="14" height="10" rx="2" fill="#2f6a3a"/><rect x="94" y="52" width="14" height="10" rx="2" fill="#2f6a3a"/><path d="M36 100c-10-16 6-28 16-16" fill="#2f6a3a"/><path d="M124 100c10-16-6-28-16-16" fill="#2f6a3a"/><circle cx="80" cy="120" r="8" fill="#b8f0c8"/></svg>`,
+    wardplate: `<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg"><rect width="160" height="160" fill="#181c22"/><path d="M40 140V64c0-24 18-40 40-40s40 16 40 40v76" fill="#2a3038" stroke="#8a9098" stroke-width="3"/><path d="M80 54c18 4 28 10 28 22 0 16-12 28-28 36-16-8-28-20-28-36 0-12 10-18 28-22z" fill="#c8ced6" stroke="#8a9098" stroke-width="2"/><rect x="64" y="68" width="32" height="22" rx="4" fill="#8a9098"/><rect x="70" y="76" width="20" height="6" fill="#1a1c20"/><rect x="58" y="96" width="44" height="36" rx="4" fill="#6a7078" stroke="#c8ced6" stroke-width="2"/><path d="M80 64v20M70 74h20" stroke="#e8f0ff" stroke-width="2"/></svg>`,
+    safecanopy: `<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg"><rect width="160" height="160" fill="#102018"/><g fill="#1c3428"><rect x="28" y="108" width="18" height="32"/><rect x="50" y="96" width="16" height="44"/><rect x="90" y="100" width="20" height="40"/><rect x="114" y="110" width="16" height="30"/></g><path d="M80 36c-32 0-58 18-66 40h132c-8-22-34-40-66-40z" fill="#2a6a48" stroke="#b8e0c0" stroke-width="2"/><path d="M20 76c20 12 40 8 60 12 20-4 40 0 60-12" fill="none" stroke="#88ffcc" stroke-width="1.5"/><rect x="76" y="76" width="8" height="52" fill="#c9a27a"/><path d="M76 128c0 10 16 10 16 0" fill="none" stroke="#c9a27a" stroke-width="3"/></svg>`,
+    calamtide: `<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg"><rect width="160" height="160" fill="#0c1c28"/><rect x="48" y="40" width="64" height="48" fill="#2a3a44" stroke="#8ab0c0" stroke-width="2"/><rect x="68" y="60" width="24" height="28" fill="#0c1c28"/><path d="M44 40h72l-10-16H54z" fill="#3a5060" stroke="#8ab0c0"/><path d="M8 120c16-24 28-10 44-28 16-18 28-8 44-24 16-16 26-6 48-20v80H8z" fill="#1a4a68" stroke="#7ec8e0" stroke-width="2"/><path d="M8 140c18-14 30-6 50-18 20-12 30-4 50-16 16-10 24-4 36-10v28H8z" fill="#2a6a88"/><path d="M96 8l-8 16 12 2-14 20" fill="#ffe45a"/><circle cx="80" cy="50" r="5" fill="#ffb347"/></svg>`,
     bearcub: `<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg"><rect width="160" height="160" fill="#2a1518"/><circle cx="48" cy="48" r="18" fill="#5a3038"/><circle cx="112" cy="48" r="18" fill="#5a3038"/><circle cx="48" cy="48" r="8" fill="#3a1c22"/><circle cx="112" cy="48" r="8" fill="#3a1c22"/><ellipse cx="80" cy="88" rx="48" ry="44" fill="#6a3840"/><circle cx="64" cy="82" r="7" fill="#ffd24a"/><circle cx="96" cy="82" r="7" fill="#ffd24a"/><circle cx="64" cy="82" r="3" fill="#1a0a04"/><circle cx="96" cy="82" r="3" fill="#1a0a04"/><ellipse cx="80" cy="100" rx="12" ry="8" fill="#3a1c22"/><path d="M70 112 C80 120 90 120 90 112" stroke="#1a0a04" stroke-width="3" fill="none"/><path d="M80 18 L92 48 L80 42 L68 48 Z" fill="#e31c23"/><path d="M80 26 L86 44 L80 40 L74 44 Z" fill="#ffd2cf"/></svg>`,
     bearshort: `<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg"><rect width="160" height="160" fill="#1a1014"/><circle cx="42" cy="44" r="20" fill="#4a242c"/><circle cx="118" cy="44" r="20" fill="#4a242c"/><circle cx="42" cy="44" r="9" fill="#2a1418"/><circle cx="118" cy="44" r="9" fill="#2a1418"/><ellipse cx="80" cy="90" rx="52" ry="48" fill="#5a2c36"/><circle cx="62" cy="82" r="8" fill="#e31c23"/><circle cx="98" cy="82" r="8" fill="#e31c23"/><circle cx="62" cy="82" r="3.5" fill="#1a0a04"/><circle cx="98" cy="82" r="3.5" fill="#1a0a04"/><path d="M70 104 L80 112 L90 104" fill="#2a1418"/><path d="M60 120 C80 136 100 136 100 120" stroke="#1a0a04" stroke-width="4" fill="none"/><path d="M80 10 L98 52 L80 44 L62 52 Z" fill="#e31c23"/><rect x="108" y="100" width="28" height="22" fill="#c4a15a" stroke="#1a0a04" stroke-width="2"/><path d="M108 100 L136 100 L130 90 L114 90 Z" fill="#8b1e1e"/><path d="M44 128 L36 150 L52 140" fill="#4a242c"/><path d="M116 128 L124 150 L108 140" fill="#4a242c"/></svg>`,
     bearrage: `<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg"><rect width="160" height="160" fill="#14080c"/><circle cx="36" cy="40" r="22" fill="#6a2030"/><circle cx="124" cy="40" r="22" fill="#6a2030"/><circle cx="36" cy="40" r="10" fill="#2a0c12"/><circle cx="124" cy="40" r="10" fill="#2a0c12"/><ellipse cx="80" cy="92" rx="58" ry="50" fill="#7a2434"/><path d="M48 70 L66 80 L50 82 Z" fill="#e31c23"/><path d="M112 70 L94 80 L110 82 Z" fill="#e31c23"/><circle cx="60" cy="86" r="9" fill="#ffd24a"/><circle cx="100" cy="86" r="9" fill="#ffd24a"/><circle cx="60" cy="86" r="4" fill="#1a0a04"/><circle cx="100" cy="86" r="4" fill="#1a0a04"/><path d="M56 118 L80 132 L104 118 L96 128 L80 140 L64 128 Z" fill="#2a0c12"/><path d="M80 6 L104 54 L80 44 L56 54 Z" fill="#e31c23"/><path d="M80 16 L94 48 L80 42 L66 48 Z" fill="#ffd24a"/><path d="M20 70 L8 40 L28 62" fill="#7a2434"/><path d="M140 70 L152 40 L132 62" fill="#7a2434"/></svg>`,
@@ -1516,7 +1593,7 @@
           <div class="badges">
             <span class="badge">${s.sector}</span>
             <span class="badge temp">${s.temperament}</span>
-            <span class="badge job">${s.job || ""}</span>
+            <span class="badge job">${jobLabel(s.job)}</span>
             ${rotationBadge(s.sector)}
           </div>
         </div>
@@ -1710,7 +1787,7 @@
     const noteEl = $("ticket-note");
     if (noteEl) {
       const wipe = state.lastWipeNote && state.lastWipeNote.id === s.id ? state.lastWipeNote.text : "";
-      const jobBit = s.job ? "職業 " + s.job + (s.role ? "：" + s.role : "") : "";
+      const jobBit = s.job ? "職業 " + jobLabel(s.job) + (s.role ? "：" + s.role : "") : "";
       const text = wipe || jobBit;
       noteEl.hidden = !text;
       noteEl.className = "ticket-note" + (wipe ? " wipe" : "");
@@ -1991,7 +2068,7 @@
     return `<div class="unit ${u.side === "enemy" ? "enemy" : "player"}${u.hp <= 0 ? " dead" : ""}${u.wiped ? " wiped" : ""}${spawn ? " spawn" : ""}${inspect ? " clickable" : ""}${arranging ? " arrange" : ""}${picked ? " picked" : ""}${u.onBench ? " bench-unit" : ""}" id="unit-${u.id}"${u.stockId ? ` data-stock="${u.stockId}"` : ""}${u.slot != null ? ` data-slot="${u.slot}"` : ""}${arranging || inspect ? ` role="button" tabindex="0" aria-label="${aria}"` : ""}${drag ? ` draggable="true"` : ""}>
       ${portrait(u.portrait)}
       <div class="unit-name">${u.name}</div>
-      <div class="unit-job">${u.job || ""}</div>
+      <div class="unit-job">${jobLabel(u.job)}</div>
       <div class="unit-sub unit-hp">${hpBit}</div>
       <div class="hp-bar"><div class="hp-fill" style="width:${hpPct}%"></div><div class="shield-fill" style="width:${shPct}%"></div></div>
     </div>`;
@@ -2368,17 +2445,17 @@
       <div class="detail-top">
         ${portrait(s.id)}
         <div>
-          <h2 id="detail-name">${s.name}</h2>
+          <h2 id="detail-name">${stockTitle(s)}</h2>
           <div class="detail-en">${stockEnLine(s)}</div>
           <div class="badges">
             <span class="badge">${s.sector}</span>
             <span class="badge temp">${s.temperament}</span>
-            <span class="badge job">${s.job || ""}</span>
+            <span class="badge job">${jobLabel(s.job)}</span>
             ${rotationBadge(s.sector)}
           </div>
         </div>
       </div>
-      <p class="detail-role">${s.job ? "職業：" + s.job + " — " + (s.role || "") : ""}</p>
+      <p class="detail-role">${s.job ? "職業：" + jobLabel(s.job) + " — " + (s.role || "") : ""}</p>
       <p class="detail-syn">${(currentSynergies().filter((x) => !x.jobs || x.jobs.indexOf(s.job) >= 0).map((x) => x.line).join("；")) || ""}</p>
       <p class="detail-blurb">${s.blurb || ""}</p>
       <div class="detail-attrs">
@@ -2720,7 +2797,7 @@
     if (!el) return;
     updateUnitEl(u);
     const jobEl = el.querySelector(".unit-job");
-    if (jobEl) jobEl.textContent = u.job || "";
+    if (jobEl) jobEl.textContent = jobLabel(u.job);
     const sub = el.querySelector(".unit-sub");
     if (sub) sub.textContent = unitHpText(u);
     el.classList.toggle("picked", !!(state.formPick && u.stockId && state.formPick === u.stockId));
@@ -2748,7 +2825,7 @@
       const el = u ? $("unit-" + u.id) : null;
       const target = el && (el.querySelector(".portrait") || el);
       if (e.type === "heal") flyFromEl(target, (e.job || "牧師") + " 回血 +" + e.amount, "heal");
-      else if (e.type === "supply") flyFromEl(target, (e.job || "補給") + " 補給 +" + e.amount, "heal");
+      else if (e.type === "supply") flyFromEl(target, (e.job || "補師") + " 補給 +" + e.amount, "heal");
       else if (e.type === "shield") flyFromEl(target, (e.job || "騎士") + " 護盾 +" + e.amount, "shield");
     }
     const line = supportLog(events);
@@ -2761,7 +2838,7 @@
     const players = state.fight.players;
     const b = state.runBuffs || {};
     const fx = currentSynergyEffects();
-    const healScale = { heal: b.healAmp || 1, supply: 1 };
+    const healScale = { heal: b.healAmp || 1, supply: fx.supply || 1 };
     const shieldScale = { shield: b.shieldAmp || 1 };
     let events = [];
     if (kind === "opening" || kind === "round") {
@@ -2780,7 +2857,7 @@
     }
     if (kind === "round") {
       events = events.concat(applyHealToLiving(players, supportSources("heal"), "heal", powerLookup, healScale));
-      events = events.concat(applyHealToLiving(players, supportSources("supply"), "supply", powerLookup));
+      events = events.concat(applyHealToLiving(players, supportSources("supply"), "supply", powerLookup, healScale));
     }
     if (kind === "opening" && (b.openHeal || b.metaOpenHeal)) {
       const living = livingCombatants(players);
@@ -3027,8 +3104,23 @@
           dmg = Math.round(dmg * 1.25);
           crit = true;
         }
+        dmg = trapperDamage(atk, dmg);
         const hpBefore = tgt.hp;
         strikeTarget(atk, tgt, dmg, crit);
+        const splash = applySplashDamage(atk, tgt, foes, dmg, state.stocks);
+        for (const ev of splash) {
+          if (!ev || !ev.target) continue;
+          const tEl = $("unit-" + ev.target.id);
+          const port = tEl && (tEl.querySelector(".portrait") || tEl);
+          if (port && ev.result) flyFromEl(port, "波及 " + ev.result.dmg, "dmg");
+          updateUnitEl(ev.target);
+          refreshUnitEl(ev.target);
+          if (ev.result && ev.result.killed && ev.target.side === "player") settlePlayerDeath(ev.target);
+        }
+        const follow = followUpRatio(atk);
+        if (follow > 0 && tgt.hp > 0 && !tgt.wiped) {
+          strikeTarget(atk, tgt, Math.round(dmg * follow), false);
+        }
         await sleep(crit ? BATTLE_CRIT_MS : BATTLE_STRIKE_MS);
         const badly = tgt.hp > 0 && tgt.maxHp > 0 && (tgt.hp / tgt.maxHp <= 0.4 || (hpBefore - tgt.hp) >= tgt.maxHp * 0.28);
         if (badly) await pauseForHurt(tgt);
@@ -3884,7 +3976,13 @@
     SUPPLY_RATIO,
     SECTOR_ORDER,
     COMBAT_TRAITS,
+    JOB_STATS,
     traitsOf,
+    stockTitle,
+    aoeRatio,
+    followUpRatio,
+    trapperDamage,
+    applySplashDamage,
     combatProfile,
     canBeginWave,
     isBuildPhase,
