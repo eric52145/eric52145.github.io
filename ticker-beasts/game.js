@@ -2,8 +2,7 @@
   "use strict";
 
   const START_CASH = 1000;
-  const MAX_WAVES = 8;
-  const GOAL = 3500;
+  const GOAL = 8000;
   const PRICE_MIN = 18;
   const PRICE_MAX = 420;
   const CONCENTRATION_CUT = 0.15;
@@ -14,27 +13,32 @@
   const EVENT_MIN_MS = 30000;
   const EVENT_MAX_MS = 60000;
   const SESSION_MS = 20000;
-  const WAVE_GAP_MS = 10000;
+  const WAVE_GAP_MS = 25000;
+  const BATTLE_OPEN_MS = 1400;
+  const BATTLE_STRIKE_MS = 900;
+  const BATTLE_CRIT_MS = 1150;
+  const BATTLE_HURT_MS = 1000;
+  const TICKET_HOLD_MS = 3000;
   const CLOCK_MS = 250;
   const KLINE_W = 520;
   const KLINE_H = 180;
   const SECTOR_ORDER = ["科技", "飲食", "能源", "地產", "銀行", "醫療", "保險"];
 
   const STOCKS = [
-    { id: "voltshark", name: "綠核", en: "Viridcore", ticker: "VRDC", sector: "科技", temperament: "急躁", job: "法師", role: "高爆發玻璃大炮，輸出高但身板薄。", price: 88, vol: 1.45, speed: 3, move: "綠光搶算", blurb: "坐唔定嘅綠色算力核心獸，人工智能同晶片需求一旺就暴衝。職業係高爆發法師，輸出高但身板薄。" },
-    { id: "glasscrit", name: "璃掌", en: "Palmsheet", ticker: "PLST", sector: "科技", temperament: "沉穩", job: "法師", role: "持續法術輸出，傷害穩、較少大起大落。", price: 126, vol: 0.74, speed: 1, move: "掌上薄璃", blurb: "沉穩嘅掌上薄璃裝置獸，靠新品同軟件慢慢疊力。職業係持續輸出法師，少見大起大落。" },
-    { id: "brothbeast", name: "陳壇", en: "Agedirn", ticker: "AGDR", sector: "飲食", temperament: "穩陣", job: "補給", role: "輸出穩定，每回合為隊友提供少量補給。", price: 120, vol: 0.72, speed: 1, move: "開窖封泥", blurb: "窖裏一排陳年酒壇，步子慢、價錢貴，防守味濃。職業係補給，輸出穩，會為隊友提供少量補給，但唔及牧師回血。" },
-    { id: "nectartide", name: "燈堡", en: "Lampburg", ticker: "LMBG", sector: "飲食", temperament: "跟風", job: "遊俠", role: "宣傳或升勢期間加快攻擊。", price: 94, vol: 1.42, speed: 3, move: "窗燈出堡", blurb: "燈火通明嘅櫃位專賣盒裝堡同薯條，優惠一浪接一浪。職業係遊俠，宣傳期會加快輸出。" },
-    { id: "flarewhale", name: "電駒", en: "Voltcourser", ticker: "VLCR", sector: "能源", temperament: "衝動", job: "狂戰士", role: "打得猛，行情一轉就大幅擺動。", price: 136, vol: 1.35, speed: 3, move: "閃轍出閘", blurb: "性急嘅電駒，電動熱潮一到就衝出閘。職業係狂戰士，打得猛，行情一轉就大幅擺動。" },
+    { id: "voltshark", name: "翠算", en: "Viridraw", ticker: "VDRW", sector: "科技", temperament: "急躁", job: "法師", role: "高爆發玻璃大炮，輸出高但身板薄。", price: 88, vol: 1.45, speed: 3, move: "綠光搶算", blurb: "坐唔定嘅綠色運算磚，螢光卡扇一轉、算力需求一旺就暴衝。職業係高爆發法師，輸出高但身板薄。" },
+    { id: "glasscrit", name: "銀片", en: "Silversheet", ticker: "SVST", sector: "科技", temperament: "沉穩", job: "法師", role: "持續法術輸出，傷害穩、較少大起大落。", price: 126, vol: 0.74, speed: 1, move: "掌上薄璃", blurb: "沉穩嘅銀色薄璃手板，靠新品同軟件慢慢疊力。職業係持續輸出法師，少見大起大落。" },
+    { id: "brothbeast", name: "樂堂", en: "Joycanteen", ticker: "JCTN", sector: "飲食", temperament: "穩陣", job: "補給", role: "輸出穩定，每回合為隊友提供少量補給。", price: 120, vol: 0.72, speed: 1, move: "出餐轉檯", blurb: "街坊食堂式出餐獸，橙托盤轉檯快、客路穩。職業係補給，輸出穩，會為隊友提供少量補給，但唔及牧師回血。" },
+    { id: "nectartide", name: "黃窗", en: "Amberwin", ticker: "AMWN", sector: "飲食", temperament: "跟風", job: "遊俠", role: "宣傳或升勢期間加快攻擊。", price: 94, vol: 1.42, speed: 3, move: "窗燈出堡", blurb: "琥珀窗燈一亮就出盒裝堡同薯條，優惠一浪接一浪。職業係遊俠，宣傳期會加快輸出。" },
+    { id: "flarewhale", name: "閃駒", en: "Flashcourser", ticker: "FLCR", sector: "能源", temperament: "衝動", job: "狂戰士", role: "打得猛，行情一轉就大幅擺動。", price: 136, vol: 1.35, speed: 3, move: "閃轍出閘", blurb: "性急嘅閃轍跑車，電動熱潮一到就衝出閘。職業係狂戰士，打得猛，行情一轉就大幅擺動。" },
     { id: "hubspire", name: "城電", en: "Metrolamp", ticker: "MTLP", sector: "能源", temperament: "沉實", job: "狂戰士", role: "中線穩定輸出，身板較厚。", price: 112, vol: 0.7, speed: 1, move: "全城穩壓", blurb: "撐住全城供電嘅穩壓獸，少有暴利，勝在捱得。職業係中線狂戰士，輸出穩定。" },
     { id: "cloudao", name: "埠廈", en: "Pierhold", ticker: "PRHD", sector: "地產", temperament: "保守", job: "守城", role: "高生命、受傷較少的守城單位。", price: 154, vol: 0.8, speed: 1, move: "長約收租", blurb: "守住海港碼頭同寫字樓嘅保守收租獸，租約長、步子慢。職業係守城，身板厚、受傷較少。" },
-    { id: "sandspire", name: "樓花", en: "Prefloor", ticker: "PRFL", sector: "地產", temperament: "投機", job: "守城", role: "旺市身板厚，跌市變得脆弱。", price: 91, vol: 1.4, speed: 3, move: "開盤搶籌", blurb: "未起樓先開盤嘅投機沙盤，售樓廳一熱就扯上，信貸一緊就可以塌。職業係高風險守城，跌市時會變得好脆。" },
-    { id: "goldhorn", name: "岸庫", en: "Shorevault", ticker: "SHVT", sector: "銀行", temperament: "審慎", job: "騎士", role: "為隊友加上薄護盾。", price: 100, vol: 0.95, speed: 2, move: "兩岸庫門", blurb: "謹慎嘅舊式兩岸存款清算庫，靠穩陣生意抵禦風浪。職業係騎士，會為隊友加上薄護盾。" },
-    { id: "leverhorn", name: "招潮", en: "Calltide", ticker: "CLTD", sector: "銀行", temperament: "進取", job: "控制", role: "升勢或高息時打得更重。", price: 82, vol: 1.33, speed: 3, move: "高息招存", blurb: "以高息招徠存款嘅進取零售庫。職業係控制，高息勢頭向上時打得更重。" },
-    { id: "grovehall", name: "杏館", en: "Grovehall", ticker: "GVHL", sector: "醫療", temperament: "穩守", job: "牧師", role: "每回合為未倒下的隊友回血。", price: 118, vol: 0.76, speed: 1, move: "施劑護脈", blurb: "穩守嘅杏林醫館獸，靠門診同成藥慢慢養倉。職業係牧師，持倉期間會為場上未倒下嘅隊友回血。" },
+    { id: "sandspire", name: "盤門", en: "Estategate", ticker: "ETGT", sector: "地產", temperament: "投機", job: "守城", role: "旺市身板厚，跌市變得脆弱。", price: 91, vol: 1.4, speed: 3, move: "開盤搶籌", blurb: "售樓大廳開閘搶籌嘅投機沙盤，開盤一熱就扯上，信貸一緊就可以塌。職業係高風險守城，跌市時會變得好脆。" },
+    { id: "goldhorn", name: "洋庫", en: "Merivault", ticker: "MRVT", sector: "銀行", temperament: "審慎", job: "騎士", role: "為隊友加上薄護盾。", price: 100, vol: 0.95, speed: 2, move: "兩岸庫門", blurb: "謹慎嘅舊式雙岸金庫大廳，靠穩陣生意抵禦風浪。職業係騎士，會為隊友加上薄護盾。" },
+    { id: "leverhorn", name: "旺生", en: "Thrivewell", ticker: "THWL", sector: "銀行", temperament: "進取", job: "控制", role: "升勢或高息時打得更重。", price: 82, vol: 1.33, speed: 3, move: "高息招存", blurb: "以高息招徠存款嘅進取零售庫，存摺向上揚。職業係控制，高息勢頭向上時打得更重。" },
+    { id: "grovehall", name: "雙護", en: "Twinsoothe", ticker: "TNSO", sector: "醫療", temperament: "穩守", job: "牧師", role: "每回合為未倒下的隊友回血。", price: 118, vol: 0.76, speed: 1, move: "施劑護脈", blurb: "穩守嘅雙瓶成藥診療獸，靠門診同家用藥慢慢養倉。職業係牧師，持倉期間會為場上未倒下嘅隊友回血。" },
     { id: "wardplate", name: "鎧院", en: "Wardplate", ticker: "WDPL", sector: "醫療", temperament: "剛毅", job: "聖騎士", role: "高生命並嘲諷敵方，可抵擋並為隊友加上薄護盾。", price: 109, vol: 0.84, speed: 2, move: "披甲守院", blurb: "披甲守院嘅醫療聖騎士，身板厚、容易吸火。職業係聖騎士，可抵擋傷害並為隊友加上薄護盾（增益）。" },
-    { id: "safecanopy", name: "撐傘", en: "Canopyhold", ticker: "CNPH", sector: "保險", temperament: "穩健", job: "守護", role: "在場時減輕隊友所受傷害。", price: 134, vol: 0.76, speed: 1, move: "長約撐傘", blurb: "為住戶撐起長約保護傘嘅穩健壽險獸。職業係守護，在場時可減輕隊友所受傷害。", unlock: "insurance" },
-    { id: "calamtide", name: "全盾", en: "Omnishield", ticker: "OMSH", sector: "保險", temperament: "緊張", job: "守護", role: "偏坦，波動大時攻擊抽高。", price: 97, vol: 1.38, speed: 3, move: "門市拉保", blurb: "門市拉保、案量一高就大幅擺動嘅綜合保險獸。職業係守護偏坦，波動大時輸出會突然抽高。", unlock: "insurance" },
+    { id: "safecanopy", name: "寰傘", en: "Aegiscanopy", ticker: "AGCP", sector: "保險", temperament: "穩健", job: "守護", role: "在場時減輕隊友所受傷害。", price: 134, vol: 0.76, speed: 1, move: "長約撐傘", blurb: "為整座城撐起長約保護傘嘅穩健壽險獸。職業係守護，在場時可減輕隊友所受傷害。", unlock: "insurance" },
+    { id: "calamtide", name: "楓庭", en: "Maplegrove", ticker: "MPGR", sector: "保險", temperament: "緊張", job: "守護", role: "偏坦，波動大時攻擊抽高。", price: 97, vol: 1.38, speed: 3, move: "門市拉保", blurb: "門市拉保、案量一高就大幅擺動嘅庭院保險獸。職業係守護偏坦，波動大時輸出會突然抽高。", unlock: "insurance" },
   ];
 
   const HEAL_RATIO = 0.12;
@@ -82,16 +86,25 @@
   function combatProfile(s, power) {
     const t = traitsOf(s);
     const p = Math.max(0, Math.round(Number(power) || 0));
-    const maxHp = Math.max(1, Math.round(p * hpFactor(s, t)));
-    const atk = Math.max(18, Math.round(p * atkFactor(s, t)));
+    const fx = currentSynergyEffects();
+    const b = state.runBuffs || {};
+    let hpMul = hpFactor(s, t) * (fx.hp || 1);
+    if (b.priceWard && s && s.change < -0.0005) hpMul *= 1.12;
+    let atkMul = atkFactor(s, t);
+    if (s && s.job === "法師") atkMul *= fx.burst || 1;
+    if ((s && (s.job === "狂戰士" || s.job === "控制")) && s.change > 0.0005) atkMul *= fx.surge || 1;
+    let taunt = t.taunt || 0;
+    if (b.tauntUp && taunt > 0) taunt = Math.min(0.95, taunt * 1.35);
+    const maxHp = Math.max(1, Math.round(p * hpMul));
+    const atk = Math.max(18, Math.round(p * atkMul));
     return {
       job: (s && s.job) || "",
       role: (s && s.role) || "",
       maxHp,
       atk,
       armor: t.armor || 0,
-      teamArmor: t.teamArmor || 0,
-      taunt: t.taunt || 0,
+      teamArmor: (t.teamArmor || 0) + (b.teamArmor || 0) + (fx.armor || 0),
+      taunt,
       heal: t.heal || 0,
       supply: t.supply || 0,
       shieldRatio: t.shield || 0,
@@ -133,14 +146,13 @@
   function canBeginWave(opts) {
     const o = opts || {};
     if (o.phase !== "gap" || o.waveBusy) return false;
-    if (o.wave > MAX_WAVES) return false;
+    if (!o.hasHoldings) return false;
+    if (o.wave === 1) return !!o.marketLive;
+    if (o.force) return true;
     const now = o.now || 0;
-    if (o.wave === 1) {
-      if (!o.marketLive) return false;
-      return !!o.hasHoldings;
-    }
     if (now < (o.nextWaveAt || 0)) return false;
-    return !!o.hasHoldings;
+    if (o.midTicket) return false;
+    return true;
   }
 
   function applyDeathWipe(stock, realizedDay) {
@@ -185,9 +197,11 @@
       if (!src || (src.shares || 0) <= 0) continue;
       const t = traitsOf(src);
       const ratio = ratioKey === "supply" ? (t.supply || 0) : (t.heal || 0);
-      if (ratio <= 0) continue;
+      const scale = (arguments[4] && arguments[4][ratioKey === "supply" ? "supply" : "heal"]) || 1;
+      const used = ratio * scale;
+      if (used <= 0) continue;
       const power = powerFn ? powerFn(src) : Math.round((src.shares || 0) * (src.price || 0));
-      const parts = splitPool(power * ratio, living.length);
+      const parts = splitPool(power * used, living.length);
       living.forEach((u, i) => {
         const amt = parts[i] || 0;
         if (amt <= 0 || u.hp <= 0 || u.wiped) return;
@@ -208,8 +222,9 @@
       if (!src || (src.shares || 0) <= 0) continue;
       const t = traitsOf(src);
       if (!t.shield) continue;
+      const scale = (arguments[3] && arguments[3].shield) || 1;
       const power = powerFn ? powerFn(src) : Math.round((src.shares || 0) * (src.price || 0));
-      const parts = splitPool(power * t.shield, living.length);
+      const parts = splitPool(power * t.shield * scale, living.length);
       living.forEach((u, i) => {
         const amt = parts[i] || 0;
         if (amt <= 0 || u.hp <= 0 || u.wiped) return;
@@ -238,12 +253,14 @@
     const ch = target && target.change ? target.change : 0;
     if (target && target.tag === "speculative" && ch < -0.0005) cut -= 0.2;
     if (target && target.tag === "berserk" && ch < -0.0005) cut -= 0.08;
+    if (state.runBuffs && state.runBuffs.priceWard && ch < -0.0005) cut += 0.08;
     cut += teamArmorOf(players, stocks);
     return Math.max(-0.15, Math.min(MAX_TEAM_ARMOR, cut));
   }
 
-  function applyIncomingDamage(target, rawDmg, players, stocks) {
-    const cut = incomingCut(target, players, stocks);
+  function applyIncomingDamage(target, rawDmg, players, stocks, opts) {
+    let cut = incomingCut(target, players, stocks);
+    if (opts && opts.heavy && state.runBuffs && state.runBuffs.bossResist) cut = Math.min(MAX_TEAM_ARMOR, cut + 0.18);
     let dmg = Math.max(1, Math.round((rawDmg || 0) * (1 - cut)));
     let blocked = 0;
     let absorbed = 0;
@@ -353,6 +370,18 @@
     marketLive: false,
     waitBookLogged: false,
     lastWipeNote: null,
+    startCash: START_CASH,
+    rotation: null,
+    floorsCleared: 0,
+    bossesCleared: [],
+    runBuffs: { taken: [] },
+    wealthContinued: false,
+    wealthOffered: false,
+    phoneTab: "quotes",
+    didAutoArena: false,
+    fatalDeath: false,
+    ticketTouchedAt: 0,
+    ticketPointer: false,
   };
 
   function memoryStore() {
@@ -372,25 +401,330 @@
     return memoryStore();
   }
 
-  function getUnlocks(store) {
+  const WEALTH_GOAL = 8000;
+  const META_KEY = "tickerBeasts.meta";
+  const ROTATION_STRONG = 0.2;
+  const ROTATION_WEAK = 0.15;
+  const MAX_ACTIVE_SYNERGIES = 2;
+
+  const SYNERGY_DEFS = [
+    { id: "healpal", jobs: ["牧師", "聖騎士"], title: "聖愈連攜", line: "牧師＋聖騎士：額外隊盾" },
+    { id: "dualmage", jobs: ["法師"], count: 2, title: "雙法齊轟", line: "兩名法師：疊加爆發" },
+    { id: "fortknight", jobs: ["守城", "騎士"], title: "城門聯防", line: "守城＋騎士：全隊更坦" },
+    { id: "berserkctrl", jobs: ["狂戰士", "控制"], title: "追擊連攜", line: "狂戰士＋控制：升勢加傷" },
+  ];
+
+  const RUN_BUFF_POOL = [
+    { id: "healAmp", name: "藥效加深", line: "牧師回血效果提高 35%。", tag: "core" },
+    { id: "shieldAmp", name: "盾壁加厚", line: "護盾效果提高 35%。", tag: "core" },
+    { id: "synAmp", name: "連攜共鳴", line: "已觸發嘅職業連攜效果更強。", tag: "core" },
+    { id: "gapCash", name: "空隙撥備", line: "下一圈空隙到帳 $250 準備金。", tag: "core", cashNextGap: 250 },
+    { id: "concCut", name: "分散紀律", line: "過度集中懲罰減半。", tag: "core" },
+    { id: "rotResist", name: "輪動抗性", line: "受壓板塊罰則大幅減輕。", tag: "core" },
+    { id: "upPower", name: "趁勢加碼", line: "股價向上時戰力額外提高。", tag: "core" },
+    { id: "tauntUp", name: "護院加深", line: "聖騎士嘲諷更強，更容易吸火。", tag: "core" },
+    { id: "openHeal", name: "開場包紮", line: "每浪開打為未倒下隊友回復少量生命。", tag: "core" },
+    { id: "teamArmor", name: "集體護甲", line: "全隊受傷再減一成。", tag: "core" },
+    { id: "bossResist", name: "抗壓訓練", line: "對 Boss 重擊減傷。", tag: "extra" },
+    { id: "priceWard", name: "跌市穩陣", line: "跌市時身板更穩。", tag: "extra" },
+  ];
+
+  const META_SHOP = [
+    { id: "startCash", name: "多備資金", cost: 1, line: "開局資金改為 $1,200。" },
+    { id: "openHeal", name: "開場療傷", cost: 1, line: "每局開打時，全體未倒下隊友少量回血。" },
+    { id: "synBoost", name: "連攜增幅", cost: 2, line: "職業連攜效果加強。" },
+    { id: "moreBuffs", name: "祝福庫擴充", cost: 2, line: "Boss 三選一加入更多選項。" },
+    { id: "rotPassive", name: "板塊適應", cost: 2, line: "受壓板塊罰則永久略減。" },
+  ];
+
+  function defaultMeta() {
+    return { bestFloor: 0, wins: 0, wealthWins: 0, bosses: {}, points: 0, purchased: {}, insurance: false };
+  }
+
+  function getMeta(store) {
+    const base = defaultMeta();
+    try {
+      const raw = storage(store).getItem(META_KEY);
+      if (raw) {
+        const data = JSON.parse(raw);
+        if (data && typeof data === "object") {
+          base.bestFloor = Math.max(0, Number(data.bestFloor) || 0);
+          base.wins = Math.max(0, Number(data.wins) || 0);
+          base.wealthWins = Math.max(0, Number(data.wealthWins) || 0);
+          base.points = Math.max(0, Number(data.points) || 0);
+          base.insurance = !!data.insurance;
+          base.bosses = data.bosses && typeof data.bosses === "object" ? { ...data.bosses } : {};
+          base.purchased = data.purchased && typeof data.purchased === "object" ? { ...data.purchased } : {};
+        }
+      }
+    } catch (e) {}
     try {
       const raw = storage(store).getItem(UNLOCK_KEY);
-      if (!raw) return { insurance: false };
-      const data = JSON.parse(raw);
-      return { insurance: !!data.insurance };
-    } catch (e) {
-      return { insurance: false };
+      if (raw) {
+        const data = JSON.parse(raw);
+        if (data && data.insurance) base.insurance = true;
+      }
+    } catch (e) {}
+    return base;
+  }
+
+  function setMeta(meta, store) {
+    const next = Object.assign(defaultMeta(), meta || {});
+    next.purchased = Object.assign({}, next.purchased);
+    next.bosses = Object.assign({}, next.bosses);
+    storage(store).setItem(META_KEY, JSON.stringify(next));
+    storage(store).setItem(UNLOCK_KEY, JSON.stringify({ insurance: !!next.insurance }));
+    return next;
+  }
+
+  function startCashOf(meta) {
+    const m = meta || getMeta();
+    return START_CASH + (m.purchased && m.purchased.startCash ? 200 : 0);
+  }
+
+  function buyMetaUnlock(id, store) {
+    const meta = getMeta(store);
+    const item = META_SHOP.find((x) => x.id === id);
+    if (!item || (meta.purchased && meta.purchased[id]) || meta.points < item.cost) {
+      return { ok: false, meta };
     }
+    meta.points -= item.cost;
+    meta.purchased[id] = true;
+    setMeta(meta, store);
+    return { ok: true, meta };
+  }
+
+  function seedRunBuffsFromMeta(meta) {
+    const b = emptyRunBuffs();
+    const p = (meta && meta.purchased) || {};
+    if (p.openHeal) b.metaOpenHeal = true;
+    if (p.synBoost) b.metaSynBoost = 1.2;
+    if (p.rotPassive) b.rotPassive = true;
+    return b;
+  }
+
+  function isMidTicket() {
+    if (state.ticketPointer) return true;
+    const qty = $("ticket-qty");
+    if (qty && typeof document !== "undefined" && document.activeElement === qty) return true;
+    if (state.ticketTouchedAt && Date.now() - state.ticketTouchedAt < TICKET_HOLD_MS) return true;
+    return false;
+  }
+
+  function touchTicket() {
+    state.ticketTouchedAt = Date.now();
+  }
+
+  function grantRunMeta(result, store) {
+    const prev = getMeta(store);
+    const meta = Object.assign(defaultMeta(), prev, {
+      purchased: Object.assign({}, prev.purchased),
+      bosses: Object.assign({}, prev.bosses),
+    });
+    const notes = [];
+    const floors = Math.max(0, (result && result.floorsCleared) || 0);
+    if (floors > meta.bestFloor) {
+      meta.points += 1;
+      meta.bestFloor = floors;
+      notes.push("新層數紀錄：第 " + floors + " 層。");
+    }
+    const bosses = (result && result.bossesCleared) || [];
+    for (let i = 0; i < bosses.length; i += 1) {
+      const w = bosses[i];
+      if (!meta.bosses[w]) {
+        meta.bosses[w] = true;
+        meta.points += 1;
+        notes.push("首次通過第 " + w + " 層 Boss。");
+      }
+    }
+    const kind = result && result.kind;
+    if (kind === "wealth" || kind === "goal") {
+      meta.wins += 1;
+      meta.wealthWins += 1;
+      meta.points += 2;
+      notes.push("達成大目標勝出。");
+    }
+    if ((kind === "wealth" || kind === "goal" || floors >= 10) && !meta.insurance) {
+      meta.insurance = true;
+      notes.push("解鎖保險板塊。");
+    }
+    setMeta(meta, store);
+    return { meta, notes, prev };
+  }
+
+  function bossKind(wave) {
+    const w = Number(wave) || 0;
+    if (w > 0 && w % 10 === 0) return "major";
+    if (w > 0 && w % 5 === 0) return "minor";
+    return null;
+  }
+
+  function isBossWave(wave) {
+    return !!bossKind(wave);
+  }
+
+  function enemyBudgetFor(wave) {
+    const w = Math.max(1, Number(wave) || 1);
+    let budget = Math.round(500 + w * 210 + Math.pow(w, 1.22) * 48);
+    const kind = bossKind(w);
+    if (kind === "minor") budget = Math.round(budget * 1.35);
+    if (kind === "major") budget = Math.round(budget * 1.7);
+    return budget;
+  }
+
+  function rotationSectorList(unlocks) {
+    const u = unlocks || {};
+    return SECTOR_ORDER.filter((s) => s !== "保險" || u.insurance);
+  }
+
+  function rollRotation(prev, sectors, rnd) {
+    const r = rnd || Math.random;
+    const list = (sectors || []).filter(Boolean);
+    if (list.length < 2) return null;
+    let strong = list[0];
+    let weak = list[1];
+    let n = 0;
+    do {
+      strong = list[Math.floor(r() * list.length)];
+      const others = list.filter((s) => s !== strong);
+      weak = others[Math.floor(r() * others.length)];
+      n += 1;
+    } while (prev && prev.strong === strong && prev.weak === weak && n < 12);
+    const duration = r() < 0.5 ? 1 : 2;
+    return { strong, weak, remaining: duration, duration };
+  }
+
+  function sectorModifier(sector, rotation, opts) {
+    if (!rotation || !sector) return 1;
+    const resist = !!(opts && opts.resist);
+    if (sector === rotation.strong) return 1 + ROTATION_STRONG;
+    if (sector === rotation.weak) return 1 - (resist ? ROTATION_WEAK * 0.4 : ROTATION_WEAK);
+    return 1;
+  }
+
+  function rotationText(rot) {
+    if (!rot || !rot.strong || !rot.weak) return "";
+    const left = Math.max(1, rot.remaining || 1);
+    return "主場 " + rot.strong + "　受壓 " + rot.weak + "　（仲有 " + left + " 浪）";
+  }
+
+  function jobCounts(list) {
+    const c = {};
+    for (const x of list || []) {
+      const j = x && x.job;
+      if (!j) continue;
+      if (x.wiped || (x.hp != null && x.hp <= 0 && x.shares == null)) continue;
+      if (x.shares != null && x.shares <= 0) continue;
+      c[j] = (c[j] || 0) + 1;
+    }
+    return c;
+  }
+
+  function synergyMatches(def, counts) {
+    if (def.jobs.length === 1) return (counts[def.jobs[0]] || 0) >= (def.count || 2);
+    return def.jobs.every((j) => (counts[j] || 0) >= 1);
+  }
+
+  function activeSynergies(list, maxSlots) {
+    const counts = jobCounts(list);
+    const found = [];
+    const cap = maxSlots == null ? MAX_ACTIVE_SYNERGIES : maxSlots;
+    for (const def of SYNERGY_DEFS) {
+      if (synergyMatches(def, counts)) found.push({ id: def.id, title: def.title, line: def.line, jobs: def.jobs.slice() });
+    }
+    return found.slice(0, cap);
+  }
+
+  function synergyEffects(synergies, buffs) {
+    const amp = ((buffs && buffs.synAmp) || 1) * ((buffs && buffs.metaSynBoost) || 1);
+    const fx = { shield: 0, burst: 1, armor: 0, hp: 1, surge: 1 };
+    for (const s of synergies || []) {
+      if (s.id === "healpal") fx.shield += 0.08 * amp;
+      if (s.id === "dualmage") fx.burst *= 1 + 0.2 * amp;
+      if (s.id === "fortknight") {
+        fx.armor += 0.08 * amp;
+        fx.hp *= 1 + 0.1 * amp;
+      }
+      if (s.id === "berserkctrl") fx.surge *= 1 + 0.15 * amp;
+    }
+    return fx;
+  }
+
+  function availableRunBuffs(owned, meta) {
+    const have = new Set(owned || []);
+    const extra = !!(meta && meta.purchased && meta.purchased.moreBuffs);
+    return RUN_BUFF_POOL.filter((b) => !have.has(b.id) && (b.tag !== "extra" || extra));
+  }
+
+  function pickBossRewards(owned, meta, n, rnd) {
+    const pool = availableRunBuffs(owned, meta).slice();
+    const r = rnd || Math.random;
+    const out = [];
+    const count = Math.min(n || 3, pool.length);
+    while (out.length < count && pool.length) {
+      const i = Math.floor(r() * pool.length);
+      out.push(pool.splice(i, 1)[0]);
+    }
+    return out;
+  }
+
+  function applyRunBuff(buffs, item) {
+    const b = Object.assign({ taken: [] }, buffs || {});
+    if (!item) return b;
+    if (item.id === "healAmp") b.healAmp = (b.healAmp || 1) * 1.35;
+    if (item.id === "shieldAmp") b.shieldAmp = (b.shieldAmp || 1) * 1.35;
+    if (item.id === "synAmp") b.synAmp = (b.synAmp || 1) * 1.3;
+    if (item.id === "concCut") b.concCut = true;
+    if (item.id === "rotResist") b.rotResist = true;
+    if (item.id === "upPower") b.upPower = true;
+    if (item.id === "tauntUp") b.tauntUp = true;
+    if (item.id === "openHeal") b.openHeal = true;
+    if (item.id === "teamArmor") b.teamArmor = (b.teamArmor || 0) + 0.1;
+    if (item.id === "bossResist") b.bossResist = true;
+    if (item.id === "priceWard") b.priceWard = true;
+    if (item.cashNextGap) b.cashNextGap = (b.cashNextGap || 0) + item.cashNextGap;
+    b.taken = (b.taken || []).concat(item.id);
+    return b;
+  }
+
+  function runOutcomeAfterDeath(opts) {
+    const o = opts || {};
+    return {
+      end: true,
+      kind: "death",
+      floorsCleared: Math.max(0, o.floorsCleared || 0),
+      mustRelist: true,
+      canContinue: false,
+    };
+  }
+
+  function shouldOfferWealthWin(opts) {
+    const o = opts || {};
+    return (o.wealth || 0) >= (o.goal || WEALTH_GOAL) && !o.wealthContinued && !o.wealthOffered;
+  }
+
+  function emptyRunBuffs() {
+    return { taken: [] };
+  }
+
+
+  function getUnlocks(store) {
+    const meta = getMeta(store);
+    return { insurance: !!meta.insurance };
   }
 
   function setUnlocks(unlocks, store) {
-    storage(store).setItem(UNLOCK_KEY, JSON.stringify({ insurance: !!unlocks.insurance }));
+    const meta = getMeta(store);
+    meta.insurance = !!(unlocks && unlocks.insurance);
+    setMeta(meta, store);
   }
 
   function grantVictoryUnlock(store) {
     const prev = getUnlocks(store);
     const first = !prev.insurance;
-    setUnlocks({ insurance: true }, store);
+    const meta = getMeta(store);
+    meta.insurance = true;
+    setMeta(meta, store);
     return { first, unlocks: { insurance: true } };
   }
 
@@ -614,15 +948,36 @@
     return state.cash + portfolioValue();
   }
 
-  function concentratedPower(raw, active) {
+  function concentratedPower(raw, active, cut) {
     const n = Math.round(raw);
     if (!active) return n;
-    return Math.round(n * (1 - CONCENTRATION_CUT));
+    const c = cut == null ? CONCENTRATION_CUT : cut;
+    return Math.round(n * (1 - c));
+  }
+
+  function currentSynergies() {
+    const list = (state.fight && state.phase === "battle")
+      ? (state.fight.players || [])
+      : (state.stocks || []).filter((s) => (s.shares || 0) > 0);
+    return activeSynergies(list, MAX_ACTIVE_SYNERGIES);
+  }
+
+  function currentSynergyEffects() {
+    return synergyEffects(currentSynergies(), state.runBuffs || {});
+  }
+
+  function rotationResistOn() {
+    const b = state.runBuffs || {};
+    return !!(b.rotResist || b.rotPassive);
   }
 
   function powerOf(s) {
-    if (s.shares <= 0) return 0;
-    return concentratedPower(s.shares * s.price, state.concentrationActive);
+    if (!s || s.shares <= 0) return 0;
+    let raw = s.shares * s.price;
+    raw *= sectorModifier(s.sector, state.rotation, { resist: rotationResistOn() });
+    if (state.runBuffs && state.runBuffs.upPower && s.change > 0.0005) raw *= 1.12;
+    const cut = state.runBuffs && state.runBuffs.concCut ? CONCENTRATION_CUT * 0.5 : CONCENTRATION_CUT;
+    return concentratedPower(raw, state.concentrationActive, cut);
   }
 
   function rawTeamPower() {
@@ -646,7 +1001,7 @@
   }
 
   function canTrade() {
-    return state.phase === "gap" || state.phase === "battle" || state.phase === "build";
+    return state.phase === "gap" || state.phase === "battle" || state.phase === "build" || state.phase === "reward" || state.phase === "choice";
   }
 
   function changeClass(ch) {
@@ -733,25 +1088,25 @@
   }
 
     const PORTRAITS = {
-    voltshark: `<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg"><rect width="160" height="160" fill="#03180c"/><g stroke="#0a4a28" stroke-width="1" opacity="0.65"><path d="M0 40h160M0 80h160M0 120h160M40 0v160M80 0v160M120 0v160"/></g><circle cx="16" cy="20" r="2.4" fill="#7cff6a"/><circle cx="144" cy="24" r="2" fill="#ffe45a"/><circle cx="22" cy="140" r="2" fill="#7cff6a"/><rect x="20" y="36" width="120" height="94" rx="8" fill="#0b2c16" stroke="#3dff8a" stroke-width="2"/><rect x="28" y="46" width="76" height="62" rx="4" fill="#071e10" stroke="#1a8a4a" stroke-width="1.2"/><circle cx="48" cy="76" r="17" fill="#0a2414" stroke="#7cff6a" stroke-width="1.6"/><circle cx="84" cy="76" r="17" fill="#0a2414" stroke="#7cff6a" stroke-width="1.6"/><path d="M48 76h14M48 76h-14M48 76v14M48 76v-14M38.2 66.2l19.6 19.6M57.8 66.2L38.2 85.8" stroke="#3dff8a" stroke-width="1.5"/><path d="M84 76h14M84 76h-14M84 76v14M84 76v-14M74.2 66.2l19.6 19.6M93.8 66.2L74.2 85.8" stroke="#3dff8a" stroke-width="1.5"/><circle cx="48" cy="76" r="3.2" fill="#e8fffb"/><circle cx="84" cy="76" r="3.2" fill="#e8fffb"/><rect x="110" y="50" width="22" height="9" rx="1.2" fill="#157a3a"/><rect x="110" y="64" width="22" height="9" rx="1.2" fill="#157a3a"/><rect x="110" y="78" width="22" height="9" rx="1.2" fill="#157a3a"/><rect x="110" y="92" width="22" height="9" rx="1.2" fill="#157a3a"/><rect x="28" y="114" width="104" height="8" rx="2" fill="#1aff70" opacity="0.5"/><circle cx="58" cy="52" r="4.6" fill="#e8fffb"/><circle cx="59.2" cy="52" r="2.1" fill="#03180c"/><circle cx="59.8" cy="51.2" r="0.8" fill="#7cff6a"/><circle cx="76" cy="52" r="4.6" fill="#e8fffb"/><circle cx="77.2" cy="52" r="2.1" fill="#03180c"/><circle cx="77.8" cy="51.2" r="0.8" fill="#7cff6a"/><path d="M14 88l-8-10 8 16-10 4" stroke="#7cff6a" stroke-width="2" fill="none"/></svg>`,
-    glasscrit: `<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg"><rect width="160" height="160" fill="#14151a"/><g stroke="#3a3a44" stroke-width="1" opacity="0.5"><path d="M0 40h160M0 80h160M0 120h160M40 0v160M80 0v160M120 0v160"/></g><circle cx="18" cy="22" r="2" fill="#c8c4bc"/><circle cx="140" cy="20" r="2.3" fill="#ffe45a"/><rect x="46" y="16" width="68" height="128" rx="16" fill="#8a8e94" stroke="#d8dce2" stroke-width="2"/><rect x="50" y="20" width="60" height="120" rx="13" fill="#1a1c20"/><rect x="53" y="28" width="54" height="96" rx="6" fill="#0c0e12"/><path d="M55 30 L78 30 L53 62 L53 40 Z" fill="#e8fffb" opacity="0.16"/><rect x="56" y="24" width="16" height="12" rx="3.5" fill="#2a2e34" stroke="#8a9098" stroke-width="1"/><circle cx="62" cy="30" r="3.2" fill="#1a1c20" stroke="#b8bec6" stroke-width="0.8"/><circle cx="68.5" cy="30" r="1.5" fill="#1a1c20" stroke="#b8bec6" stroke-width="0.7"/><circle cx="70.8" cy="26.5" r="1.1" fill="#1a1c20" stroke="#b8bec6" stroke-width="0.6"/><circle cx="70" cy="72" r="5" fill="#e8e4dc"/><circle cx="71.3" cy="72" r="2.2" fill="#121416"/><circle cx="90" cy="72" r="5" fill="#e8e4dc"/><circle cx="91.3" cy="72" r="2.2" fill="#121416"/><path d="M74 92 C80 97 86 97 90 92" stroke="#c8c4bc" stroke-width="2" fill="none" stroke-linecap="round"/><rect x="72" y="128" width="16" height="5" rx="2" fill="#8a8e94"/><rect x="114" y="70" width="3" height="18" rx="1" fill="#8a8e94"/></svg>`,
-    brothbeast: `<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg"><rect width="160" height="160" fill="#2a1810"/><rect x="0" y="108" width="160" height="52" fill="#1a100c"/><path d="M0 108 h160" stroke="#5a3a22" stroke-width="3"/><rect x="0" y="20" width="160" height="14" fill="#3a2418"/><path d="M0 34 h160 M16 20 v88 M80 20 v40 M144 20 v88" stroke="#5a3a22" stroke-width="2"/><ellipse cx="40" cy="118" rx="18" ry="22" fill="#d8c09a" stroke="#8a6238" stroke-width="2"/><ellipse cx="40" cy="100" rx="14" ry="6" fill="#c4a078" stroke="#8a6238" stroke-width="1.5"/><rect x="32" y="86" width="16" height="16" rx="2" fill="#a07848"/><ellipse cx="118" cy="122" rx="16" ry="20" fill="#c4a070" stroke="#8a6238" stroke-width="2"/><ellipse cx="118" cy="106" rx="13" ry="5.5" fill="#d8c09a" stroke="#8a6238" stroke-width="1.5"/><rect x="111" y="94" width="14" height="14" rx="2" fill="#a07848"/><ellipse cx="80" cy="124" rx="24" ry="26" fill="#efe0c4" stroke="#8a6238" stroke-width="2.2"/><ellipse cx="80" cy="102" rx="18" ry="7" fill="#dcc8a0" stroke="#8a6238" stroke-width="1.6"/><rect x="70" y="86" width="20" height="18" rx="3" fill="#b08950"/><path d="M62 70 q18 -28 36 0" stroke="#c41c2c" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M80 70 v16" stroke="#c41c2c" stroke-width="3"/><circle cx="68" cy="122" r="5" fill="#fff6e0"/><circle cx="69.3" cy="122" r="2.3" fill="#1a100c"/><circle cx="92" cy="122" r="5" fill="#fff6e0"/><circle cx="93.3" cy="122" r="2.3" fill="#1a100c"/><path d="M74 134 c6 5 12 5 16 0" stroke="#7a3a18" stroke-width="2" fill="none" stroke-linecap="round"/><ellipse cx="28" cy="70" rx="8" ry="10" fill="#3a2418" opacity="0.5"/><ellipse cx="136" cy="78" rx="7" ry="9" fill="#3a2418" opacity="0.45"/></svg>`,
-    nectartide: `<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg"><rect width="160" height="160" fill="#3a2408"/><rect x="10" y="18" width="140" height="90" rx="6" fill="#5a3a10" stroke="#f0c14b" stroke-width="3"/><rect x="20" y="30" width="120" height="66" fill="#201408"/><g fill="#ffe45a"><circle cx="36" cy="40" r="4"/><circle cx="56" cy="40" r="4"/><circle cx="76" cy="40" r="4"/><circle cx="96" cy="40" r="4"/><circle cx="116" cy="40" r="4"/></g><rect x="28" y="50" width="104" height="40" fill="#4a2e0c"/><rect x="36" y="112" width="88" height="10" rx="2" fill="#e8d5a8" stroke="#8a6238" stroke-width="1.2"/><rect x="48" y="122" width="64" height="6" rx="1" fill="#c4a15a"/><ellipse cx="80" cy="96" rx="28" ry="12" fill="#c47828"/><ellipse cx="80" cy="86" rx="28" ry="13" fill="#f3c14a" stroke="#a06020" stroke-width="1.4"/><rect x="54" y="88" width="52" height="10" fill="#7a3a12"/><ellipse cx="80" cy="88" rx="26" ry="5" fill="#d8e08a" opacity="0.85"/><ellipse cx="80" cy="100" rx="28" ry="11" fill="#e8a038" stroke="#a06020" stroke-width="1.4"/><circle cx="68" cy="86" r="4.4" fill="#fff6e0"/><circle cx="69.2" cy="86" r="2" fill="#201408"/><circle cx="90" cy="86" r="4.4" fill="#fff6e0"/><circle cx="91.2" cy="86" r="2" fill="#201408"/><path d="M74 94 c4 3 8 3 12 0" stroke="#7a3a12" stroke-width="1.6" fill="none" stroke-linecap="round"/><rect x="18" y="70" width="16" height="22" rx="2" fill="#f0c14b"/><rect x="20" y="72" width="12" height="3" fill="#ffe9a0"/><rect x="20" y="77" width="12" height="3" fill="#ffe9a0"/><rect x="20" y="82" width="12" height="3" fill="#ffe9a0"/></svg>`,
-    flarewhale: `<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg"><rect width="160" height="160" fill="#0a1020"/><circle cx="22" cy="20" r="1.4" fill="#8aa"/><circle cx="50" cy="14" r="1" fill="#8aa"/><circle cx="128" cy="24" r="1.4" fill="#ffe45a"/><circle cx="90" cy="18" r="1.1" fill="#8aa"/><path d="M0 118 C40 108 90 116 160 106 L160 160 L0 160 Z" fill="#141820"/><path d="M0 124 h160" stroke="#3a4a58" stroke-width="2" opacity="0.5"/><path d="M18 104 C28 86 46 78 70 78 L118 80 C136 82 146 90 148 100 C136 114 40 118 18 104 Z" fill="#1c2834" stroke="#9ad4ff" stroke-width="2"/><path d="M34 96 C50 88 90 88 126 94 C114 102 60 104 34 96 Z" fill="#7ad0e0" opacity="0.28"/><ellipse cx="46" cy="108" rx="16" ry="16" fill="#141820" stroke="#9ad4ff" stroke-width="2"/><ellipse cx="122" cy="108" rx="16" ry="16" fill="#141820" stroke="#9ad4ff" stroke-width="2"/><circle cx="46" cy="108" r="6" fill="#3a4a58"/><circle cx="122" cy="108" r="6" fill="#3a4a58"/><path d="M70 80 L108 81 L110 90 L68 90 Z" fill="#0c1824"/><path d="M148 96 L158 86 L154 104 Z" fill="#9ad4ff" opacity="0.7"/><path d="M100 52 l6 16 h-8 l10 16" stroke="#ffe45a" stroke-width="2.4" fill="none" stroke-linejoin="round"/><path d="M28 58 l5 12 h-7 l8 14" stroke="#ffe45a" stroke-width="1.8" fill="none" opacity="0.8"/><circle cx="80" cy="86" r="4.6" fill="#e8fffb"/><circle cx="81.2" cy="86" r="2" fill="#0a1020"/><circle cx="96" cy="86" r="4.6" fill="#e8fffb"/><circle cx="97.2" cy="86" r="2" fill="#0a1020"/><rect x="18" y="96" width="10" height="5" rx="1" fill="#ffe45a"/></svg>`,
-    hubspire: `<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg"><rect width="160" height="160" fill="#101820"/><path d="M0 108 L18 108 L22 88 L30 88 L34 108 L52 108 L56 72 L66 72 L70 108 L88 108 L92 92 L100 92 L104 108 L160 108 L160 160 L0 160 Z" fill="#1a2430"/><rect x="18" y="120" width="10" height="28" fill="#2a3848"/><rect x="40" y="128" width="14" height="20" fill="#2a3848"/><rect x="70" y="116" width="12" height="32" fill="#2a3848"/><rect x="110" y="122" width="16" height="26" fill="#2a3848"/><path d="M28 108 L28 36 L80 16 L132 36 L132 108" fill="none" stroke="#c4a15a" stroke-width="3"/><path d="M28 36 L132 36 M40 68 L120 68 M52 88 L108 88" stroke="#8a9aa8" stroke-width="1.4"/><path d="M28 36 L40 68 L28 108 M132 36 L120 68 L132 108 M80 16 L80 108" stroke="#6a7a88" stroke-width="1.2"/><rect x="70" y="54" width="20" height="28" rx="2" fill="#243040" stroke="#f0c14b" stroke-width="1.6"/><circle cx="80" cy="64" r="7" fill="#ffe45a"/><circle cx="80" cy="64" r="3.2" fill="#fff3a8"/><rect x="76" y="70" width="8" height="12" fill="#c4a15a"/><circle cx="72" cy="84" r="3.6" fill="#e8fffb"/><circle cx="73" cy="84" r="1.6" fill="#101820"/><circle cx="88" cy="84" r="3.6" fill="#e8fffb"/><circle cx="89" cy="84" r="1.6" fill="#101820"/><circle cx="24" cy="24" r="2" fill="#ffe45a"/><circle cx="140" cy="28" r="1.6" fill="#7ad0e0"/></svg>`,
-    cloudao: `<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg"><rect width="160" height="160" fill="#12202c"/><path d="M0 96 C28 86 50 104 80 94 C112 84 140 100 160 90 L160 160 L0 160 Z" fill="#1a3a4a"/><path d="M0 118 C30 110 70 126 110 114 C136 108 150 118 160 114 L160 160 L0 160 Z" fill="#0e2834"/><rect x="8" y="124" width="8" height="26" fill="#6a5a40"/><rect x="28" y="128" width="8" height="22" fill="#6a5a40"/><rect x="48" y="122" width="8" height="28" fill="#6a5a40"/><rect x="130" y="126" width="8" height="24" fill="#6a5a40"/><rect x="58" y="28" width="56" height="96" fill="#c4b49a" stroke="#8a7a60" stroke-width="2"/><g fill="#2a2218"><rect x="66" y="38" width="8" height="8"/><rect x="80" y="38" width="8" height="8"/><rect x="94" y="38" width="8" height="8"/><rect x="66" y="54" width="8" height="8"/><rect x="80" y="54" width="8" height="8"/><rect x="94" y="54" width="8" height="8"/><rect x="66" y="70" width="8" height="8"/><rect x="80" y="70" width="8" height="8"/><rect x="94" y="70" width="8" height="8"/><rect x="66" y="86" width="8" height="8"/><rect x="80" y="86" width="8" height="8"/><rect x="94" y="86" width="8" height="8"/></g><rect x="78" y="104" width="16" height="20" fill="#2a2218"/><path d="M118 58 l16 6 v22 l-8 4 l-8 -4 z" fill="#f0c14b" stroke="#8a6238" stroke-width="1.4"/><circle cx="130" cy="72" r="3" fill="#2a2218"/><circle cx="76" cy="44" r="4" fill="#fff6e0"/><circle cx="77.1" cy="44" r="1.8" fill="#12202c"/><circle cx="96" cy="44" r="4" fill="#fff6e0"/><circle cx="97.1" cy="44" r="1.8" fill="#12202c"/></svg>`,
-    sandspire: `<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg"><rect width="160" height="160" fill="#2a2014"/><rect x="8" y="16" width="144" height="88" fill="#5a4630" stroke="#c4a15a" stroke-width="3"/><rect x="16" y="24" width="128" height="72" fill="#cbb58a"/><rect x="30" y="70" width="100" height="18" fill="#8a6a3a"/><polygon points="40,70 54,40 70,70" fill="#e8d5a8" stroke="#8a6238" stroke-width="1.2"/><polygon points="68,70 86,32 104,70" fill="#f3e6c8" stroke="#8a6238" stroke-width="1.2"/><polygon points="98,70 114,48 128,70" fill="#e8d5a8" stroke="#8a6238" stroke-width="1.2"/><rect x="80" y="46" width="10" height="24" fill="#6a4e28"/><path d="M20 24 V8 H40 V24 M120 24 V6 H148 V24" stroke="#9a9aa0" stroke-width="3" fill="none"/><path d="M20 12 h20 M120 12 h28 M28 8 v16 M132 6 v18" stroke="#c8c8d0" stroke-width="1.4"/><rect x="24" y="112" width="112" height="14" fill="#3a2a18"/><rect x="36" y="126" width="88" height="10" fill="#4a3824"/><circle cx="70" cy="58" r="3.8" fill="#fff6e0"/><circle cx="71" cy="58" r="1.6" fill="#2a2014"/><circle cx="90" cy="58" r="3.8" fill="#fff6e0"/><circle cx="91" cy="58" r="1.6" fill="#2a2014"/><circle cx="18" cy="150" r="2" fill="#c4a15a"/></svg>`,
-    goldhorn: `<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg"><rect width="160" height="160" fill="#1a1610"/><rect x="10" y="20" width="140" height="86" fill="#3a3224" stroke="#c4a15a" stroke-width="2.4"/><path d="M20 106 V36 H140 V106" fill="none" stroke="#e8d5a8" stroke-width="2"/><path d="M36 106 V48 h20 V106 M104 106 V48 h20 V106" stroke="#c4a15a" stroke-width="2" fill="none"/><rect x="56" y="44" width="48" height="48" rx="24" fill="#2a2418" stroke="#f0c14b" stroke-width="3"/><circle cx="80" cy="68" r="14" fill="none" stroke="#e8d5a8" stroke-width="2"/><circle cx="80" cy="68" r="4" fill="#f0c14b"/><rect x="78" y="68" width="12" height="3" fill="#f0c14b"/><path d="M0 124 C28 112 50 128 80 118 C110 108 140 124 160 116 L160 160 L0 160 Z" fill="#143044"/><path d="M0 138 C40 130 70 146 110 134 C136 128 150 138 160 134 L160 160 L0 160 Z" fill="#0c4a4a"/><circle cx="44" cy="58" r="4" fill="#fff6e0"/><circle cx="45.1" cy="58" r="1.8" fill="#1a1610"/><circle cx="116" cy="58" r="4" fill="#fff6e0"/><circle cx="117.1" cy="58" r="1.8" fill="#1a1610"/><circle cx="20" cy="28" r="2" fill="#f0c14b"/></svg>`,
-    leverhorn: `<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg"><rect width="160" height="160" fill="#141c28"/><path d="M0 128 C20 116 40 140 64 124 C88 108 110 136 132 118 C146 108 154 120 160 114 L160 160 L0 160 Z" fill="#1e4a6a"/><path d="M0 144 C30 132 60 150 96 136 C124 126 144 144 160 134 L160 160 L0 160 Z" fill="#2a6a8a" opacity="0.85"/><g fill="#c8d8e4" opacity="0.9"><circle cx="28" cy="126" r="7"/><circle cx="48" cy="132" r="6"/><circle cx="70" cy="124" r="7"/><circle cx="94" cy="130" r="6"/><circle cx="118" cy="122" r="7"/><circle cx="140" cy="128" r="6"/></g><rect x="44" y="24" width="72" height="84" rx="4" fill="#f3ead4" stroke="#c4a15a" stroke-width="2"/><path d="M52 40 h56 M52 52 h56 M52 64 h40 M52 76 h48" stroke="#8a7a60" stroke-width="2"/><path d="M80 88 L96 36 L104 88 Z" fill="#0a8a48" opacity="0.55"/><path d="M80 88 L96 36" stroke="#0a8a48" stroke-width="3" stroke-linecap="round"/><circle cx="66" cy="28" r="4" fill="#fff6e0"/><circle cx="67.1" cy="28" r="1.7" fill="#141c28"/><circle cx="94" cy="28" r="4" fill="#fff6e0"/><circle cx="95.1" cy="28" r="1.7" fill="#141c28"/><circle cx="18" cy="22" r="2" fill="#ffe45a"/></svg>`,
-    grovehall: `<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg"><rect width="160" height="160" fill="#152018"/><path d="M0 120 C30 110 60 126 90 116 C120 106 140 118 160 112 L160 160 L0 160 Z" fill="#203428"/><rect x="58" y="48" width="64" height="68" fill="#e8dcc4" stroke="#8a7a60" stroke-width="2"/><rect x="80" y="90" width="16" height="26" fill="#3a2a18"/><rect x="66" y="58" width="12" height="12" fill="#7ad0e0" opacity="0.55"/><rect x="86" y="58" width="12" height="12" fill="#7ad0e0" opacity="0.55"/><rect x="102" y="58" width="12" height="12" fill="#7ad0e0" opacity="0.55"/><rect x="66" y="76" width="12" height="12" fill="#7ad0e0" opacity="0.4"/><rect x="102" y="76" width="12" height="12" fill="#7ad0e0" opacity="0.4"/><polygon points="58,48 90,24 122,48" fill="#3a6a48" stroke="#c4e8a8" stroke-width="1.6"/><ellipse cx="30" cy="92" rx="16" ry="28" fill="#2f6a3a"/><ellipse cx="22" cy="80" rx="10" ry="16" fill="#3d8a4a"/><ellipse cx="40" cy="84" rx="9" ry="14" fill="#2a7a40"/><rect x="27" y="108" width="8" height="22" fill="#6a4e28"/><ellipse cx="44" cy="118" rx="6" ry="10" fill="#d8c8a0" stroke="#8a6238" stroke-width="1"/><ellipse cx="56" cy="122" rx="5" ry="8" fill="#c4e8c8" stroke="#3a6a48" stroke-width="1"/><ellipse cx="136" cy="118" rx="6" ry="11" fill="#e8dcc4" stroke="#8a6238" stroke-width="1"/><circle cx="80" cy="70" r="4" fill="#fff6e0"/><circle cx="81.1" cy="70" r="1.7" fill="#152018"/><circle cx="100" cy="70" r="4" fill="#fff6e0"/><circle cx="101.1" cy="70" r="1.7" fill="#152018"/><circle cx="16" cy="24" r="2" fill="#c4e8a8"/></svg>`,
-    wardplate: `<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg"><rect width="160" height="160" fill="#161820"/><rect x="44" y="36" width="72" height="92" rx="6" fill="#8a9098" stroke="#d8dce2" stroke-width="2.2"/><rect x="52" y="48" width="56" height="44" fill="#2a3038"/><rect x="60" y="92" width="40" height="28" fill="#6a7078"/><g fill="#2a3038"><circle cx="64" cy="104" r="3"/><circle cx="80" cy="104" r="3"/><circle cx="96" cy="104" r="3"/><circle cx="64" cy="114" r="3"/><circle cx="80" cy="114" r="3"/><circle cx="96" cy="114" r="3"/></g><path d="M80 14 L118 32 V64 L80 82 L42 64 V32 Z" fill="#c4b49a" stroke="#f0c14b" stroke-width="2.4"/><path d="M80 26 L106 40 V58 L80 72 L54 58 V40 Z" fill="#3a424c" stroke="#e8d5a8" stroke-width="1.5"/><circle cx="80" cy="48" r="8" fill="#e8d5a8" opacity="0.35"/><rect x="26" y="70" width="16" height="56" rx="3" fill="#8a9098" stroke="#d8dce2" stroke-width="1.6"/><rect x="118" y="70" width="16" height="56" rx="3" fill="#8a9098" stroke="#d8dce2" stroke-width="1.6"/><circle cx="68" cy="58" r="4.2" fill="#fff6e0"/><circle cx="69.1" cy="58" r="1.8" fill="#161820"/><circle cx="92" cy="58" r="4.2" fill="#fff6e0"/><circle cx="93.1" cy="58" r="1.8" fill="#161820"/><circle cx="18" cy="22" r="2" fill="#f0c14b"/></svg>`,
-    safecanopy: `<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg"><rect width="160" height="160" fill="#162016"/><path d="M0 124 L18 124 L22 100 L34 100 L38 124 L58 124 L62 88 L76 88 L80 124 L98 124 L102 108 L114 108 L118 124 L160 124 L160 160 L0 160 Z" fill="#2a3a28"/><circle cx="28" cy="148" r="10" fill="#3a2a18"/><circle cx="48" cy="150" r="8" fill="#4a3828"/><circle cx="36" cy="140" r="7" fill="#c4a070"/><circle cx="52" cy="142" r="6" fill="#e8d5a8"/><path d="M20 86 C20 50 52 28 80 28 C108 28 140 50 140 86 Z" fill="#3a7a4a" stroke="#c4e8a8" stroke-width="2.2"/><path d="M20 86 H140" stroke="#c4e8a8" stroke-width="2"/><path d="M80 86 V118" stroke="#e8d5a8" stroke-width="5" stroke-linecap="round"/><path d="M50 70 Q80 58 110 70" stroke="#e8fffb" stroke-width="1.4" fill="none" opacity="0.7"/><circle cx="66" cy="62" r="4.2" fill="#fff6e0"/><circle cx="67.1" cy="62" r="1.8" fill="#162016"/><circle cx="94" cy="62" r="4.2" fill="#fff6e0"/><circle cx="95.1" cy="62" r="1.8" fill="#162016"/><circle cx="18" cy="24" r="2" fill="#ffe45a"/><circle cx="142" cy="28" r="1.6" fill="#c4e8a8"/></svg>`,
-    calamtide: `<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg"><rect width="160" height="160" fill="#201410"/><rect x="8" y="96" width="36" height="44" fill="#3a2a1c" stroke="#c4a15a" stroke-width="1.6"/><rect x="52" y="96" width="36" height="44" fill="#3a2a1c" stroke="#c4a15a" stroke-width="1.6"/><rect x="96" y="96" width="56" height="44" fill="#3a2a1c" stroke="#c4a15a" stroke-width="1.6"/><rect x="16" y="108" width="20" height="16" fill="#1a100c"/><rect x="60" y="108" width="20" height="16" fill="#1a100c"/><rect x="108" y="108" width="32" height="16" fill="#1a100c"/><circle cx="26" cy="104" r="3" fill="#e8d5a8"/><circle cx="70" cy="104" r="3" fill="#e8d5a8"/><circle cx="124" cy="104" r="3" fill="#e8d5a8"/><path d="M80 18 L122 40 V78 L80 100 L38 78 V40 Z" fill="#4a3a24" stroke="#f0c14b" stroke-width="3"/><path d="M80 30 L110 46 V72 L80 88 L50 72 V46 Z" fill="#2a2018" stroke="#e8d5a8" stroke-width="1.6"/><path d="M80 42 L100 52 V68 L80 78 L60 68 V52 Z" fill="#c4a15a" opacity="0.35"/><circle cx="70" cy="58" r="4.4" fill="#fff6e0"/><circle cx="71.1" cy="58" r="1.9" fill="#201410"/><circle cx="90" cy="58" r="4.4" fill="#fff6e0"/><circle cx="91.1" cy="58" r="1.9" fill="#201410"/><circle cx="18" cy="22" r="2" fill="#f0c14b"/></svg>`,
+    voltshark: `<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg"><rect width="160" height="160" fill="#04160c"/><g stroke="#0a4a28" stroke-width="1" opacity=".45"><path d="M0 40h160M0 80h160M0 120h160M40 0v160M80 0v160M120 0v160"/></g><rect x="14" y="36" width="132" height="88" rx="7" fill="#0a3a20" stroke="#7cff6a" stroke-width="2.5"/><path d="M22 52h26M22 62h16M128 52h-22M128 64h-14" stroke="#1f7a44" stroke-width="1.6" fill="none"/><g fill="#062414" stroke="#9aff7a" stroke-width="2"><circle cx="50" cy="80" r="22"/><circle cx="98" cy="80" r="22"/></g><g fill="#7cff6a"><path d="M50 80l7-15 5 3zM50 80l15 7-3 5zM50 80l-7 15-5-3zM50 80l-15-7 3-5zM50 80l12 12-5 3zM50 80l-12-12 5-3z"/><path d="M98 80l7-15 5 3zM98 80l15 7-3 5zM98 80l-7 15-5-3zM98 80l-15-7 3-5zM98 80l12 12-5 3zM98 80l-12-12 5-3z"/></g><circle cx="50" cy="80" r="5" fill="#d8ff9a"/><circle cx="98" cy="80" r="5" fill="#d8ff9a"/><rect x="122" y="48" width="16" height="20" rx="2" fill="#7cff6a"/><rect x="124" y="74" width="12" height="12" rx="1.5" fill="#b8ff6a"/><rect x="22" y="126" width="116" height="12" fill="#c9a227"/><g fill="#3a2a08"><rect x="26" y="128" width="3" height="8"/><rect x="32" y="128" width="3" height="8"/><rect x="38" y="128" width="3" height="8"/><rect x="44" y="128" width="3" height="8"/><rect x="50" y="128" width="3" height="8"/><rect x="56" y="128" width="3" height="8"/><rect x="62" y="128" width="3" height="8"/><rect x="68" y="128" width="3" height="8"/><rect x="74" y="128" width="3" height="8"/><rect x="80" y="128" width="3" height="8"/><rect x="86" y="128" width="3" height="8"/><rect x="92" y="128" width="3" height="8"/><rect x="98" y="128" width="3" height="8"/><rect x="104" y="128" width="3" height="8"/><rect x="110" y="128" width="3" height="8"/><rect x="116" y="128" width="3" height="8"/><rect x="122" y="128" width="3" height="8"/><rect x="128" y="128" width="3" height="8"/></g></svg>`,
+    glasscrit: `<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg"><rect width="160" height="160" fill="#1a1c20"/><rect x="38" y="16" width="84" height="128" rx="16" fill="#c8ced6" stroke="#8a929c" stroke-width="2"/><rect x="44" y="26" width="72" height="104" rx="8" fill="#16181c"/><path d="M48 30h50" stroke="#3a4048" stroke-width="3" opacity=".7"/><rect x="48" y="22" width="28" height="16" rx="5" fill="#b4bac2"/><circle cx="56" cy="30" r="4.2" fill="#2a3038" stroke="#d8dee6" stroke-width="1"/><circle cx="66" cy="30" r="3.4" fill="#2a3038" stroke="#d8dee6" stroke-width="1"/><circle cx="75" cy="30" r="2.4" fill="#dfe6b8"/><path d="M52 40h56l-8 70H60z" fill="#2a3340" opacity=".35"/><rect x="66" y="128" width="28" height="4" rx="2" fill="#8a9098"/></svg>`,
+    brothbeast: `<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg"><rect width="160" height="160" fill="#3a2214"/><rect x="0" y="96" width="160" height="64" fill="#5a3820"/><rect x="8" y="20" width="144" height="70" fill="#6a4030" stroke="#2a160c" stroke-width="2"/><g fill="#1a1008"><rect x="16" y="28" width="36" height="28"/><rect x="62" y="28" width="36" height="28"/><rect x="108" y="28" width="36" height="28"/></g><g fill="#e8893a" stroke="#7a3a10" stroke-width="1.5"><rect x="18" y="72" width="34" height="10" rx="2"/><rect x="64" y="72" width="34" height="10" rx="2"/><rect x="110" y="72" width="34" height="10" rx="2"/></g><g fill="#f0c14b"><circle cx="30" cy="76" r="3"/><circle cx="42" cy="76" r="3"/><rect x="72" y="74" width="10" height="6" rx="1"/><circle cx="126" cy="76" r="3"/></g><ellipse cx="40" cy="128" rx="22" ry="8" fill="#c47838"/><ellipse cx="120" cy="132" rx="22" ry="8" fill="#c47838"/><rect x="8" y="88" width="144" height="8" fill="#2a160c"/><g fill="none" stroke="#f4e0c0" stroke-width="1.6" opacity=".8"><path d="M30 54c0-8 6-10 6-16"/><path d="M76 54c2-8 8-9 6-16"/><path d="M124 54c0-7 7-11 5-16"/></g></svg>`,
+    nectartide: `<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg"><rect width="160" height="160" fill="#2a1808"/><rect x="18" y="18" width="124" height="88" fill="#5a2e10" stroke="#f3c14a" stroke-width="4"/><rect x="28" y="28" width="104" height="68" fill="#f3c14a"/><g fill="#ffe9a0"><rect x="34" y="34" width="14" height="16"/><rect x="54" y="34" width="14" height="16"/><rect x="74" y="34" width="14" height="16"/><rect x="94" y="34" width="14" height="16"/><rect x="114" y="34" width="14" height="16"/></g><ellipse cx="80" cy="128" rx="36" ry="8" fill="#6a3a14"/><rect x="48" y="116" width="64" height="8" rx="2" fill="#d8b060"/><ellipse cx="80" cy="104" rx="22" ry="10" fill="#c47828"/><rect x="62" y="86" width="36" height="16" rx="4" fill="#f0c14b"/><circle cx="70" cy="80" r="5" fill="#3a2010"/><circle cx="90" cy="80" r="5" fill="#3a2010"/><rect x="72" y="108" width="6" height="10" fill="#e8d080"/><rect x="82" y="108" width="6" height="10" fill="#e8d080"/></svg>`,
+    flarewhale: `<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg"><rect width="160" height="160" fill="#101820"/><path d="M20 96c18-28 44-40 70-40 18 0 34 6 48 16l10 24H28z" fill="#c8d0d8" stroke="#3a4450" stroke-width="2"/><path d="M42 64c18-8 40-10 58-4" fill="none" stroke="#8ab4d0" stroke-width="3"/><circle cx="48" cy="108" r="14" fill="#1a1a1a" stroke="#ffe45a" stroke-width="3"/><circle cx="118" cy="108" r="14" fill="#1a1a1a" stroke="#ffe45a" stroke-width="3"/><circle cx="48" cy="108" r="5" fill="#888"/><circle cx="118" cy="108" r="5" fill="#888"/><path d="M86 18l-8 28h16l-12 28 28-32h-16z" fill="#ffe45a" stroke="#f0c14b" stroke-width="1.5"/><path d="M28 100h18" stroke="#3ad0e0" stroke-width="3"/><rect x="14" y="98" width="12" height="6" rx="1" fill="#3ad0e0"/><path d="M22 140h116" stroke="#3a4450" stroke-width="4"/></svg>`,
+    hubspire: `<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg"><rect width="160" height="160" fill="#142028"/><path d="M0 120h160v40H0z" fill="#1c2a30"/><g fill="#3a4a52"><rect x="10" y="96" width="16" height="24"/><rect x="30" y="88" width="14" height="32"/><rect x="118" y="92" width="18" height="28"/><rect x="138" y="100" width="12" height="20"/></g><g fill="#c8d0d4" stroke="#6a7880" stroke-width="1"><path d="M46 128L58 36h8l12 92z"/><path d="M94 128L106 40h8l12 88z"/></g><path d="M62 44h48M58 70h56M54 96h60" stroke="#f0c14b" stroke-width="2" fill="none"/><circle cx="80" cy="28" r="6" fill="#ffe45a"/><rect x="72" y="116" width="16" height="16" fill="#f0c14b"/></svg>`,
+    cloudao: `<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg"><rect width="160" height="160" fill="#1c2830"/><path d="M0 108h160v52H0z" fill="#2a4a58"/><path d="M0 108c18 8 36-6 54 2 20 8 34-8 52 0 16 8 32-4 54 2v48H0z" fill="#3a6a78"/><g fill="#6a5a40"><rect x="8" y="100" width="8" height="28"/><rect x="24" y="100" width="8" height="28"/><rect x="40" y="100" width="8" height="28"/></g><rect x="70" y="24" width="52" height="96" fill="#c8b894" stroke="#5a4a30" stroke-width="2"/><g fill="#3a4a58"><rect x="78" y="34" width="10" height="10"/><rect x="94" y="34" width="10" height="10"/><rect x="110" y="34" width="8" height="10"/><rect x="78" y="50" width="10" height="10"/><rect x="94" y="50" width="10" height="10"/><rect x="110" y="50" width="8" height="10"/><rect x="78" y="66" width="10" height="10"/><rect x="94" y="66" width="10" height="10"/></g><path d="M58 70h16v28H62l-4-8z" fill="#f0c14b" stroke="#8a7018" stroke-width="1.5"/><circle cx="66" cy="82" r="3" fill="#3a2a08"/></svg>`,
+    sandspire: `<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg"><rect width="160" height="160" fill="#3a2a18"/><rect x="10" y="70" width="140" height="70" fill="#e8d2a0" stroke="#8a6a30" stroke-width="2"/><path d="M20 70l20-28h80l20 28z" fill="#d8b878" stroke="#8a6a30" stroke-width="2"/><rect x="58" y="86" width="44" height="36" fill="#fff8e8" stroke="#6a4e28" stroke-width="2"/><rect x="28" y="108" width="104" height="22" fill="#c4a060"/><g fill="#8a6a40"><rect x="36" y="96" width="16" height="14"/><rect x="108" y="96" width="16" height="14"/><rect x="70" y="92" width="10" height="18"/><rect x="82" y="98" width="8" height="12"/></g><path d="M48 70v-18h12v18M100 70v-18h12v18" fill="#6a4e28"/><rect x="44" y="36" width="72" height="10" fill="#c41c2c"/><ellipse cx="80" cy="148" rx="60" ry="8" fill="#c4a060"/></svg>`,
+    goldhorn: `<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg"><rect width="160" height="160" fill="#1c1810"/><rect x="0" y="100" width="160" height="60" fill="#2a3040"/><path d="M0 112h68c6-16 18-24 28-24s22 8 28 24h36v48H0z" fill="#3a4860"/><rect x="8" y="48" width="52" height="64" fill="#e8d8b0" stroke="#8a7018" stroke-width="2"/><rect x="100" y="48" width="52" height="64" fill="#e8d8b0" stroke="#8a7018" stroke-width="2"/><g fill="#c8b888"><rect x="16" y="56" width="8" height="48"/><rect x="36" y="56" width="8" height="48"/><rect x="116" y="56" width="8" height="48"/><rect x="136" y="56" width="8" height="48"/></g><circle cx="80" cy="100" r="26" fill="#c9a227" stroke="#8a7018" stroke-width="3"/><circle cx="80" cy="100" r="10" fill="#6a5010"/><g fill="none" stroke="#6a5010" stroke-width="2"><circle cx="80" cy="100" r="18"/></g><rect x="54" y="28" width="52" height="14" fill="#e8d8b0"/></svg>`,
+    leverhorn: `<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg"><rect width="160" height="160" fill="#201810"/><rect x="10" y="88" width="140" height="52" fill="#6a3a22"/><rect x="18" y="96" width="36" height="28" fill="#fff8e8"/><rect x="62" y="96" width="36" height="28" fill="#fff8e8"/><rect x="106" y="96" width="36" height="28" fill="#fff8e8"/><rect x="44" y="36" width="52" height="64" rx="3" fill="#f0e0b8" stroke="#8a7018" stroke-width="2" transform="rotate(-18 70 68)"/><path d="M58 86l36-48 8 6-36 48z" fill="#f0c14b"/><path d="M28 140h20v-16h20v-16h20v-16h20v-16h24" fill="none" stroke="#e05030" stroke-width="4"/><circle cx="128" cy="60" r="6" fill="#e05030"/></svg>`,
+    grovehall: `<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg"><rect width="160" height="160" fill="#e8f0e8"/><rect x="86" y="40" width="60" height="80" fill="#d8e4d4" stroke="#4a6a50" stroke-width="2"/><rect x="102" y="78" width="20" height="42" fill="#6a5a40"/><rect x="94" y="50" width="14" height="14" fill="#8ab4c8"/><rect x="116" y="50" width="14" height="14" fill="#8ab4c8"/><g stroke="#2f6a3a" stroke-width="2" fill="#4a8a4a"><ellipse cx="30" cy="70" rx="16" ry="22"/><ellipse cx="58" cy="78" rx="14" ry="20"/><path d="M30 90v30M58 96v24"/></g><rect x="18" y="64" width="18" height="44" rx="6" fill="#f4f0e0" stroke="#6a5a30" stroke-width="2"/><rect x="42" y="58" width="18" height="50" rx="6" fill="#e8d8c0" stroke="#6a5a30" stroke-width="2"/><rect x="22" y="70" width="10" height="8" fill="#6aa0c8"/><rect x="46" y="66" width="10" height="8" fill="#c86a6a"/><rect x="0" y="120" width="160" height="40" fill="#c8d4c0"/></svg>`,
+    wardplate: `<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg"><rect width="160" height="160" fill="#1c2024"/><rect x="36" y="28" width="88" height="100" fill="#8a9098" stroke="#3a4048" stroke-width="2"/><g fill="#6a7078"><rect x="44" y="40" width="20" height="14"/><rect x="70" y="40" width="20" height="14"/><rect x="96" y="40" width="20" height="14"/><rect x="44" y="60" width="20" height="14"/><rect x="70" y="60" width="20" height="14"/><rect x="96" y="60" width="20" height="14"/></g><path d="M80 70l28 12v22c0 16-12 28-28 36-16-8-28-20-28-36V82z" fill="#c8d0d4" stroke="#3a4048" stroke-width="2.5"/><path d="M80 84v36" stroke="#5a6070" stroke-width="2"/><rect x="28" y="20" width="104" height="14" fill="#8a9098"/><rect x="22" y="128" width="116" height="16" fill="#4a5058"/></svg>`,
+    safecanopy: `<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg"><rect width="160" height="160" fill="#102028"/><g fill="#3a4a52"><rect x="28" y="100" width="18" height="36"/><rect x="52" y="88" width="22" height="48"/><rect x="86" y="96" width="16" height="40"/><rect x="110" y="84" width="24" height="52"/></g><path d="M80 28c-32 0-58 18-66 40 20-10 42-14 66-14s46 4 66 14c-8-22-34-40-66-40z" fill="#d8e8f0" stroke="#8aa0b0" stroke-width="2"/><path d="M20 68c18-8 40-12 60-12s42 4 60 12" fill="none" stroke="#8aa0b0" stroke-width="2"/><rect x="76" y="68" width="8" height="72" fill="#8aa0b0"/><circle cx="80" cy="26" r="5" fill="#8aa0b0"/></svg>`,
+    calamtide: `<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg"><rect width="160" height="160" fill="#2a2418"/><rect x="0" y="88" width="160" height="72" fill="#4a3a28"/><rect x="12" y="100" width="40" height="36" fill="#efe0b8"/><rect x="60" y="100" width="40" height="36" fill="#efe0b8"/><rect x="108" y="100" width="40" height="36" fill="#efe0b8"/><rect x="20" y="108" width="24" height="16" fill="#6a5a40"/><rect x="68" y="108" width="24" height="16" fill="#6a5a40"/><rect x="116" y="108" width="24" height="16" fill="#6a5a40"/><g fill="#3a6a38"><ellipse cx="80" cy="48" rx="22" ry="16"/><ellipse cx="64" cy="56" rx="14" ry="10"/><ellipse cx="98" cy="54" rx="14" ry="10"/></g><path d="M80 52v36" stroke="#5a3a18" stroke-width="4"/><path d="M74 44l6-16 6 16-16-6 20-2z" fill="#6a8a40" opacity=".85"/></svg>`,
     bearcub: `<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg"><rect width="160" height="160" fill="#2a1518"/><circle cx="48" cy="48" r="18" fill="#5a3038"/><circle cx="112" cy="48" r="18" fill="#5a3038"/><circle cx="48" cy="48" r="8" fill="#3a1c22"/><circle cx="112" cy="48" r="8" fill="#3a1c22"/><ellipse cx="80" cy="88" rx="48" ry="44" fill="#6a3840"/><circle cx="64" cy="82" r="7" fill="#ffd24a"/><circle cx="96" cy="82" r="7" fill="#ffd24a"/><circle cx="64" cy="82" r="3" fill="#1a0a04"/><circle cx="96" cy="82" r="3" fill="#1a0a04"/><ellipse cx="80" cy="100" rx="12" ry="8" fill="#3a1c22"/><path d="M70 112 C80 120 90 120 90 112" stroke="#1a0a04" stroke-width="3" fill="none"/><path d="M80 18 L92 48 L80 42 L68 48 Z" fill="#e31c23"/><path d="M80 26 L86 44 L80 40 L74 44 Z" fill="#ffd2cf"/></svg>`,
     bearshort: `<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg"><rect width="160" height="160" fill="#1a1014"/><circle cx="42" cy="44" r="20" fill="#4a242c"/><circle cx="118" cy="44" r="20" fill="#4a242c"/><circle cx="42" cy="44" r="9" fill="#2a1418"/><circle cx="118" cy="44" r="9" fill="#2a1418"/><ellipse cx="80" cy="90" rx="52" ry="48" fill="#5a2c36"/><circle cx="62" cy="82" r="8" fill="#e31c23"/><circle cx="98" cy="82" r="8" fill="#e31c23"/><circle cx="62" cy="82" r="3.5" fill="#1a0a04"/><circle cx="98" cy="82" r="3.5" fill="#1a0a04"/><path d="M70 104 L80 112 L90 104" fill="#2a1418"/><path d="M60 120 C80 136 100 136 100 120" stroke="#1a0a04" stroke-width="4" fill="none"/><path d="M80 10 L98 52 L80 44 L62 52 Z" fill="#e31c23"/><rect x="108" y="100" width="28" height="22" fill="#c4a15a" stroke="#1a0a04" stroke-width="2"/><path d="M108 100 L136 100 L130 90 L114 90 Z" fill="#8b1e1e"/><path d="M44 128 L36 150 L52 140" fill="#4a242c"/><path d="M116 128 L124 150 L108 140" fill="#4a242c"/></svg>`,
     bearrage: `<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg"><rect width="160" height="160" fill="#14080c"/><circle cx="36" cy="40" r="22" fill="#6a2030"/><circle cx="124" cy="40" r="22" fill="#6a2030"/><circle cx="36" cy="40" r="10" fill="#2a0c12"/><circle cx="124" cy="40" r="10" fill="#2a0c12"/><ellipse cx="80" cy="92" rx="58" ry="50" fill="#7a2434"/><path d="M48 70 L66 80 L50 82 Z" fill="#e31c23"/><path d="M112 70 L94 80 L110 82 Z" fill="#e31c23"/><circle cx="60" cy="86" r="9" fill="#ffd24a"/><circle cx="100" cy="86" r="9" fill="#ffd24a"/><circle cx="60" cy="86" r="4" fill="#1a0a04"/><circle cx="100" cy="86" r="4" fill="#1a0a04"/><path d="M56 118 L80 132 L104 118 L96 128 L80 140 L64 128 Z" fill="#2a0c12"/><path d="M80 6 L104 54 L80 44 L56 54 Z" fill="#e31c23"/><path d="M80 16 L94 48 L80 42 L66 48 Z" fill="#ffd24a"/><path d="M20 70 L8 40 L28 62" fill="#7a2434"/><path d="M140 70 L152 40 L132 62" fill="#7a2434"/></svg>`,
     shortwolf: `<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg"><rect width="160" height="160" fill="#16141c"/><path d="M28 60 L20 16 L52 48 Z" fill="#3a3a48"/><path d="M132 60 L140 16 L108 48 Z" fill="#3a3a48"/><path d="M20 16 L32 8 L40 36" fill="#8a90a0"/><path d="M140 16 L128 8 L120 36" fill="#8a90a0"/><ellipse cx="80" cy="92" rx="50" ry="46" fill="#4a4a5a"/><path d="M50 70 L80 100 L110 70 L100 110 L80 124 L60 110 Z" fill="#2e2e3a"/><circle cx="64" cy="84" r="7" fill="#e31c23"/><circle cx="96" cy="84" r="7" fill="#e31c23"/><circle cx="64" cy="84" r="3" fill="#111"/><circle cx="96" cy="84" r="3" fill="#111"/><path d="M80 18 L96 50 L80 44 L64 50 Z" fill="#e31c23"/><path d="M72 104 L80 118 L88 104" fill="#111"/></svg>`,
-  };
+  };;
 
   /* ===== Audio ===== */
   let audioCtx = null;
@@ -798,11 +1153,102 @@
 
 
   /* ===== Render ===== */
+
+  function rotationBadge(sector) {
+    if (!state.rotation) return "";
+    if (sector === state.rotation.strong) return '<span class="badge home">主場</span>';
+    if (sector === state.rotation.weak) return '<span class="badge weak">受壓</span>';
+    return "";
+  }
+
+  function updateSynergyLine() {
+    const el = $("synergy-line");
+    if (!el) return;
+    const list = currentSynergies();
+    if (!list.length || (state.phase !== "battle" && state.phase !== "gap" && state.phase !== "reward" && state.phase !== "choice")) {
+      el.hidden = true;
+      el.textContent = "";
+      return;
+    }
+    el.hidden = false;
+    el.textContent = "連攜中：" + list.map((s) => s.title).join("、");
+  }
+
+  function updateFightBanner() {
+    const el = $("fight-banner");
+    const btn = $("btn-to-arena");
+    if (!el) return;
+    const show = state.phase === "battle" && state.phoneTab !== "arena";
+    el.hidden = !show;
+    if (btn && show) btn.textContent = "第 " + state.wave + " 浪進行中 · 去戰場";
+  }
+
+  function setPhoneTab(tab) {
+    const next = tab === "book" || tab === "arena" ? tab : "quotes";
+    state.phoneTab = next;
+    const app = $("app");
+    if (app) app.setAttribute("data-tab", next);
+    document.querySelectorAll("[data-tab]").forEach((btn) => {
+      if (btn.id === "app") return;
+      const on = btn.getAttribute("data-tab") === next;
+      btn.classList.toggle("on", on);
+      btn.setAttribute("aria-selected", on ? "true" : "false");
+    });
+    updateFightBanner();
+  }
+
+  function onBattleViewCue() {
+    if (!state.didAutoArena) {
+      state.didAutoArena = true;
+      setPhoneTab("arena");
+    } else {
+      updateFightBanner();
+    }
+  }
+
+  function ensureRotation() {
+    if (state.rotation && state.rotation.remaining > 0) return state.rotation;
+    state.rotation = rollRotation(state.rotation, rotationSectorList(getUnlocks()), Math.random);
+    return state.rotation;
+  }
+
+  function consumeRotationAfterWave() {
+    if (state.rotation) state.rotation.remaining = Math.max(0, (state.rotation.remaining || 1) - 1);
+  }
+
+  function bossTelegraphStep(atk) {
+    if (!atk || atk.side !== "enemy" || !atk.boss) return { mul: 1, note: "", heavy: false };
+    if (atk.telegraphing) {
+      atk.telegraphing = false;
+      atk.charge = 0;
+      return { mul: atk.boss === "major" ? 2.1 : 1.65, note: atk.name + " 重擊！", heavy: true };
+    }
+    atk.charge = (atk.charge || 0) + 1;
+    const need = atk.boss === "major" ? 2 : 3;
+    if (atk.charge >= need) {
+      atk.telegraphing = true;
+      return { mul: 0.7, note: atk.name + " 正在蓄力，下一擊會係重擊！", heavy: false, telegraph: true };
+    }
+    return { mul: 1, note: "", heavy: false };
+  }
+
   function renderMast() {
     const waveEl = $("stat-wave");
     const goalEl = $("stat-goal");
-    if (waveEl) waveEl.textContent = state.wave + " / " + MAX_WAVES;
-    if (goalEl) goalEl.textContent = money(GOAL);
+    if (waveEl) waveEl.textContent = "第 " + state.wave + " 層";
+    if (goalEl) goalEl.textContent = money(WEALTH_GOAL);
+    const cashout = $("btn-cashout");
+    if (cashout) {
+      cashout.hidden = !(state.wealthContinued && state.phase !== "end" && state.phase !== "start");
+    }
+    const rot = $("rotation-line");
+    if (rot) {
+      const text = rotationText(state.rotation);
+      rot.hidden = !text;
+      rot.textContent = text;
+    }
+    updateSynergyLine();
+    updateFightBanner();
     updateAccountBar();
   }
 
@@ -818,24 +1264,28 @@
     const chgTxt = chgText(s);
     const selected = state.ticketId === s.id ? " selected" : "";
     const held = s.shares ? " held" : "";
-    return `<article class="quote${held}${selected}" data-quote="${s.id}" data-card="${s.id}">
-      <button type="button" class="quote-file" data-file="${s.id}" aria-label="查看 ${s.name} 檔案">
+    return `<article class="quote${held}${selected}" data-card="${s.id}">
+      <button type="button" class="quote-icon" data-file="${s.id}" aria-label="查看 ${s.name} 資料">
         ${portrait(s.id)}
+        <span class="file-tag">資料</span>
+      </button>
+      <button type="button" class="quote-pick" data-quote-select="${s.id}" aria-label="將 ${s.name} 放入訂單">
         <div class="quote-id">
           <div class="card-name-row">
-            <div class="card-name">${s.name}</div>
+            <div class="card-name">${s.name}<span class="pick-tag">下單</span></div>
             <div class="card-en">${stockEnLine(s)}</div>
           </div>
           <div class="badges">
             <span class="badge">${s.sector}</span>
             <span class="badge temp">${s.temperament}</span>
             <span class="badge job">${s.job || ""}</span>
+            ${rotationBadge(s.sector)}
           </div>
         </div>
-      </button>
-      <button type="button" class="quote-px" data-quote-select="${s.id}" aria-label="將 ${s.name} 放入訂單">
-        <div class="price ${chgClass}" data-price="${s.id}">${money(s.price)}</div>
-        <div class="chg ${chgClass}" data-chg="${s.id}">${chgTxt}</div>
+        <div class="quote-px">
+          <div class="price ${chgClass}" data-price="${s.id}">${money(s.price)}</div>
+          <div class="chg ${chgClass}" data-chg="${s.id}">${chgTxt}</div>
+        </div>
       </button>
     </article>`;
   }
@@ -844,21 +1294,24 @@
     const m = positionMetrics(s);
     const cls = changeClass(m.unreal);
     const selected = state.ticketId === s.id ? " selected" : "";
-    return `<article class="position${selected}" data-pos="${s.id}" data-quote-select="${s.id}">
-      <button type="button" class="pos-file" data-file="${s.id}" aria-label="查看 ${s.name} 檔案">
+    return `<article class="position${selected}" data-pos="${s.id}">
+      <button type="button" class="pos-icon" data-file="${s.id}" aria-label="查看 ${s.name} 資料">
         ${portrait(s.id)}
+        <span class="file-tag">資料</span>
+      </button>
+      <button type="button" class="pos-pick" data-quote-select="${s.id}" aria-label="將 ${s.name} 放入訂單">
         <div>
-          <div class="card-name">${s.name}</div>
+          <div class="card-name">${s.name}<span class="pick-tag">下單</span></div>
           <div class="card-en">${stockEnLine(s)} · ${s.sector}</div>
         </div>
-      </button>
-      <div class="pos-grid">
+        <div class="pos-grid">
         <div><span class="attr-label">股數</span><span class="attr-value" data-pos-shares="${s.id}">${m.shares}</span></div>
         <div><span class="attr-label">成本</span><span class="attr-value" data-pos-avg="${s.id}">${money(m.avg)}</span></div>
         <div><span class="attr-label">現價</span><span class="attr-value price ${changeClass(s.change)}" data-pos-last="${s.id}">${money(m.last)}</span></div>
         <div><span class="attr-label">市值</span><span class="attr-value" data-pos-val="${s.id}">${money(m.value)}</span></div>
         <div class="pos-pnl"><span class="attr-label">浮動盈虧</span><span class="attr-value ${cls}" data-pos-pnl="${s.id}">${moneySigned(m.unreal)}　${pct(m.unrealPct)}</span></div>
-      </div>
+        </div>
+      </button>
     </article>`;
   }
 
@@ -895,7 +1348,7 @@
       if (sub) sub.textContent = "尚未持倉";
     } else {
       box.innerHTML = held.map(positionHTML).join("");
-      const pnl = portfolioPnL(state.stocks, state.cash, START_CASH, state.realizedDay);
+      const pnl = portfolioPnL(state.stocks, state.cash, state.startCash || START_CASH, state.realizedDay);
       if (sub) sub.textContent = held.length + " 隻 · 市值 " + money(pnl.value) + " · 浮動 " + moneySigned(pnl.unreal);
     }
   }
@@ -936,7 +1389,7 @@
       set(`[data-pos-pnl="${s.id}"]`, moneySigned(m.unreal) + "　" + pct(m.unrealPct), "attr-value " + cls);
     }
     const sub = $("positions-sub");
-    const pnl = portfolioPnL(state.stocks, state.cash, START_CASH, state.realizedDay);
+    const pnl = portfolioPnL(state.stocks, state.cash, state.startCash || START_CASH, state.realizedDay);
     if (sub) sub.textContent = held.length + " 隻 · 市值 " + money(pnl.value) + " · 浮動 " + moneySigned(pnl.unreal);
   }
 
@@ -945,7 +1398,7 @@
   }
 
   function updateAccountBar() {
-    const pnl = portfolioPnL(state.stocks, state.cash, START_CASH, state.realizedDay);
+    const pnl = portfolioPnL(state.stocks, state.cash, state.startCash || START_CASH, state.realizedDay);
     const set = (id, text, cls) => {
       const el = $(id);
       if (!el) return;
@@ -958,14 +1411,14 @@
     const totCls = pnlClass(pnl.total);
     const dayEl = $("acct-day");
     if (dayEl) {
-      const startEq = START_CASH;
+      const startEq = state.startCash || START_CASH;
       const dayPct = startEq ? pnl.dayMtm / startEq : 0;
       dayEl.textContent = moneySigned(pnl.dayMtm) + "　" + pct(dayPct);
       dayEl.className = "acct-value" + (dayCls ? " " + dayCls : "");
     }
     const totEl = $("acct-total");
     if (totEl) {
-      const totPct = START_CASH ? pnl.total / START_CASH : 0;
+      const totPct = (state.startCash || START_CASH) ? pnl.total / (state.startCash || START_CASH) : 0;
       totEl.textContent = moneySigned(pnl.total) + "　" + pct(totPct);
       totEl.className = "acct-value" + (totCls ? " " + totCls : "");
     }
@@ -982,6 +1435,7 @@
   function setTicketQty(n) {
     n = Math.max(1, Math.floor(Number(n) || 1));
     state.ticketQty = n;
+    touchTicket();
     const input = $("ticket-qty");
     if (input && document.activeElement !== input) input.value = String(n);
     else if (input && !input.value) input.value = String(n);
@@ -992,7 +1446,7 @@
     if (!id) return;
     state.ticketId = id;
     document.querySelectorAll(".quote.selected, .position.selected").forEach((el) => el.classList.remove("selected"));
-    document.querySelectorAll(`[data-quote="${id}"], [data-pos="${id}"]`).forEach((el) => el.classList.add("selected"));
+    document.querySelectorAll(`[data-card="${id}"], [data-pos="${id}"]`).forEach((el) => el.classList.add("selected"));
     updateTicketLive();
   }
 
@@ -1066,7 +1520,7 @@
       if (box) box.classList.toggle("pressed", cutNow || warn);
     }
 
-    let hint = "揀一隻怪下單。撳名稱睇檔案同職業、互動 K 線。行情會自己行。";
+    let hint = "撳圖示睇檔案，撳名稱或價錢揀嚟買賣。";
     if (cutNow) {
       hint = "過度集中 −15%（原戰力 " + raw.toLocaleString("en-US") + "）。交戰中仍然可以調倉。";
     } else if (warn) {
@@ -1077,7 +1531,7 @@
         : "建倉中，開市報價凍結。至少買入 1 股，先可以撳「確認開市」。";
     } else if (state.phase === "gap") {
       hint = hasHoldings()
-        ? "空隙：可以自由買賣。行情持續，下一浪會自動出現。"
+        ? "換倉空隙約 25 秒，行情持續。倒數完先出下一浪；準備好可提早開打。"
         : "至少持有 1 股先可以迎戰。行情仍然繼續。";
     } else if (state.phase === "battle") {
       hint = "交戰中仍然可以買賣。醫療牧師會為未倒下嘅隊友回血；陣亡會即時清倉。";
@@ -1424,10 +1878,12 @@
             <span class="badge">${s.sector}</span>
             <span class="badge temp">${s.temperament}</span>
             <span class="badge job">${s.job || ""}</span>
+            ${rotationBadge(s.sector)}
           </div>
         </div>
       </div>
       <p class="detail-role">${s.job ? "職業：" + s.job + " — " + (s.role || "") : ""}</p>
+      <p class="detail-syn">${(currentSynergies().filter((x) => !x.jobs || x.jobs.indexOf(s.job) >= 0).map((x) => x.line).join("；")) || ""}</p>
       <p class="detail-blurb">${s.blurb || ""}</p>
       <div class="detail-attrs">
         <div><span class="attr-label">招式</span><span class="attr-value">「${s.move}」</span></div>
@@ -1701,36 +2157,42 @@
   const ENEMY_BUDGET = [0, 560, 780, 1100, 1450, 1820, 2200, 2580, 2960];
 
   function makeEnemies(wave, budget) {
-    const n = wave <= 2 ? 2 : wave <= 5 ? 3 : 4;
+    const kind = bossKind(wave);
+    const n = kind === "major" ? 3 : kind === "minor" ? 3 : (wave <= 2 ? 2 : wave <= 4 ? 3 : 4);
     const types = [];
-    if (wave <= 2) {
+    if (kind === "minor") {
+      types.push(["壓價熊", "Pressbear", "bearrage", 2, "minor", true], ["掃貨狼", "Sweepwolf", "shortwolf", 3, "minor", false], ["沽空熊", "Shortbear", "bearshort", 2, null, false]);
+    } else if (kind === "major") {
+      const names = { 10: ["夜盤巨空", "Nightshort"], 20: ["連環逼倉", "Chaincall"], 30: ["終極沽空皇", "Shortcrown"] };
+      const pair = names[wave] || ["第" + wave + "層巨空", "Floorvoid"];
+      types.push([pair[0], pair[1], "bearrage", 2, "major", true], ["空頭狼", "Shortwolf", "shortwolf", 3, null, false], ["沽空熊", "Shortbear", "bearshort", 2, null, false]);
+    } else if (wave <= 2) {
       types.push(["細熊", "Cubbear", "bearcub", 2], ["細熊", "Cubbear", "bearcub", 2]);
     } else if (wave <= 4) {
-      types.push(["沽空熊", "Shortbear", "bearshort", 2], ["空頭狼", "Shortwolf", "shortwolf", 3]);
-      if (n >= 3) types.push(["細熊", "Cubbear", "bearcub", 2]);
-    } else if (wave <= 6) {
-      types.push(["沽空熊", "Shortbear", "bearshort", 2], ["空頭狼", "Shortwolf", "shortwolf", 3], ["狂熊", "Ragebear", "bearrage", 3]);
-      if (n >= 4) types.push(["沽空熊", "Shortbear", "bearshort", 2]);
+      types.push(["沽空熊", "Shortbear", "bearshort", 2], ["空頭狼", "Shortwolf", "shortwolf", 3], ["細熊", "Cubbear", "bearcub", 2]);
     } else {
-      types.push(["狂熊", "Ragebear", "bearrage", 3], ["空頭狼", "Shortwolf", "shortwolf", 3], ["大阿熊", "Bossbear", "bearrage", 2]);
-      if (n >= 4) types.push(["沽空熊", "Shortbear", "bearshort", 3]);
+      types.push(["狂熊", "Ragebear", "bearrage", 3], ["空頭狼", "Shortwolf", "shortwolf", 3], ["沽空熊", "Shortbear", "bearshort", 2], ["細熊", "Cubbear", "bearcub", 2]);
     }
-    const weights = types.slice(0, n).map(() => 0.7 + Math.random() * 0.6);
+    const weights = types.slice(0, n).map((t, i) => (t[5] ? 1.6 : 0.7) + Math.random() * 0.5);
     const sum = weights.reduce((a, b) => a + b, 0);
     return types.slice(0, n).map((t, i) => {
       const power = Math.max(80, Math.round((budget * weights[i]) / sum));
+      const hpMul = t[5] ? (t[4] === "major" ? 1.45 : 1.25) : 1;
       return {
         id: "e-" + i,
         name: t[0],
         en: t[1],
         portrait: t[2],
         power,
-        hp: power,
-        maxHp: power,
-        atk: Math.max(16, Math.round(power * 0.21)),
+        hp: Math.round(power * hpMul),
+        maxHp: Math.round(power * hpMul),
+        atk: Math.max(16, Math.round(power * (t[5] ? 0.24 : 0.21))),
         speed: t[3],
         side: "enemy",
         change: 0,
+        boss: t[4] || null,
+        telegraphing: false,
+        charge: 0,
       };
     });
   }
@@ -1820,13 +2282,39 @@
   function pulseBattleSupport(kind) {
     if (!state.fight || !state.fight.players) return [];
     const players = state.fight.players;
+    const b = state.runBuffs || {};
+    const fx = currentSynergyEffects();
+    const healScale = { heal: b.healAmp || 1, supply: 1 };
+    const shieldScale = { shield: b.shieldAmp || 1 };
     let events = [];
     if (kind === "opening" || kind === "round") {
-      events = events.concat(applyShieldToLiving(players, supportSources("shield"), powerLookup));
+      events = events.concat(applyShieldToLiving(players, supportSources("shield"), powerLookup, shieldScale));
+      if (fx.shield > 0) {
+        const living = livingCombatants(players);
+        const pool = Math.round(totalPower() * fx.shield);
+        const parts = splitPool(pool, living.length || 1);
+        living.forEach((u, i) => {
+          const amt = parts[i] || 0;
+          if (amt <= 0) return;
+          u.shield = (u.shield || 0) + amt;
+          events.push({ type: "shield", source: "聖愈連攜", job: "連攜", target: u.name, unitId: u.id, amount: amt });
+        });
+      }
     }
     if (kind === "round") {
-      events = events.concat(applyHealToLiving(players, supportSources("heal"), "heal", powerLookup));
+      events = events.concat(applyHealToLiving(players, supportSources("heal"), "heal", powerLookup, healScale));
       events = events.concat(applyHealToLiving(players, supportSources("supply"), "supply", powerLookup));
+    }
+    if (kind === "opening" && (b.openHeal || b.metaOpenHeal)) {
+      const living = livingCombatants(players);
+      living.forEach((u) => {
+        const amt = Math.max(1, Math.round((u.maxHp || 0) * 0.08));
+        const healed = Math.min(amt, Math.max(0, (u.maxHp || 0) - u.hp));
+        if (healed > 0) {
+          u.hp += healed;
+          events.push({ type: "heal", source: "開場包紮", job: "祝福", target: u.name, unitId: u.id, amount: healed });
+        }
+      });
     }
     if (events.length) flashSupport(events);
     return events;
@@ -1839,26 +2327,29 @@
     u.shield = 0;
     u.power = 0;
     const idx = state.stocks.findIndex((x) => x.id === u.stockId);
-    if (idx < 0) {
-      refreshUnitEl(u);
-      return { note: (u.name || "") + " 陣亡清倉", cash: state.cash };
+    let note = (u.name || "") + " 陣亡清倉";
+    if (idx >= 0) {
+      const s = state.stocks[idx];
+      const result = applyDeathWipe(s, state.realizedDay);
+      state.stocks[idx] = Object.assign(s, result.stock);
+      state.realizedDay = result.realizedDay;
+      state.lastWipeNote = { id: s.id, text: result.note };
+      note = result.note;
     }
-    const s = state.stocks[idx];
-    const cashBefore = state.cash;
-    const result = applyDeathWipe(s, state.realizedDay);
-    state.stocks[idx] = Object.assign(s, result.stock);
-    state.realizedDay = result.realizedDay;
-    state.lastWipeNote = { id: s.id, text: result.note };
-    setLog(result.note);
-    flyFromEl($("unit-" + u.id), result.note, "wipe");
+    setLog(note + "。呢局完結，要重新掛牌再開一局。");
+    flyFromEl($("unit-" + u.id), note, "wipe");
     refreshUnitEl(u);
-    afterHoldingsChange();
-    return { note: result.note, cash: state.cash, cashBefore, shares: result.shares };
+    state.fatalDeath = true;
+    endRun("death");
+    return { note, cash: state.cash, canContinue: false };
   }
 
   function strikeTarget(atk, tgt, rawDmg, crit) {
+    const step = atk.side === "enemy" ? bossTelegraphStep(atk) : { mul: 1, note: "", heavy: false };
+    const dmgIn = Math.round((rawDmg || 0) * (step.mul || 1));
+    if (step.note) setLog(step.note);
     const allies = atk.side === "enemy" && state.fight ? state.fight.players : (state.fight ? state.fight.enemies : []);
-    const result = applyIncomingDamage(tgt, rawDmg, allies, state.stocks);
+    const result = applyIncomingDamage(tgt, dmgIn, allies, state.stocks, { heavy: !!step.heavy });
     const aEl = $("unit-" + atk.id);
     const tEl = $("unit-" + tgt.id);
     if (aEl) {
@@ -1935,9 +2426,20 @@
     }
   }
 
+  async function pauseForHurt(u) {
+    const arena = document.querySelector(".arena");
+    const el = u && $("unit-" + u.id);
+    if (arena) arena.classList.add("hurt-pause");
+    if (el) el.classList.add("hurt");
+    setLog((u && u.name ? u.name : "單位") + " 受重創，短暫慢下來，可以先行調倉。");
+    await sleep(BATTLE_HURT_MS);
+    if (arena) arena.classList.remove("hurt-pause");
+    if (el) el.classList.remove("hurt");
+  }
+
   async function runBattle() {
     const players = state.stocks.filter((s) => s.shares > 0).map(playerUnit);
-    const budget = ENEMY_BUDGET[state.wave] || 2000;
+    const budget = enemyBudgetFor(state.wave);
     const enemies = makeEnemies(state.wave, budget);
     const enemyPower = enemies.reduce((a, e) => a + e.power, 0);
     state.fight = { players, enemies };
@@ -1945,13 +2447,14 @@
     $("player-units").innerHTML = players.map((u) => unitHTML(u, true)).join("");
     $("enemy-units").innerHTML = enemies.map((u) => unitHTML(u, true)).join("");
     $("vs-mark").textContent = "VS";
-    let openLog = `第 ${state.wave} 浪開打 · 組合戰力 ${totalPower().toLocaleString("en-US")} vs 沽空 ${enemyPower.toLocaleString("en-US")}`;
+    const kind = bossKind(state.wave);
+    let openLog = (kind === "major" ? "大Boss戰 · " : kind === "minor" ? "小Boss戰 · " : "") + `第 ${state.wave} 層開打 · 組合戰力 ${totalPower().toLocaleString("en-US")} vs 沽空 ${enemyPower.toLocaleString("en-US")}`;
     if (state.concentrationActive) {
       openLog = "過度集中·戰力受壓 15%。" + openLog;
     }
     setLog(openLog);
     pulseBattleSupport("opening");
-    await sleep(700);
+    await sleep(BATTLE_OPEN_MS);
     if (state.phase === "end") return { win: false, hpRatio: 0, aborted: true };
 
     let guard = 0;
@@ -1985,8 +2488,11 @@
           dmg = Math.round(dmg * 1.25);
           crit = true;
         }
+        const hpBefore = tgt.hp;
         strikeTarget(atk, tgt, dmg, crit);
-        await sleep(crit ? 520 : 400);
+        await sleep(crit ? BATTLE_CRIT_MS : BATTLE_STRIKE_MS);
+        const badly = tgt.hp > 0 && tgt.maxHp > 0 && (tgt.hp / tgt.maxHp <= 0.4 || (hpBefore - tgt.hp) >= tgt.maxHp * 0.28);
+        if (badly) await pauseForHurt(tgt);
         syncPlayerUnits();
         if (!living(players).length || !living(enemies).length) break;
       }
@@ -2107,6 +2613,9 @@
     const kicker = $("status-kicker");
     const label = $("status-label");
     const sub = $("status-sub");
+    const gapActions = $("gap-actions");
+    const gapCount = $("gap-count");
+    const nextBtn = $("btn-next-wave");
     if (!status || !label) return;
     const t = now || Date.now();
     const building = state.phase === "build";
@@ -2117,20 +2626,36 @@
     if (kicker) kicker.textContent = state.phase === "battle" ? "FIGHT" : building ? "BUILD" : "LIVE";
     if (state.phase === "battle") {
       label.textContent = "第 " + state.wave + " 浪交戰中";
-      if (sub) sub.textContent = "仍可買賣調倉";
+      if (sub) sub.textContent = "節奏已放慢，仍可買賣調倉";
+      if (gapActions) gapActions.hidden = true;
     } else if (building) {
       label.textContent = "建倉";
       if (sub) sub.textContent = hasHoldings() ? "撳「確認開市」開始" : "價錢凍結，先買入";
+      if (gapActions) gapActions.hidden = true;
     } else if (state.phase === "gap") {
       const remain = Math.max(0, Math.ceil((state.nextWaveAt - t) / 1000));
-      label.textContent = hasHoldings() ? "空隙" : "請先建倉";
-      if (sub) sub.textContent = hasHoldings() ? ("下一浪 " + remain + " 秒") : "行情持續";
+      const mid = isMidTicket();
+      label.textContent = hasHoldings() ? "換倉空隙" : "請先建倉";
+      if (sub) {
+        if (!hasHoldings()) sub.textContent = "行情持續，至少持有 1 股先可以出浪";
+        else if (mid && remain <= 0) sub.textContent = "下單完成後出下一浪";
+        else sub.textContent = "下一浪倒數 " + remain + " 秒，準備好可提早開打";
+      }
+      if (gapActions) gapActions.hidden = !hasHoldings();
+      if (gapCount) gapCount.textContent = String(remain);
+      if (nextBtn) nextBtn.disabled = !hasHoldings();
+    } else if (state.phase === "reward" || state.phase === "choice") {
+      label.textContent = state.phase === "reward" ? "選擇祝福" : "大目標";
+      if (sub) sub.textContent = "仍可買賣";
+      if (gapActions) gapActions.hidden = true;
     } else if (state.phase === "start") {
       label.textContent = "等候開局";
       if (sub) sub.textContent = "";
+      if (gapActions) gapActions.hidden = true;
     } else {
       label.textContent = "收市";
       if (sub) sub.textContent = "";
+      if (gapActions) gapActions.hidden = true;
     }
     updateOpenMarketButton();
   }
@@ -2254,11 +2779,7 @@
   }
 
   function maybeEndRun() {
-    if (state.phase === "end" || state.phase === "start" || state.phase === "battle" || state.phase === "build") return false;
-    if (wealth() >= GOAL) {
-      endRun("goal");
-      return true;
-    }
+    if (state.phase === "end" || state.phase === "start" || state.phase === "battle" || state.phase === "build" || state.phase === "reward" || state.phase === "choice") return false;
     if (!canAffordAnything()) {
       endRun("bust");
       return true;
@@ -2266,10 +2787,10 @@
     return false;
   }
 
-  function tryStartWave() {
+  function tryStartWave(opts) {
     if (state.phase !== "gap" || state.waveBusy) return;
-    if (state.wave > MAX_WAVES) return;
     const now = Date.now();
+    const force = !!(opts && opts.force);
     if (!canBeginWave({
       phase: state.phase,
       waveBusy: state.waveBusy,
@@ -2278,9 +2799,11 @@
       nextWaveAt: state.nextWaveAt,
       marketLive: state.marketLive,
       hasHoldings: hasHoldings(),
+      midTicket: force ? false : isMidTicket(),
+      force: force,
     })) {
-      if (state.phase === "gap" && !state.waveBusy && state.wave <= MAX_WAVES && !hasHoldings()) {
-        const ready = state.wave === 1 ? !!state.marketLive : now >= state.nextWaveAt;
+      if (state.phase === "gap" && !state.waveBusy && !hasHoldings()) {
+        const ready = state.wave === 1 ? !!state.marketLive : (force || now >= state.nextWaveAt);
         if (ready && !state.waitBookLogged) {
           setLog("至少持有 1 股先可以迎戰下一浪。行情仍然繼續。");
           state.waitBookLogged = true;
@@ -2296,12 +2819,14 @@
   async function beginWave() {
     if (state.waveBusy || state.phase !== "gap") return;
     state.waveBusy = true;
+    ensureRotation();
     const currentSet = holdingSetKey(state.stocks);
     const concentrated = shouldPenalize(state.wave, state.lastHoldingSet, currentSet);
     state.concentrationActive = concentrated;
     state.lastHoldingSet = currentSet;
     state.phase = "battle";
     state.lastBook = portfolioValue();
+    onBattleViewCue();
     renderAll();
     updateStatusFoot();
     scrollToArena();
@@ -2311,11 +2836,16 @@
     const result = await runBattle();
     state.fight = null;
     state.waveBusy = false;
-    if (state.phase === "end" || (result && result.aborted)) return;
+    if (state.phase === "end" || state.fatalDeath || (result && result.aborted)) return;
 
     const bookAfter = portfolioValue();
     const payout = computePayout(result, state.lastBook, bookAfter);
     state.cash = Math.max(0, state.cash + payout.cash);
+    state.floorsCleared = Math.max(state.floorsCleared || 0, state.wave);
+    if (result.win && isBossWave(state.wave) && state.bossesCleared.indexOf(state.wave) < 0) {
+      state.bossesCleared = state.bossesCleared.concat([state.wave]);
+    }
+    consumeRotationAfterWave();
 
     if (result.win) sfx.win();
     else sfx.lose();
@@ -2328,29 +2858,22 @@
     renderMast();
     pop($("stat-cash"));
     pop($("stat-wealth"));
-    await sleep(1100);
-    if (state.phase === "end") return;
+    await sleep(1400);
+    if (state.phase === "end" || state.fatalDeath) return;
 
-    if (wealth() >= GOAL) {
-      endRun("goal");
-      return;
-    }
     if (!canAffordAnything()) {
       endRun("bust");
       return;
     }
-    if (state.wave >= MAX_WAVES) {
-      endRun(wealth() >= START_CASH ? "close-up" : "close-down");
+    if (result.win && isBossWave(state.wave)) {
+      showRewardPick();
       return;
     }
-
-    state.wave += 1;
-    state.phase = "gap";
-    state.concentrationActive = false;
-    state.nextWaveAt = Date.now() + WAVE_GAP_MS;
-    setIdleHeadline();
-    setLog("空隙：可以換倉。行情同倒數繼續，下一浪即將出現。目標 " + money(GOAL) + "。");
-    renderAll();
+    if (shouldOfferWealthWin({ wealth: wealth(), goal: WEALTH_GOAL, wealthContinued: state.wealthContinued, wealthOffered: state.wealthOffered })) {
+      showWealthChoice();
+      return;
+    }
+    enterGapAfterWave();
   }
 
   function confirmOpenMarket() {
@@ -2381,9 +2904,121 @@
     return true;
   }
 
+  function hidePick() {
+    const el = $("overlay-pick");
+    if (el) el.classList.remove("show");
+  }
+
+  function enterGapAfterWave() {
+    state.wave += 1;
+    state.phase = "gap";
+    state.concentrationActive = false;
+    if (state.runBuffs && state.runBuffs.cashNextGap) {
+      const amt = state.runBuffs.cashNextGap;
+      state.cash += amt;
+      state.runBuffs.cashNextGap = 0;
+      setLog("空隙撥備到帳 " + money(amt) + "。");
+      if (sfx.cash) sfx.cash();
+    }
+    ensureRotation();
+    state.nextWaveAt = Date.now() + WAVE_GAP_MS;
+    state.waitBookLogged = false;
+    hidePick();
+    setIdleHeadline();
+    setLog("換倉空隙約 " + Math.round(WAVE_GAP_MS / 1000) + " 秒，行情繼續行。倒數完先出下一層；準備好可以撳「下一浪」。大目標 " + money(WEALTH_GOAL) + "。");
+    renderAll();
+    updateStatusFoot();
+  }
+
+  function showRewardPick() {
+    state.phase = "reward";
+    const picks = pickBossRewards((state.runBuffs && state.runBuffs.taken) || [], getMeta(), 3, Math.random);
+    if (!picks.length) {
+      if (shouldOfferWealthWin({ wealth: wealth(), goal: WEALTH_GOAL, wealthContinued: state.wealthContinued, wealthOffered: state.wealthOffered })) {
+        showWealthChoice();
+      } else {
+        enterGapAfterWave();
+      }
+      return;
+    }
+    const card = $("pick-card");
+    const overlay = $("overlay-pick");
+    if (!card || !overlay) {
+      enterGapAfterWave();
+      return;
+    }
+    card.innerHTML = `
+      <div class="end-kicker">BOSS 祝福</div>
+      <h2>第 ${state.wave} 層通過 · 三選一</h2>
+      <p>揀一項本局祝福。揀完會進入較長嘅換倉空隙。</p>
+      <div class="pick-choices">
+        ${picks.map((item, i) => `<button type="button" data-buff="${item.id}">${item.name}<br><span>${item.line}</span></button>`).join("")}
+      </div>`;
+    overlay.classList.add("show");
+    card.querySelectorAll("[data-buff]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const item = picks.find((x) => x.id === btn.getAttribute("data-buff"));
+        state.runBuffs = applyRunBuff(state.runBuffs, item);
+        hidePick();
+        setLog("獲得祝福：" + ((item && item.name) || "") + "。");
+        if (shouldOfferWealthWin({ wealth: wealth(), goal: WEALTH_GOAL, wealthContinued: state.wealthContinued, wealthOffered: state.wealthOffered })) {
+          showWealthChoice();
+        } else {
+          enterGapAfterWave();
+        }
+      }, { once: true });
+    });
+    renderAll();
+  }
+
+  function showWealthChoice() {
+    state.phase = "choice";
+    state.wealthOffered = true;
+    const card = $("pick-card");
+    const overlay = $("overlay-pick");
+    if (!card || !overlay) {
+      enterGapAfterWave();
+      return;
+    }
+    card.innerHTML = `
+      <div class="end-kicker">大目標</div>
+      <h2>已經賺夠 ${money(WEALTH_GOAL)}</h2>
+      <p>而家總資產 ${money(wealth())}。可以宣告勝出，或者繼續向下打。</p>
+      <div class="choice-actions">
+        <button type="button" id="btn-take-win">賺夠，宣告勝出</button>
+        <button type="button" id="btn-keep-climb">繼續向下打</button>
+      </div>`;
+    overlay.classList.add("show");
+    const take = $("btn-take-win");
+    const keep = $("btn-keep-climb");
+    if (take) take.addEventListener("click", () => { hidePick(); endRun("wealth"); }, { once: true });
+    if (keep) keep.addEventListener("click", () => {
+      state.wealthContinued = true;
+      hidePick();
+      setLog("繼續向下打。隨時可以撳「宣告勝出」收市。");
+      enterGapAfterWave();
+    }, { once: true });
+    renderAll();
+  }
+
+  function renderMetaShop() {
+    const box = $("meta-shop");
+    if (!box) return;
+    const meta = getMeta();
+    const items = META_SHOP.map((item) => {
+      const have = !!(meta.purchased && meta.purchased[item.id]);
+      const can = !have && meta.points >= item.cost;
+      return `<div class="meta-item"><div><strong>${item.name}</strong>（${item.cost} 點）${have ? " · 已解鎖" : ""}<div>${item.line}</div></div><button type="button" data-meta="${item.id}" ${can ? "" : "disabled"}>${have ? "已有" : "兌換"}</button></div>`;
+    }).join("");
+    box.innerHTML = `<h3>局外成長</h3><div class="meta-points">可用點數 ${meta.points}　最高層 ${meta.bestFloor || 0}　勝場 ${meta.wins || 0}</div>${items || "<p>尚未有可兌換項目。</p>"}`;
+  }
+
   function startRun() {
     stopClock();
-    state.cash = START_CASH;
+    hidePick();
+    const meta = getMeta();
+    state.startCash = startCashOf(meta);
+    state.cash = state.startCash;
     state.wave = 1;
     state.phase = "build";
     state.stocks = newStocks();
@@ -2404,12 +3039,23 @@
     state.waitBookLogged = false;
     state.lastWipeNote = null;
     state.nextWaveAt = 0;
+    state.floorsCleared = 0;
+    state.bossesCleared = [];
+    state.runBuffs = seedRunBuffsFromMeta(meta);
+    state.rotation = rollRotation(null, rotationSectorList(getUnlocks()), Math.random);
+    state.wealthContinued = false;
+    state.wealthOffered = false;
+    state.didAutoArena = false;
+    state.fatalDeath = false;
+    state.ticketTouchedAt = 0;
+    state.ticketPointer = false;
     closeDetail();
+    setPhoneTab("quotes");
     $("overlay-start").classList.remove("show");
     $("overlay-end").classList.remove("show");
     setIdleHeadline();
     setHeadline("", "build");
-    setLog("開局資金 $1,000。而家係無時限建倉：開市報價凍結，可以慢慢買好第一批。至少持有 1 股之後撳「確認開市」，行情先會開始行，然後第一浪出陣。");
+    setLog("開局資金 " + money(state.startCash) + "。而家係無時限建倉：開市報價凍結，可以慢慢買好第一批。至少持有 1 股之後撳「確認開市」，行情先會開始行，然後第一浪出陣。");
     refreshStartRules();
     renderAll();
     buildTape();
@@ -2418,6 +3064,7 @@
 
   function endRun(kind) {
     stopClock();
+    hidePick();
     state.phase = "end";
     state.runOver = true;
     state.concentrationActive = false;
@@ -2425,51 +3072,55 @@
     closeDetail();
     const card = $("end-card");
     const w = wealth();
+    const floors = state.floorsCleared || 0;
+    const bosses = (state.bossesCleared || []).slice();
+    const grant = grantRunMeta({ kind: kind, floorsCleared: floors, bossesCleared: bosses });
+    const notes = (grant.notes || []).map((n) => `<p class="unlock-note">${n}</p>`).join("");
     let kicker = "收市結算";
-    let title = "順利收市";
+    let title = "收市";
     let body = "";
-    let unlockNote = "";
-    if (kind === "goal") {
+    if (kind === "goal" || kind === "wealth") {
       kicker = "號外";
       title = "達標出陣";
-      body = `總資產達到 ${money(w)}，超過目標 ${money(GOAL)}。你嘅持倉怪獸喺 ${state.wave} 浪之內打出行情。`;
-      const grant = grantVictoryUnlock();
-      if (grant.first) {
-        unlockNote = `<p class="unlock-note">解鎖新板塊「保險」：下轉可買入${insurancePairText()}，仲有保險專屬頭條。</p>`;
-      } else {
-        unlockNote = `<p class="unlock-note">保險板塊仍然解鎖，下轉會繼續出現喺行情板上。</p>`;
-      }
+      body = `總資產 ${money(w)}，達到大目標 ${money(WEALTH_GOAL)}。今轉清到第 ${floors} 層。`;
       sfx.win();
     } else if (kind === "bust") {
       kicker = "停牌";
       title = "破產收市";
-      body = "現金同持倉都再買唔起下一手。沽空軍團暫時贏咗呢轉。";
+      body = "現金同持倉都再買唔起下一手。呢局完結，要重新掛牌。";
       sfx.lose();
-    } else if (kind === "close-up") {
-      title = "順利收市";
-      body = `八浪打完，總資產 ${money(w)}，仍然未到 ${money(GOAL)}，但比起開局 ${money(START_CASH)} 有進帳。`;
+    } else if (kind === "death") {
+      kicker = "陣亡";
+      title = "出陣失敗";
+      body = `有怪獸陣亡清倉，呢局即刻完結，剩低現金唔可以再重組。今轉清到第 ${floors} 層。`;
+      sfx.lose();
     } else {
-      title = "損手收市";
-      body = `八浪打完，總資產 ${money(w)}，低過開局 ${money(START_CASH)}。下轉可以試下分散，或者等行情再加倉。`;
+      title = "收市結算";
+      body = `今轉清到第 ${floors} 層，總資產 ${money(w)}。`;
     }
     const book = state.stocks
       .filter((s) => s.shares > 0)
       .map((s) => `${s.name} ${s.shares} 股（${money(s.price)}）`)
       .join(" · ") || "無持倉";
-    card.innerHTML = `
+    const bossTxt = bosses.length ? bosses.map((n) => "第 " + n + " 層").join("、") : "未通過 Boss";
+    if (card) {
+      card.innerHTML = `
       <div class="end-kicker">${kicker}</div>
       <h2>${title}</h2>
       <p>${body}</p>
-      ${unlockNote}
-      <div class="end-numbers">總資產 ${money(w)}　現金 ${money(state.cash)}</div>
+      ${notes}
+      <div class="end-numbers">層數 ${floors}　Boss ${bossTxt}<br>總資產 ${money(w)}　現金 ${money(state.cash)}</div>
       <p>最後持倉：${book}</p>
       <button type="button" class="btn-open" id="btn-again">
         <span class="btn-open-kicker">RELIST</span>
-        <span class="btn-open-label">再來一轉</span>
+        <span class="btn-open-label">重新掛牌</span>
       </button>`;
-    $("overlay-end").classList.add("show");
-    $("btn-again").addEventListener("click", restart, { once: true });
+      $("overlay-end").classList.add("show");
+      const again = $("btn-again");
+      if (again) again.addEventListener("click", restart, { once: true });
+    }
     refreshStartRules();
+    renderMetaShop();
   }
 
   function restart() {
@@ -2489,8 +3140,8 @@
     bits.push("<span>行情持續跳價，沽空自動分浪出陣</span>");
     bits.push("<span>下單票買賣 · 持倉睇成本同盈虧</span>");
     bits.push("<span>連續兩浪同一持倉會有過度集中懲罰</span>");
-    bits.push("<span>撳名稱睇檔案、價格線同 K 線</span>");
-    bits.push("<span>目標總資產 $3,500 · 共 8 浪</span>");
+    bits.push("<span>撳圖示睇檔案，撳名稱或價錢揀嚟買賣</span>");
+    bits.push("<span>大目標 " + money(WEALTH_GOAL) + " · 向上爬層</span>");
     const html = bits.join("") + bits.join("");
     const tape = $("tape");
     if (tape) tape.innerHTML = html;
@@ -2498,11 +3149,13 @@
 
   function refreshStartRules() {
     const el = $("rule-unlock");
-    if (!el) return;
-    const unlocked = typeof getUnlocks === "function" && getUnlocks().insurance;
-    el.textContent = unlocked
-      ? "已解鎖保險板塊：" + insurancePairText() + " 會出現喺行情板上。"
-      : "首次達標會解鎖新板塊「保險」，下轉可以再玩。";
+    if (el) {
+      const unlocked = typeof getUnlocks === "function" && getUnlocks().insurance;
+      el.textContent = unlocked
+        ? "已解鎖保險板塊：" + insurancePairText() + " 會出現喺行情板上。"
+        : "達標或打到第 10 層會解鎖新板塊「保險」，下轉可以再玩。";
+    }
+    renderMetaShop();
   }
 
   /* ===== Events ===== */
@@ -2535,9 +3188,9 @@
           openDetail(file.dataset.file);
           return;
         }
-        const pick = e.target.closest("[data-quote-select], [data-quote]");
+        const pick = e.target.closest("[data-quote-select]");
         if (pick) {
-          const id = pick.dataset.quoteSelect || pick.dataset.quote;
+          const id = pick.dataset.quoteSelect;
           if (id) selectTicket(id);
         }
       });
@@ -2552,6 +3205,7 @@
         const btn = target && target.closest && target.closest("[data-ticket]");
         if (!btn || btn.disabled) return false;
         const act = btn.dataset.ticket;
+        touchTicket();
         if (act === "qty-minus") setTicketQty(ticketQtyValue() - 1);
         else if (act === "qty-plus") setTicketQty(ticketQtyValue() + 1);
         else if (act === "qty-max") {
@@ -2568,23 +3222,29 @@
         if (!ticketAct(e.target)) return;
         const btn = e.target.closest("[data-ticket]");
         if (!btn || (btn.dataset.ticket !== "qty-minus" && btn.dataset.ticket !== "qty-plus")) return;
+        state.ticketPointer = true;
+        touchTicket();
         stop();
         timer = setTimeout(() => {
           interval = setInterval(() => ticketAct(btn), 90);
         }, 400);
       });
-      window.addEventListener("pointerup", stop);
-      window.addEventListener("pointercancel", stop);
+      const stopHold = () => { state.ticketPointer = false; touchTicket(); stop(); };
+      window.addEventListener("pointerup", stopHold);
+      window.addEventListener("pointercancel", stopHold);
     }
 
     const qtyInput = $("ticket-qty");
     if (qtyInput) {
+      qtyInput.addEventListener("focus", touchTicket);
+      qtyInput.addEventListener("keydown", touchTicket);
       qtyInput.addEventListener("input", () => {
+        touchTicket();
         const n = parseInt(qtyInput.value, 10);
         if (Number.isFinite(n) && n >= 1) state.ticketQty = n;
         updateTicketLive();
       });
-      qtyInput.addEventListener("change", () => setTicketQty(qtyInput.value));
+      qtyInput.addEventListener("change", () => { touchTicket(); setTicketQty(qtyInput.value); });
     }
 
     const arena = document.querySelector(".arena");
@@ -2607,12 +3267,44 @@
       }
     });
 
+    const tabs = $("phone-tabs");
+    if (tabs) {
+      tabs.addEventListener("click", (e) => {
+        const btn = e.target.closest("[data-tab]");
+        if (btn) setPhoneTab(btn.getAttribute("data-tab"));
+      });
+    }
+    const banner = $("fight-banner");
+    if (banner) banner.addEventListener("click", () => setPhoneTab("arena"));
+    const nextBtn = $("btn-next-wave");
+    if (nextBtn) {
+      nextBtn.addEventListener("click", () => {
+        ctx();
+        tryStartWave({ force: true });
+      });
+    }
+    const cashout = $("btn-cashout");
+    if (cashout) cashout.addEventListener("click", () => {
+      if (state.wealthContinued && state.phase !== "end" && state.phase !== "start") endRun("wealth");
+    });
+    const shop = $("meta-shop");
+    if (shop) {
+      shop.addEventListener("click", (e) => {
+        const btn = e.target.closest("[data-meta]");
+        if (!btn || btn.disabled) return;
+        const res = buyMetaUnlock(btn.getAttribute("data-meta"));
+        if (res.ok) renderMetaShop();
+      });
+    }
+    setPhoneTab(state.phoneTab || "quotes");
+
     buildTape();
     state.stocks = newStocks();
     renderMast();
     renderBoard();
     renderIdleArmy();
     updateAccountBar();
+    refreshStartRules();
   }
 
   const TickerBeastsLogic = {
@@ -2621,7 +3313,7 @@
     ENEMY_BUDGET,
     START_CASH,
     GOAL,
-    MAX_WAVES,
+    WEALTH_GOAL,
     CONCENTRATION_CUT,
     PRE_CANDLES,
     PRICE_TICK_MS,
@@ -2671,6 +3363,32 @@
     applyIncomingDamage,
     livingCombatants,
     supportLog,
+    META_KEY,
+    META_SHOP,
+    RUN_BUFF_POOL,
+    SYNERGY_DEFS,
+    getMeta,
+    setMeta,
+    grantRunMeta,
+    startCashOf,
+    buyMetaUnlock,
+    seedRunBuffsFromMeta,
+    bossKind,
+    isBossWave,
+    enemyBudgetFor,
+    rollRotation,
+    sectorModifier,
+    rotationText,
+    activeSynergies,
+    synergyEffects,
+    pickBossRewards,
+    applyRunBuff,
+    runOutcomeAfterDeath,
+    shouldOfferWealthWin,
+    BATTLE_OPEN_MS,
+    BATTLE_STRIKE_MS,
+    BATTLE_CRIT_MS,
+    BATTLE_HURT_MS,
   };
 
   if (typeof module !== "undefined" && module.exports) {

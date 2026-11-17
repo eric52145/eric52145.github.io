@@ -16,7 +16,7 @@
 </head>
 <body>
   <div id="shake-root">
-    <div id="app">
+    <div id="app" data-tab="quotes">
       <header class="masthead">
         <div class="mast-left">
           <div class="edition">夜報 · 怪獸行情</div>
@@ -25,20 +25,25 @@
         </div>
         <div class="mast-stats" id="mast-stats">
           <div class="stat">
-            <span class="stat-label">浪數</span>
-            <span class="stat-value" id="stat-wave">1 / 8</span>
+            <span class="stat-label">層數</span>
+            <span class="stat-value" id="stat-wave">第 1 層</span>
           </div>
           <div class="stat">
-            <span class="stat-label">目標</span>
-            <span class="stat-value" id="stat-goal">$3,500</span>
+            <span class="stat-label">大目標</span>
+            <span class="stat-value" id="stat-goal">$8,000</span>
           </div>
         </div>
+        <button type="button" class="btn-cashout" id="btn-cashout" hidden>宣告勝出</button>
         <button type="button" class="icon-btn" id="btn-mute" title="靜音" aria-label="靜音">♪</button>
       </header>
 
       <div class="tape-wrap" aria-hidden="true">
         <div class="tape" id="tape"></div>
       </div>
+
+      <button type="button" class="fight-banner" id="fight-banner" hidden>
+        <span id="btn-to-arena">第 1 浪進行中 · 去戰場</span>
+      </button>
 
       <main class="stage">
         <section class="market" aria-label="市場看板">
@@ -60,6 +65,7 @@
               <span class="acct-value" id="acct-total">$0</span>
             </div>
           </div>
+          <div class="rotation-line" id="rotation-line" hidden></div>
           <div class="book-scroll">
             <div class="positions-block">
               <div class="block-head">
@@ -71,14 +77,14 @@
             <div class="quotes-block">
               <div class="block-head">
                 <h2>行情</h2>
-                <div class="block-sub">撳名稱睇檔案 · 撳報價放入訂單</div>
+                <div class="block-sub">撳圖示睇檔案，撳名稱或價錢揀嚟買賣</div>
               </div>
               <div class="board" id="board"></div>
             </div>
           </div>
           <div class="market-foot">
             <div class="ticket" id="ticket">
-              <div class="ticket-empty" id="ticket-empty">喺行情表或持倉揀一隻怪下單</div>
+              <div class="ticket-empty" id="ticket-empty">撳圖示睇檔案，撳名稱或價錢揀嚟買賣</div>
               <div class="ticket-body" id="ticket-body" hidden>
                 <div class="ticket-id">
                   <div class="ticket-name" id="ticket-name"></div>
@@ -111,19 +117,24 @@
               <div class="power-box">
                 <div class="power-label">組合戰力</div>
                 <div class="power-value" id="team-power">0</div>
-                <div class="power-hint" id="team-hint">行情會自己行。揀一隻怪下單，或撳名稱睇 K 線。</div>
+                <div class="power-hint" id="team-hint">撳圖示睇檔案，撳名稱或價錢揀嚟買賣。</div>
                 <div class="conc-warn" id="conc-warn" hidden>連續兩浪同一持倉，下一浪會有過度集中懲罰</div>
               </div>
               <div class="wave-status" id="wave-status">
                 <span class="btn-open-kicker" id="status-kicker">LIVE</span>
                 <span class="status-label" id="status-label">等候開局</span>
                 <span class="status-sub" id="status-sub"></span>
+                <div class="gap-actions" id="gap-actions" hidden>
+                  <div class="gap-count" id="gap-count">25</div>
+                  <button type="button" class="btn-next-wave" id="btn-next-wave">下一浪</button>
+                </div>
               </div>
             </div>
           </div>
         </section>
 
         <section class="arena" aria-label="戰場">
+          <div class="synergy-line" id="synergy-line" hidden></div>
           <div class="headline-slot" id="headline-slot">
             <div class="headline-idle" id="headline-idle">建倉中 · 開市報價凍結</div>
           </div>
@@ -141,6 +152,12 @@
           <div class="arena-log" id="arena-log">先建倉，撳「確認開市」之後行情先會開始行。</div>
         </section>
       </main>
+
+      <nav class="phone-tabs" id="phone-tabs" aria-label="手機分頁">
+        <button type="button" class="phone-tab on" data-tab="quotes" aria-selected="true">行情</button>
+        <button type="button" class="phone-tab" data-tab="book" aria-selected="false">持倉</button>
+        <button type="button" class="phone-tab" data-tab="arena" aria-selected="false">戰場</button>
+      </nav>
     </div>
 
     <div class="float-layer" id="float-layer"></div>
@@ -148,20 +165,22 @@
 
   <div class="overlay show" id="overlay-start">
     <div class="paper-card start-card">
-      <div class="start-kicker">夜報號外</div>
+      <div class="edition">夜報 · 怪獸行情</div>
       <h1>行情出陣</h1>
-      <p class="start-sub">TICKER BEASTS</p>
+      <p class="lede">買入上市怪獸，等行情自己行，再打沽空。場上會自動交戰，但你永遠有足夠時間先想清楚先落單。</p>
       <ul class="rules">
-        <li>你買入嘅股票，就係你嘅怪獸。同一個板塊有兩隻性格唔同嘅虛構怪獸，一隻較急、一隻較穩。每個板塊對應一種職業（法師、補給、狂戰士、守城、騎士、牧師、聖騎士、守護等）。</li>
-        <li>撳「開始掛牌」之後進入無時限建倉：開市報價凍結，唔會跳價、唔會出推動行情嘅頭條，亦唔會出浪。慢慢買好第一批，至少持有 1 股之後撳「確認開市」，行情先會開始行，然後第一浪出陣。只買入唔會自動開市。</li>
-        <li>確認開市之後，大約每 5 秒跳一次價，隔一陣會有頭條。沽空會分浪自動出陣；打完有短空隙可以換倉，呢段期間行情會繼續行。戰鬥途中都可以用下單票買賣。</li>
-        <li>持倉表會顯示股數、成本、現價、市值同浮動盈虧。帳戶列永遠睇到現金、總資產、今日盈虧同總盈虧。</li>
-        <li>撳名稱或肖像可以睇檔案、職業同互動 K 線（有價格線）；撳報價就放入下單票。</li>
-        <li>戰力 ≈ 持股 × 現價，再按職業表現：例如醫療牧師會為場上未倒下嘅隊友回血，聖騎士較坦、會抵擋同加薄護盾。升就變強，跌就變弱。連續兩浪持有同一批股票，下一浪會有「過度集中」懲罰。</li>
-        <li>怪獸陣亡會即時清倉，唔會套現，只確認該股盈虧。該股之後仍然可以再買，但唔會喺當浪即刻復活。</li>
-        <li>建議用大部分資金買入 2 至 3 隻。八浪之內，總資產達到 $3,500 即勝；破產則敗。</li>
-        <li id="rule-unlock">首次達標會解鎖新板塊「保險」，下轉可以再玩。</li>
+        <li>撳「開始掛牌」之後進入無時限建倉：開市報價凍結，唔會跳價、唔會出頭條，亦唔會出浪。至少持有 1 股之後撳「確認開市」，行情先會開始行，然後第一浪出陣。只買入唔會自動開市。</li>
+        <li>撳圖示睇檔案，撳名稱或價錢揀嚟買賣。下單票用框住嘅 −／股數／＋／最多，再撳買入或賣出。戰鬥途中都可以調倉。</li>
+        <li>確認開市之後，大約每 5 秒跳一次價，隔一陣會有頭條。打完一浪會有約 25 秒空隙換倉，行情呢段時間會繼續行，並顯示倒數。準備好可以撳「下一浪」提早開打；改緊下單數量時，倒數完都唔會即刻出浪。</li>
+        <li>戰鬥節奏較慢，隊友受重創會短暫慢下來，等你有時間決定加倉定減倉。唔會一打完就即刻出下一浪。</li>
+        <li>板塊會輪動：有主場同受壓板塊，持續一兩浪，對戰力有加減。持倉職業最多同時觸發兩組連攜。</li>
+        <li>層數向上爬，無八浪上限。第 5、15、25… 層係小 Boss，第 10、20、30… 層係大 Boss。打贏 Boss 之後三選一祝福（唔一定係現金或股票）。</li>
+        <li>大目標係總資產 $8,000：賺夠可以勝出，亦可以繼續向下打。陣亡或破產即完局，要重新掛牌，剩低現金唔可以再重組。</li>
+        <li>戰力 ≈ 持股 × 現價，再按職業、輪動同連攜調整。醫療牧師會為未倒下隊友回血，聖騎士較坦並可加薄護盾。連續兩浪同一持倉會有「過度集中」懲罰。</li>
+        <li>怪獸陣亡會即時清倉，唔會套現，只確認該股盈虧，並且即刻完局。</li>
+        <li id="rule-unlock">達標或打到第 10 層會解鎖新板塊「保險」，下轉可以再玩。</li>
       </ul>
+      <div class="meta-shop" id="meta-shop"></div>
       <button type="button" class="btn-open start-go" id="btn-start">
         <span class="btn-open-kicker">NEW LISTING</span>
         <span class="btn-open-label">開始掛牌</span>
@@ -171,6 +190,10 @@
 
   <div class="overlay" id="overlay-end">
     <div class="paper-card end-card" id="end-card"></div>
+  </div>
+
+  <div class="overlay" id="overlay-pick">
+    <div class="paper-card pick-card" id="pick-card"></div>
   </div>
 
   <div class="overlay" id="overlay-detail">
