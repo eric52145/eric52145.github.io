@@ -141,15 +141,23 @@
           <div class="pit" id="pit">
             <div class="side player-side">
               <div class="side-label">你的持倉</div>
-              <div class="units" id="player-units"></div>
+              <div class="form-wrap">
+                <div class="form-cols" aria-hidden="true"><span>後排</span><span></span><span class="front">前排</span></div>
+                <div class="units form-grid" id="player-units"></div>
+              </div>
+              <div class="bench" id="player-bench" hidden></div>
             </div>
             <div class="vs-mark" id="vs-mark">VS</div>
             <div class="side enemy-side">
-              <div class="side-label">沽空軍團</div>
-              <div class="units" id="enemy-units"></div>
+              <div class="side-label">沽空軍團 <span id="enemy-wait-note"></span></div>
+              <div class="form-wrap">
+                <div class="form-cols" aria-hidden="true"><span class="front">前排</span><span></span><span>後排</span></div>
+                <div class="units form-grid" id="enemy-units"></div>
+              </div>
             </div>
           </div>
-          <div class="arena-log" id="arena-log">先建倉，撳「確認開市」之後行情先會開始行。</div>
+          <p class="form-hint" id="form-hint">建倉同空隙可以排陣，前排（靠敵）先出手，多數放坦。</p>
+          <div class="arena-log" id="arena-log">先建倉，撳「確認開市」之後行情先會開始行。建倉同空隙可以排陣，前排（靠敵）先出手，多數放坦。</div>
         </section>
       </main>
 
@@ -178,6 +186,7 @@
         <li>大目標係總資產 $8,000：賺夠可以勝出，亦可以繼續向下打。全軍覆沒或破產即完局，要重新掛牌，剩低現金唔可以再重組。</li>
         <li>戰力 ≈ 持股 × 現價，再按職業、輪動同連攜調整。醫療牧師會為未倒下隊友回血，聖騎士較坦並可加薄護盾。連續兩浪同一持倉會有「過度集中」懲罰。</li>
         <li>怪獸陣亡會即時清倉，唔會套現，只確認該股盈虧；其餘怪獸繼續出陣。全軍覆沒或破產先完局。</li>
+        <li>建倉同空隙可以排陣，前排（靠敵）先出手，多數放坦。每邊 4 行 × 3 列；多出嘅持倉會去後備席，換上陣先出戰。交戰途中唔可以改陣。</li>
         <li id="rule-unlock">達標或打到第 10 層會解鎖新板塊「保險」，下轉可以再玩。</li>
       </ul>
       <div class="meta-shop" id="meta-shop"></div>
