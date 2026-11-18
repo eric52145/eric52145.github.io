@@ -766,24 +766,11 @@ button, input { font-family: inherit; }
   white-space: nowrap;
   text-shadow: 0 1px 2px rgba(0,0,0,0.85);
 }
-.form-slot .unit-stats {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  justify-items: center;
-  column-gap: 2px;
-  font-size: 8px;
-  line-height: 1.1;
-  margin-top: 1px;
-  max-width: 100%;
-  white-space: nowrap;
-}
-.form-slot .unit-stats .st-hp,
-.form-slot .unit-stats .st-sh {
-  grid-column: 1 / -1;
-}
 .form-slot .unit-job,
 .form-slot .unit-hp,
-.form-slot .unit-sub {
+.form-slot .unit-sub,
+.form-slot .unit-stats,
+.bench-unit .unit-stats {
   display: none;
 }
 .unit.enemy .unit-job { color: #ffc9c9; }
@@ -1651,8 +1638,7 @@ button, .trade button, .btn-open, .icon-btn { touch-action: manipulation; }
   .form-slot .unit .portrait { width: clamp(48px, 8vh, 72px); height: clamp(48px, 8vh, 72px); box-shadow: none; border: 0; }
   .form-slot .hp-bar { max-width: 52px; height: 4px; }
   .form-slot .unit-name { font-size: 10px; letter-spacing: 0; }
-  .form-slot .unit-stats { font-size: 8px; }
-  .form-slot .unit-job, .form-slot .unit-hp, .form-slot .unit-sub { display: none; }
+  .form-slot .unit-job, .form-slot .unit-hp, .form-slot .unit-sub, .form-slot .unit-stats { display: none; }
   .form-cols { font-size: 9px; letter-spacing: 0.1em; }
   .side-label { font-size: 11px; letter-spacing: 0.12em; }
   .vs-mark { font-size: 14px; padding: 0; align-self: center; }
@@ -2149,15 +2135,10 @@ button, .trade button, .btn-open, .icon-btn { touch-action: manipulation; }
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  #app[data-tab="arena"] .form-slot .unit-stats {
-    font-size: 8px;
-    letter-spacing: 0;
-    max-width: 100%;
-    overflow: hidden;
-  }
   #app[data-tab="arena"] .form-slot .unit-job,
   #app[data-tab="arena"] .form-slot .unit-hp,
-  #app[data-tab="arena"] .form-slot .unit-sub {
+  #app[data-tab="arena"] .form-slot .unit-sub,
+  #app[data-tab="arena"] .form-slot .unit-stats {
     display: none;
   }
   #app[data-tab="arena"] .form-slot .hp-bar {
