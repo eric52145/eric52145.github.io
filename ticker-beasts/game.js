@@ -2828,12 +2828,15 @@
       const target = el && (el.querySelector(".portrait") || el);
       if (e.type === "heal") {
         playSupportFx(el, "heal");
+        bumpAnim(el, "cast");
         flyFromEl(target, (jobLabel(e.job) || "牧師") + " 回血 +" + e.amount, "heal");
       } else if (e.type === "supply") {
         playSupportFx(el, "heal");
+        bumpAnim(el, "cast");
         flyFromEl(target, (jobLabel(e.job) || "補師") + " 補給 +" + e.amount, "heal");
       } else if (e.type === "shield") {
         playSupportFx(el, "shield");
+        bumpAnim(el, "cast");
         flyFromEl(target, (jobLabel(e.job) || "騎士") + " 護盾 +" + e.amount, "shield");
       }
     }
@@ -2995,6 +2998,49 @@
     spawnPitFx("fx-impact fx-" + (kind === "shield" ? "bash" : "heal") + "-hit", pt.x, pt.y);
   }
 
+
+  function bumpAnim(el, cls) {
+    if (!el || !cls) return;
+    el.classList.remove("dash", "cast", "hit", "lunge-right", "lunge-left");
+    void el.offsetWidth;
+    el.classList.add(cls);
+    const onEnd = (ev) => {
+      if (ev.target !== el) return;
+      el.classList.remove(cls);
+      el.removeEventListener("animationend", onEnd);
+    };
+    el.addEventListener("animationend", onEnd);
+  }
+
+  function playUnitMotion(atk, tgt) {
+    const aEl = atk && $("unit-" + atk.id);
+    const tEl = tgt && $("unit-" + tgt.id);
+    if (!aEl || !tEl) return;
+    const ar = aEl.getBoundingClientRect();
+    const tr = tEl.getBoundingClientRect();
+    const dx = (tr.left + tr.width / 2) - (ar.left + ar.width / 2);
+    const dy = (tr.top + tr.height / 2) - (ar.top + ar.height / 2);
+    const dist = Math.hypot(dx, dy) || 1;
+    const job = atk.job || "";
+    const melee = job === "刺客" || job === "狂戰士" || job === "守城" || job === "聖騎士" || job === "守護" || job === "騎士";
+    const approach = melee ? 0.7 : 0.26;
+    const cap = melee ? 200 : 42;
+    let mx = dx * approach;
+    let my = dy * approach;
+    const md = Math.hypot(mx, my);
+    if (md > cap) {
+      mx *= cap / md;
+      my *= cap / md;
+    }
+    aEl.style.setProperty("--dash-x", mx + "px");
+    aEl.style.setProperty("--dash-y", my + "px");
+    aEl.style.setProperty("--dash-rot", (atk.side === "player" ? -8 : 8) + "deg");
+    bumpAnim(aEl, "dash");
+    const kb = melee ? 16 : 10;
+    tEl.style.setProperty("--kb-x", (dx / dist) * kb + "px");
+    tEl.style.setProperty("--kb-y", (dy / dist) * (kb * 0.4) + "px");
+  }
+
   function strikeTarget(atk, tgt, rawDmg, crit) {
     const step = atk.side === "enemy" ? bossTelegraphStep(atk) : { mul: 1, note: "", heavy: false };
     const dmgIn = Math.round((rawDmg || 0) * (step.mul || 1));
@@ -3003,16 +3049,11 @@
     const result = applyIncomingDamage(tgt, dmgIn, allies, state.stocks, { heavy: !!step.heavy });
     const aEl = $("unit-" + atk.id);
     const tEl = $("unit-" + tgt.id);
-    if (aEl) {
-      aEl.classList.remove("lunge-right", "lunge-left");
-      void aEl.offsetWidth;
-      aEl.classList.add(atk.side === "player" ? "lunge-right" : "lunge-left");
-    }
+    if (aEl && tEl) playUnitMotion(atk, tgt);
+    else if (aEl) bumpAnim(aEl, "dash");
     playStrikeFx(atk, tgt);
     if (tEl) {
-      tEl.classList.remove("hit");
-      void tEl.offsetWidth;
-      tEl.classList.add("hit");
+      bumpAnim(tEl, "hit");
       const port = tEl.querySelector(".portrait") || tEl;
       if (result.blocked > 0) flyFromEl(port, (jobLabel(tgt.job) || "聖騎士") + " 抵擋", "shield");
       else flyFromEl(port, (crit ? "暴擊 " : "") + result.dmg, crit ? "crit" : "dmg");
