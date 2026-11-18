@@ -30,9 +30,9 @@
     { id: "brothbeast", name: "「大」魂", title: "「大」眾聖廚・樂魂", en: "Joyhearth", ticker: "JYHT", sector: "飲食", temperament: "穩陣", job: "補師", role: "輸出穩定，每回合為隊友提供少量補給並消除疲勞。", price: 120, vol: 0.72, speed: 1, move: "鐵板焗飯", blurb: "背住巨型鐵板同焗爐，轉眼派出「鐵板焗飯」同「紅豆冰砂」，幫全隊回復並消除疲勞。職業係全能補師，補給穩定但唔及牧師回血。" },
     { id: "nectartide", name: "「麥」堡", title: "「麥」香連擊士・燈堡", en: "Lampfort", ticker: "LPFT", sector: "飲食", temperament: "跟風", job: "狂戰士", role: "高速連擊狂戰士，升勢時打得更兇。", price: 94, vol: 1.42, speed: 3, move: "窗燈連擊", blurb: "擁有極速出招嘅被動，攻擊一浪接一浪，大絕召喚無數「窗燈套餐」同「層堡」壓垮對手。職業係高速連擊狂戰士。" },
     { id: "flarewhale", name: "「特」雷", title: "「特」攻閃霆・驟雷號", en: "Surgebolt", ticker: "SGBT", sector: "能源", temperament: "衝動", job: "刺客", role: "高機動刺客，攻速快、單體殺傷銳利。", price: 136, vol: 1.35, speed: 3, move: "霆弧穿陣", blurb: "駕駛自走機甲以極速穿梭戰場，釋放高壓電弧並召出機械扈從作戰。職業係高機動刺客，身板較薄但出手銳利。" },
-    { id: "hubspire", name: "「中」霸", title: "「中」樞雷神・電霸", en: "Voltward", ticker: "VLWD", sector: "能源", temperament: "沉實", job: "守城", role: "坦克：生命高、擋傷，並為全隊提供能量護盾，可降下落雷。", price: 112, vol: 0.7, speed: 1, move: "全城落雷", blurb: "身上纏繞極穩定嘅高壓電網，為全隊提供源源不絕嘅能量護盾；一旦發怒會降下覆蓋全城嘅落雷。職業係坦克，身板厚、負責擋傷。" },
+    { id: "hubspire", name: "「中」霸", title: "「中」樞雷神・電霸", en: "Voltward", ticker: "VLWD", sector: "能源", temperament: "沉實", job: "守城", role: "盾戰士：生命高、擋傷，並為全隊提供能量護盾，可降下落雷。", price: 112, vol: 0.7, speed: 1, move: "全城落雷", blurb: "身上纏繞極穩定嘅高壓電網，為全隊提供源源不絕嘅能量護盾；一旦發怒會降下覆蓋全城嘅落雷。職業係盾戰士，身板厚、負責擋傷。" },
     { id: "cloudao", name: "「長」廈", title: "「長」埠操盤・影廈", en: "Shadehold", ticker: "SDHD", sector: "地產", temperament: "保守", job: "刺客", role: "策略型刺客，先佈局再於關鍵時刻一擊收割。", price: 154, vol: 0.8, speed: 2, move: "暗線收割", blurb: "擅長佈下時間陷阱，表面上按兵不動，實際上早已鎖死戰場地脈，關鍵時刻發動「全場收割」。職業係策略型刺客。" },
-    { id: "sandspire", name: "「新」石", title: "「新」盤門壁壘・基石巨像", en: "Keycoloss", ticker: "KYCL", sector: "地產", temperament: "厚重", job: "守城", role: "坦克：防禦極高，可召喚巨塔砸向敵人。", price: 91, vol: 0.82, speed: 1, move: "拔地巨塔", blurb: "能從地底召喚「盤門劍塔」同「基石巨樓」砸向敵人，防禦力極高，係團隊最堅實嘅後盾。職業係坦克，身板極厚、負責擋傷。" },
+    { id: "sandspire", name: "「新」石", title: "「新」盤門壁壘・基石巨像", en: "Keycoloss", ticker: "KYCL", sector: "地產", temperament: "厚重", job: "守城", role: "盾戰士：防禦極高，可召喚巨塔砸向敵人。", price: 91, vol: 0.82, speed: 1, move: "拔地巨塔", blurb: "能從地底召喚「盤門劍塔」同「基石巨樓」砸向敵人，防禦力極高，係團隊最堅實嘅後盾。職業係盾戰士，身板極厚、負責擋傷。" },
     { id: "goldhorn", name: "「匯」獅", title: "「匯」洋金庫門・豐獅", en: "Tidevault", ticker: "TDVT", sector: "銀行", temperament: "審慎", job: "掌控", role: "高爆發掌控，以大範圍金幣轟擊壓制全場。", price: 100, vol: 0.95, speed: 2, move: "金庫嵐雨", blurb: "鎮守洋金庫門嘅金庫巨獸，擅長用「洋潮風暴」同「金幣暴雨」進行大範圍轟擊。職業係經濟掌控者。" },
     { id: "leverhorn", name: "「恒」門", title: "「恒」市招潮・生門", en: "Tidegate", ticker: "TDGT", sector: "銀行", temperament: "進取", job: "控制", role: "升勢或高息時打得更重。", price: 82, vol: 1.33, speed: 3, move: "旺潮招存", blurb: "以高息同旺市氣勢招來資金潮水，存潮一湧就壓制對手節奏。職業係控制，勢頭向上時打得更重。" },
     { id: "grovehall", name: "「強」庭", title: "「強」護施劑・脈庭", en: "Pulsehall", ticker: "PLHL", sector: "醫療", temperament: "穩守", job: "牧師", role: "每回合為未倒下的隊友回血。", price: 118, vol: 0.76, speed: 1, move: "雙劑護脈", blurb: "穩守嘅雙劑施術者，以「強」庭藥劑為未倒下嘅隊友續力回血。職業係牧師，持倉期間會為場上未倒下嘅隊友回血。" },
@@ -325,7 +325,7 @@
   const GRID_SLOTS = GRID_ROWS * GRID_COLS;
   const FRONT_JOBS = ["守城", "坦克", "聖騎士", "騎士", "守護", "結界師"];
 
-  const JOB_LABELS = { 守城: "坦克" };
+  const JOB_LABELS = { 守城: "盾戰士", 坦克: "盾戰士" };
   function jobLabel(job) {
     return JOB_LABELS[job] || job || "";
   }
@@ -678,8 +678,8 @@
   const SYNERGY_DEFS = [
     { id: "healpal", jobs: ["牧師", "聖騎士"], title: "聖愈連攜", line: "牧師＋聖騎士：額外隊盾" },
     { id: "techward", jobs: ["法師", "結界師"], title: "科技領域", line: "法師＋結界師：爆發加防護" },
-    { id: "fortctrl", jobs: ["守城", "掌控"], title: "基建更坦", line: "坦克＋掌控：全隊更坦" },
-    { id: "dualfort", jobs: ["守城"], count: 2, title: "雙坦合壁", line: "兩名坦克：全隊更坦" },
+    { id: "fortctrl", jobs: ["守城", "掌控"], title: "基建更坦", line: "盾戰士＋掌控：全隊更坦" },
+    { id: "dualfort", jobs: ["守城"], count: 2, title: "雙坦合壁", line: "兩名盾戰士：全隊更坦" },
     { id: "feastfury", jobs: ["補師", "狂戰士"], title: "民生連攜", line: "補師＋狂戰士：補給與追擊" },
     { id: "ambush", jobs: ["刺客", "掌控"], title: "突襲連攜", line: "刺客＋掌控：爆發突襲" },
     { id: "dualassassin", jobs: ["刺客"], count: 2, title: "雙刺齊出", line: "兩名刺客：突襲加傷" },
@@ -1902,6 +1902,42 @@
     return "HP " + Math.max(0, Math.round(u.hp || 0)) + "/" + Math.max(1, Math.round(u.maxHp || 1)) + (sh ? " 盾 " + Math.round(sh) : "");
   }
 
+  function defValue(armor) {
+    return Math.round(Math.max(0, Number(armor) || 0) * 100);
+  }
+
+  function unitStatsText(u) {
+    if (!u) return "";
+    if (u.wiped) return "陣亡清倉";
+    const atk = Math.max(0, Math.round(u.atk || 0));
+    const def = defValue(u.armor);
+    const hp = Math.max(0, Math.round(u.hp || 0));
+    const max = Math.max(1, Math.round(u.maxHp || 1));
+    const sh = u.shield ? " 盾" + Math.round(u.shield) : "";
+    return "攻" + atk + " 防" + def + " 血" + hp + "/" + max + sh;
+  }
+
+  function unitStatsHTML(u) {
+    if (!u) return "";
+    if (u.wiped) return "陣亡清倉";
+    const atk = Math.max(0, Math.round(u.atk || 0));
+    const def = defValue(u.armor);
+    const hp = Math.max(0, Math.round(u.hp || 0));
+    const max = Math.max(1, Math.round(u.maxHp || 1));
+    const sh = u.shield ? '<span class="st-sh">盾' + Math.round(u.shield) + "</span>" : "";
+    return '<span class="st-atk">攻' + atk + '</span><span class="st-def">防' + def + '</span><span class="st-hp">' + hp + "/" + max + "</span>" + sh;
+  }
+
+  function stockStatView(s) {
+    const fightU = state.fight && state.fight.players ? state.fight.players.find((u) => u.stockId === s.id) : null;
+    if (fightU) {
+      return { atk: Math.max(0, Math.round(fightU.atk || 0)), def: defValue(fightU.armor), hp: Math.max(0, Math.round(fightU.hp || 0)), maxHp: Math.max(1, Math.round(fightU.maxHp || 1)), shield: fightU.shield || 0 };
+    }
+    const p = s.shares ? powerOf(s) : Math.max(0, Math.round(Number(s.price) || 0));
+    const c = combatProfile(s, p);
+    return { atk: c.atk, def: defValue(c.armor), hp: c.maxHp, maxHp: c.maxHp, shield: 0 };
+  }
+
   function renderIdleArmy() {
     syncPlayerFormation();
     const arranging = arrangeAllowed();
@@ -1988,7 +2024,7 @@
     const el = $("form-hint");
     if (!el) return;
     if (state.phase === "battle") el.textContent = "交戰中，陣型已鎖定。前排（靠敵）先出手。";
-    else el.textContent = "建倉同空隙可以排陣，前排（靠敵）先出手，多數放坦克。";
+    else el.textContent = "建倉同空隙可以排陣，前排（靠敵）先出手，多數放盾戰士。";
     const enemyLab = $("enemy-wait-note");
     if (enemyLab) {
       if (state.phase === "build") enemyLab.textContent = "等候開市";
@@ -2071,6 +2107,7 @@
       <div class="unit-sprite">${portrait(u.portrait)}</div>
       <div class="unit-name">${u.name}</div>
       <div class="unit-job">${jobLabel(u.job)}</div>
+      <div class="unit-stats">${unitStatsHTML(u)}</div>
       <div class="unit-sub unit-hp">${hpBit}</div>
       <div class="hp-bar"><div class="hp-fill" style="width:${hpPct}%"></div><div class="shield-fill" style="width:${shPct}%"></div></div>
     </div>`;
@@ -2086,7 +2123,7 @@
     const laneLabel = lane === 0 ? "前排" : lane === 1 ? "中排" : "後排";
     const cls = ["form-slot", unit ? "filled" : "empty", picked ? "picked" : "", arranging ? "open" : "", lane === 0 ? "front-slot" : ""].filter(Boolean).join(" ");
     const aria = arranging ? (unit ? ("調動 " + unit.name) : ("空位 " + laneLabel)) : (unit ? unit.name : laneLabel + "空位");
-    return `<div class="${cls}" data-side="${side}" data-slot="${index}" data-row="${row}" data-col="${col}" data-lane="${lane}"${arranging ? ` role="button" tabindex="0" aria-label="${aria}"` : ""}>${unit ? unitHTML(unit, o.spawn, o) : `<span class="slot-ghost">${lane === 0 ? "前" : ""}</span>`}</div>`;
+    return `<div class="${cls}" data-side="${side}" data-slot="${index}" data-row="${row}" data-col="${col}" data-lane="${lane}"${arranging ? ` role="button" tabindex="0" aria-label="${aria}"` : ""}>${unit ? unitHTML(unit, o.spawn, o) : `<span class="slot-ghost"></span>`}</div>`;
   }
 
   function bindFormationUi() {
@@ -2438,6 +2475,7 @@
     const chgClass = changeClass(s.change);
     const chgTxt = chgText(s);
     const pow = powerOf(s);
+    const stats = stockStatView(s);
     const history = chartHistory(s);
     const prev = history.length >= 2 ? history[history.length - 2].c : s.prevPrice;
     const hi = state.hoverIndex == null ? (history.length ? history.length - 1 : null) : Math.min(state.hoverIndex, history.length - 1);
@@ -2467,6 +2505,9 @@
         <div><span class="attr-label">上日收市</span><span class="attr-value" id="detail-prev">${money(prev)}</span></div>
         <div><span class="attr-label">持有</span><span class="attr-value" id="detail-shares">${s.shares} 股 · 市值 ${money(s.shares * s.price)}</span></div>
         <div><span class="attr-label">戰力</span><span class="attr-value" id="detail-power">${s.shares ? pow.toLocaleString("en-US") : "0"}</span></div>
+        <div><span class="attr-label">攻擊</span><span class="attr-value" id="detail-atk">${stats.atk}</span></div>
+        <div><span class="attr-label">防禦</span><span class="attr-value" id="detail-def">${stats.def}</span></div>
+        <div><span class="attr-label">生命</span><span class="attr-value" id="detail-hp">${stats.hp} / ${stats.maxHp}${stats.shield ? " 盾 " + Math.round(stats.shield) : ""}</span></div>
       </div>
       <div class="kline-wrap">
         <div class="kline-head">
@@ -2509,6 +2550,13 @@
     if (shEl) shEl.textContent = s.shares + " 股 · 市值 " + money(s.shares * s.price);
     const pwEl = $("detail-power");
     if (pwEl) pwEl.textContent = s.shares ? powerOf(s).toLocaleString("en-US") : "0";
+    const stats = stockStatView(s);
+    const atkEl = $("detail-atk");
+    if (atkEl) atkEl.textContent = String(stats.atk);
+    const defEl = $("detail-def");
+    if (defEl) defEl.textContent = String(stats.def);
+    const hpEl = $("detail-hp");
+    if (hpEl) hpEl.textContent = stats.hp + " / " + stats.maxHp + (stats.shield ? " 盾 " + Math.round(stats.shield) : "");
     const idx = state.hoverIndex == null ? (history.length ? history.length - 1 : null) : Math.min(state.hoverIndex, history.length - 1);
     applyKlineHover(svg, $("kline-tooltip"), history, idx);
   }
@@ -2753,6 +2801,8 @@
     return types.slice(0, n).map((t, i) => {
       const power = Math.max(80, Math.round((budget * weights[i]) / sum));
       const hpMul = t[5] ? (t[4] === "major" ? 1.45 : 1.25) : 1;
+      const job = (t[5] || String(t[2] || "").indexOf("wolf") < 0) ? "守城" : "狂戰士";
+      const st = JOB_STATS[job] || {};
       return {
         id: "e-" + i,
         name: t[0],
@@ -2762,9 +2812,12 @@
         hp: Math.round(power * hpMul),
         maxHp: Math.round(power * hpMul),
         atk: Math.max(16, Math.round(power * (t[5] ? 0.24 : 0.21))),
+        armor: st.armor || 0,
+        teamArmor: st.teamArmor || 0,
+        tag: st.tag,
         speed: t[3],
         side: "enemy",
-        job: (t[5] || String(t[2] || "").indexOf("wolf") < 0) ? "守城" : "狂戰士",
+        job,
         change: 0,
         boss: t[4] || null,
         telegraphing: false,
@@ -2780,6 +2833,10 @@
     if (fill) fill.style.width = Math.max(0, Math.round(((u.hp || 0) / Math.max(1, u.maxHp || 1)) * 100)) + "%";
     const shFill = el.querySelector(".shield-fill");
     if (shFill) shFill.style.width = Math.min(100, Math.round(((u.shield || 0) / Math.max(1, u.maxHp || 1)) * 100)) + "%";
+    const statsEl = el.querySelector(".unit-stats");
+    if (statsEl) statsEl.innerHTML = unitStatsHTML(u);
+    const sub = el.querySelector(".unit-sub");
+    if (sub) sub.textContent = unitHpText(u);
     el.classList.toggle("dead", u.hp <= 0);
     el.classList.toggle("wiped", !!u.wiped);
   }
@@ -2800,8 +2857,6 @@
     updateUnitEl(u);
     const jobEl = el.querySelector(".unit-job");
     if (jobEl) jobEl.textContent = jobLabel(u.job);
-    const sub = el.querySelector(".unit-sub");
-    if (sub) sub.textContent = unitHpText(u);
     el.classList.toggle("picked", !!(state.formPick && u.stockId && state.formPick === u.stockId));
   }
 
@@ -3069,7 +3124,7 @@
     if (crit && result.blocked <= 0) sfx.crit();
     else sfx.hit();
     const knocked = tgt.hp <= 0;
-    setLog(attackLog(atk, tgt, result.dmg, knocked) + (result.blocked ? "（" + (jobLabel(tgt.job) || "坦克") + " 抵擋 " + result.blocked + "）" : ""));
+    setLog(attackLog(atk, tgt, result.dmg, knocked) + (result.blocked ? "（" + (jobLabel(tgt.job) || "盾戰士") + " 抵擋 " + result.blocked + "）" : ""));
     return result;
   }
 

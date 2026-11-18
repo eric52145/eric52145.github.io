@@ -633,7 +633,7 @@ button, input { font-family: inherit; }
 .form-wrap {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
   min-width: 0;
   min-height: 0;
   flex: 1;
@@ -641,23 +641,30 @@ button, input { font-family: inherit; }
 .form-cols {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
+  flex: 0 0 auto;
+  position: relative;
+  z-index: 2;
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.18em;
   color: #8a7a5a;
   text-align: center;
   line-height: 1.2;
+  padding: 0 0 2px;
+  pointer-events: none;
 }
 .form-cols .front { color: #f0c14b; }
 .units.form-grid,
 .form-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  grid-template-rows: repeat(4, minmax(0, 1fr));
+  grid-template-rows: repeat(4, minmax(0, auto));
   gap: 6px;
   width: 100%;
+  flex: 1;
   min-height: 240px;
-  align-content: stretch;
+  height: auto;
+  align-content: center;
   justify-content: stretch;
 }
 .form-slot {
@@ -703,6 +710,7 @@ button, input { font-family: inherit; }
   border-color: #f0c14b;
 }
 .slot-ghost {
+  display: none;
   font-size: 10px;
   letter-spacing: 0.14em;
   color: rgba(240, 193, 75, 0.45);
@@ -757,6 +765,21 @@ button, input { font-family: inherit; }
   max-width: 100%;
   white-space: nowrap;
   text-shadow: 0 1px 2px rgba(0,0,0,0.85);
+}
+.form-slot .unit-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  justify-items: center;
+  column-gap: 2px;
+  font-size: 8px;
+  line-height: 1.1;
+  margin-top: 1px;
+  max-width: 100%;
+  white-space: nowrap;
+}
+.form-slot .unit-stats .st-hp,
+.form-slot .unit-stats .st-sh {
+  grid-column: 1 / -1;
 }
 .form-slot .unit-job,
 .form-slot .unit-hp,
@@ -1628,6 +1651,7 @@ button, .trade button, .btn-open, .icon-btn { touch-action: manipulation; }
   .form-slot .unit .portrait { width: clamp(48px, 8vh, 72px); height: clamp(48px, 8vh, 72px); box-shadow: none; border: 0; }
   .form-slot .hp-bar { max-width: 52px; height: 4px; }
   .form-slot .unit-name { font-size: 10px; letter-spacing: 0; }
+  .form-slot .unit-stats { font-size: 8px; }
   .form-slot .unit-job, .form-slot .unit-hp, .form-slot .unit-sub { display: none; }
   .form-cols { font-size: 9px; letter-spacing: 0.1em; }
   .side-label { font-size: 11px; letter-spacing: 0.12em; }
@@ -1762,6 +1786,18 @@ button, .trade button, .btn-open, .icon-btn { touch-action: manipulation; }
   color: #f0c14b;
   min-height: 1em;
 }
+.unit-stats {
+  font-family: Oswald, "Noto Sans TC", sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0;
+  color: #e8d5a8;
+  line-height: 1.1;
+  text-align: center;
+  white-space: nowrap;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.85);
+}
+.unit.wiped .unit-stats { color: #ffb0a0; }
 .unit.enemy .unit-job { color: #e8b4b4; }
 .unit .hp-bar { position: relative; overflow: hidden; }
 .shield-fill {
@@ -2055,9 +2091,24 @@ button, .trade button, .btn-open, .icon-btn { touch-action: manipulation; }
   #app[data-tab="arena"] .form-wrap { min-height: 0; flex: 1; }
   #app[data-tab="arena"] .units.form-grid,
   #app[data-tab="arena"] .form-grid {
+    flex: 1;
     min-height: 0;
-    height: 100%;
+    height: auto;
+    gap: 2px 4px;
+    align-content: center;
+    grid-template-rows: repeat(4, minmax(0, auto));
+  }
+  #app[data-tab="arena"] .form-cols {
+    font-size: 9px;
+    letter-spacing: 0.08em;
+    padding-bottom: 4px;
+  }
+  #app[data-tab="arena"] .side {
+    justify-content: center;
     gap: 4px;
+  }
+  #app[data-tab="arena"] .vs-mark {
+    align-self: center;
   }
   #app[data-tab="arena"] .form-slot {
     min-height: 0;
@@ -2097,6 +2148,12 @@ button, .trade button, .btn-open, .icon-btn { touch-action: manipulation; }
     letter-spacing: 0;
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+  #app[data-tab="arena"] .form-slot .unit-stats {
+    font-size: 8px;
+    letter-spacing: 0;
+    max-width: 100%;
+    overflow: hidden;
   }
   #app[data-tab="arena"] .form-slot .unit-job,
   #app[data-tab="arena"] .form-slot .unit-hp,
