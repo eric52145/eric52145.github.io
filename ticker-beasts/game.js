@@ -1399,8 +1399,9 @@
   }
 
   function portrait(id) {
+    const key = PORTRAITS[id] ? id : "bearshort";
     const svg = PORTRAITS[id] || PORTRAITS.bearshort;
-    return `<div class="portrait" aria-hidden="true">${svg}</div>`;
+    return `<div class="portrait" aria-hidden="true"><img class="portrait-img" src="art/${key}.jpg" alt="" width="512" height="512" onerror="this.style.display='none';this.nextElementSibling.hidden=false"/><div class="portrait-fallback" hidden>${svg}</div></div>`;
   }
 
     const PORTRAITS = {
@@ -2825,9 +2826,16 @@
       const u = state.fight && state.fight.players ? state.fight.players.find((x) => x.id === e.unitId) : null;
       const el = u ? $("unit-" + u.id) : null;
       const target = el && (el.querySelector(".portrait") || el);
-      if (e.type === "heal") flyFromEl(target, (jobLabel(e.job) || "牧師") + " 回血 +" + e.amount, "heal");
-      else if (e.type === "supply") flyFromEl(target, (jobLabel(e.job) || "補師") + " 補給 +" + e.amount, "heal");
-      else if (e.type === "shield") flyFromEl(target, (jobLabel(e.job) || "騎士") + " 護盾 +" + e.amount, "shield");
+      if (e.type === "heal") {
+        playSupportFx(el, "heal");
+        flyFromEl(target, (jobLabel(e.job) || "牧師") + " 回血 +" + e.amount, "heal");
+      } else if (e.type === "supply") {
+        playSupportFx(el, "heal");
+        flyFromEl(target, (jobLabel(e.job) || "補師") + " 補給 +" + e.amount, "heal");
+      } else if (e.type === "shield") {
+        playSupportFx(el, "shield");
+        flyFromEl(target, (jobLabel(e.job) || "騎士") + " 護盾 +" + e.amount, "shield");
+      }
     }
     const line = supportLog(events);
     if (line) setLog(line);
@@ -2925,6 +2933,68 @@
     return { note, cash: state.cash, canContinue: false, end: true };
   }
 
+
+  function fxKindForJob(job) {
+    const j = job || "";
+    if (j === "法師") return "bolt";
+    if (j === "結界師") return "ward";
+    if (j === "刺客") return "slash";
+    if (j === "狂戰士") return "multislash";
+    if (j === "補師" || j === "牧師") return "healbeam";
+    if (j === "守城" || j === "聖騎士" || j === "守護" || j === "騎士") return "bash";
+    if (j === "掌控" || j === "控制") return "burst";
+    return "slash";
+  }
+
+  function spawnPitFx(cls, x, y, vars) {
+    const pit = document.querySelector(".pit");
+    if (!pit) return null;
+    const el = document.createElement("div");
+    el.className = "battle-fx " + cls;
+    el.style.left = x + "px";
+    el.style.top = y + "px";
+    if (vars) {
+      Object.keys(vars).forEach((k) => el.style.setProperty(k, vars[k]));
+    }
+    pit.appendChild(el);
+    setTimeout(() => { if (el.parentNode) el.parentNode.removeChild(el); }, 520);
+    return el;
+  }
+
+  function unitFxPoint(unitEl) {
+    const pit = document.querySelector(".pit");
+    if (!pit || !unitEl) return null;
+    const pr = pit.getBoundingClientRect();
+    const er = (unitEl.querySelector(".portrait") || unitEl).getBoundingClientRect();
+    return { x: er.left + er.width / 2 - pr.left, y: er.top + er.height / 2 - pr.top };
+  }
+
+  function playStrikeFx(atk, tgt) {
+    const aEl = atk && $("unit-" + atk.id);
+    const tEl = tgt && $("unit-" + tgt.id);
+    const a = unitFxPoint(aEl);
+    const t = unitFxPoint(tEl);
+    if (!a || !t) return;
+    const kind = fxKindForJob(atk.job);
+    const dx = t.x - a.x;
+    const dy = t.y - a.y;
+    const ang = Math.atan2(dy, dx) * 180 / Math.PI;
+    const dist = Math.max(8, Math.hypot(dx, dy));
+    spawnPitFx("fx-beam fx-" + kind, a.x, a.y, {
+      "--dx": dx + "px",
+      "--dy": dy + "px",
+      "--ang": ang + "deg",
+      "--dist": dist + "px"
+    });
+    spawnPitFx("fx-impact fx-" + kind + "-hit", t.x, t.y);
+  }
+
+  function playSupportFx(unitEl, kind) {
+    const pt = unitFxPoint(unitEl);
+    if (!pt) return;
+    spawnPitFx("fx-impact fx-" + (kind === "shield" ? "bash" : "heal") + "-hit", pt.x, pt.y);
+  }
+
   function strikeTarget(atk, tgt, rawDmg, crit) {
     const step = atk.side === "enemy" ? bossTelegraphStep(atk) : { mul: 1, note: "", heavy: false };
     const dmgIn = Math.round((rawDmg || 0) * (step.mul || 1));
@@ -2938,6 +3008,7 @@
       void aEl.offsetWidth;
       aEl.classList.add(atk.side === "player" ? "lunge-right" : "lunge-left");
     }
+    playStrikeFx(atk, tgt);
     if (tEl) {
       tEl.classList.remove("hit");
       void tEl.offsetWidth;
