@@ -2068,7 +2068,7 @@
     const hpBit = unitHpText(u);
     const aria = arranging ? ("選擇 " + u.name + " 排陣") : (inspect ? ("查看 " + u.name + " 檔案") : (u.name || ""));
     return `<div class="unit ${u.side === "enemy" ? "enemy" : "player"}${u.hp <= 0 ? " dead" : ""}${u.wiped ? " wiped" : ""}${spawn ? " spawn" : ""}${inspect ? " clickable" : ""}${arranging ? " arrange" : ""}${picked ? " picked" : ""}${u.onBench ? " bench-unit" : ""}" id="unit-${u.id}"${u.stockId ? ` data-stock="${u.stockId}"` : ""}${u.slot != null ? ` data-slot="${u.slot}"` : ""}${arranging || inspect ? ` role="button" tabindex="0" aria-label="${aria}"` : ""}${drag ? ` draggable="true"` : ""}>
-      ${portrait(u.portrait)}
+      <div class="unit-sprite">${portrait(u.portrait)}</div>
       <div class="unit-name">${u.name}</div>
       <div class="unit-job">${jobLabel(u.job)}</div>
       <div class="unit-sub unit-hp">${hpBit}</div>
@@ -2999,25 +2999,30 @@
   }
 
 
+  function motionEl(el) {
+    return (el && el.querySelector(".unit-sprite")) || el;
+  }
+
   function bumpAnim(el, cls) {
     if (!el || !cls) return;
     el.classList.remove("dash", "cast", "hit", "lunge-right", "lunge-left");
-    void el.offsetWidth;
+    const motion = motionEl(el);
+    void motion.offsetWidth;
     el.classList.add(cls);
     const onEnd = (ev) => {
-      if (ev.target !== el) return;
+      if (ev.target !== motion) return;
       el.classList.remove(cls);
-      el.removeEventListener("animationend", onEnd);
+      motion.removeEventListener("animationend", onEnd);
     };
-    el.addEventListener("animationend", onEnd);
+    motion.addEventListener("animationend", onEnd);
   }
 
   function playUnitMotion(atk, tgt) {
     const aEl = atk && $("unit-" + atk.id);
     const tEl = tgt && $("unit-" + tgt.id);
     if (!aEl || !tEl) return;
-    const ar = aEl.getBoundingClientRect();
-    const tr = tEl.getBoundingClientRect();
+    const ar = motionEl(aEl).getBoundingClientRect();
+    const tr = motionEl(tEl).getBoundingClientRect();
     const dx = (tr.left + tr.width / 2) - (ar.left + ar.width / 2);
     const dy = (tr.top + tr.height / 2) - (ar.top + ar.height / 2);
     const dist = Math.hypot(dx, dy) || 1;
