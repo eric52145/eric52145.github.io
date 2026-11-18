@@ -582,27 +582,28 @@ button, input { font-family: inherit; }
 }
 .hp-fill { height: 100%; background: linear-gradient(90deg, #e0a01a, #ffe28a); width: 100%; transition: width 220ms ease; }
 .enemy .hp-fill { background: linear-gradient(90deg, #7a2d3c, #ff6b6b); }
+.unit-sprite {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 1;
+}
 .unit.dead {
   opacity: 0.38;
   filter: grayscale(0.8);
-  transform: rotate(-8deg) translateY(8px);
 }
-.unit.lunge-right { animation: lungeRight 320ms ease; }
-.unit.lunge-left { animation: lungeLeft 320ms ease; }
-.unit.dash {
-  z-index: 9;
-  animation: unitDash 520ms cubic-bezier(0.2, 0.8, 0.25, 1);
-}
+.unit.dead .unit-sprite { transform: rotate(-8deg) translateY(8px); }
+.unit.lunge-right .unit-sprite { animation: lungeRight 320ms ease; }
+.unit.lunge-left .unit-sprite { animation: lungeLeft 320ms ease; }
+.unit.dash { z-index: 9; }
+.unit.dash .unit-sprite { animation: unitDash 520ms cubic-bezier(0.2, 0.8, 0.25, 1); }
 .unit.dash .portrait { animation: portraitStrike 520ms ease; }
-.unit.hit {
-  z-index: 6;
-  animation: unitHit 400ms ease;
-}
+.unit.hit { z-index: 6; }
+.unit.hit .unit-sprite { animation: unitHit 400ms ease; }
 .unit.hit .portrait { animation: portraitHurt 400ms ease; }
-.unit.cast {
-  z-index: 7;
-  animation: unitCast 420ms ease;
-}
+.unit.cast { z-index: 7; }
+.unit.cast .unit-sprite { animation: unitCast 420ms ease; }
 .unit.spawn { animation: spawnIn 420ms ease; }
 .form-slot:has(.dash),
 .form-slot:has(.cast),
@@ -614,16 +615,16 @@ button, input { font-family: inherit; }
 }
 .side:has(.dash),
 .side:has(.cast) { z-index: 4; }
-.pit:not(.arranging) .unit:not(.dead):not(.dash):not(.hit):not(.cast):not(.spawn):not(.dragging) {
+.pit:not(.arranging) .unit:not(.dead):not(.dash):not(.hit):not(.cast):not(.spawn):not(.dragging) .unit-sprite {
   animation: idleBob 1.8s ease-in-out infinite;
 }
-.pit:not(.arranging) .form-slot:nth-child(2n) .unit:not(.dead):not(.dash):not(.hit):not(.cast):not(.spawn):not(.dragging) {
+.pit:not(.arranging) .form-slot:nth-child(2n) .unit:not(.dead):not(.dash):not(.hit):not(.cast):not(.spawn):not(.dragging) .unit-sprite {
   animation-delay: 0.22s;
 }
-.pit:not(.arranging) .form-slot:nth-child(3n) .unit:not(.dead):not(.dash):not(.hit):not(.cast):not(.spawn):not(.dragging) {
+.pit:not(.arranging) .form-slot:nth-child(3n) .unit:not(.dead):not(.dash):not(.hit):not(.cast):not(.spawn):not(.dragging) .unit-sprite {
   animation-delay: 0.4s;
 }
-.pit:not(.arranging) .unit.enemy:not(.dead):not(.dash):not(.hit):not(.cast):not(.spawn):not(.dragging) {
+.pit:not(.arranging) .unit.enemy:not(.dead):not(.dash):not(.hit):not(.cast):not(.spawn):not(.dragging) .unit-sprite {
   animation-duration: 1.95s;
 }
 .unit.clickable { cursor: pointer; }
@@ -663,30 +664,38 @@ button, input { font-family: inherit; }
   min-width: 0;
   min-height: 0;
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: center;
-  border: 1px dashed rgba(196, 161, 90, 0.38);
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.03);
-  padding: 3px 2px;
+  border: 1px dashed transparent;
+  border-radius: 10px;
+  background: transparent;
+  padding: 2px 1px 0;
+  position: relative;
   transition: background 140ms ease, border-color 140ms ease, box-shadow 140ms ease;
 }
 .form-slot.empty { min-height: 72px; }
-.form-slot.front-slot {
+.pit.arranging .form-slot {
+  border-color: rgba(196, 161, 90, 0.32);
+  background: rgba(255, 255, 255, 0.03);
+}
+.pit.arranging .form-slot.front-slot {
   border-color: rgba(240, 193, 75, 0.45);
   background: rgba(240, 193, 75, 0.05);
 }
-.form-slot.filled {
-  border-style: solid;
-  border-color: rgba(196, 161, 90, 0.28);
-  background: rgba(10, 12, 16, 0.35);
+.pit.arranging .form-slot.filled {
+  border-style: dashed;
+  background: rgba(10, 12, 16, 0.2);
 }
+.form-slot.front-slot { border-color: transparent; }
+.form-slot.filled { border-style: solid; border-color: transparent; background: transparent; }
 .form-slot.open { cursor: pointer; }
-.form-slot.picked,
-.unit.picked {
-  outline: 2px solid #f0c14b;
-  outline-offset: 1px;
-  box-shadow: 0 0 0 3px rgba(240, 193, 75, 0.4);
+.pit.arranging .form-slot.picked {
+  outline: 2px dashed #f0c14b;
+  outline-offset: 0;
+  background: rgba(240, 193, 75, 0.12);
+}
+.unit.picked .unit-sprite {
+  filter: drop-shadow(0 0 7px rgba(240, 193, 75, 0.9));
 }
 .form-slot.drop-ok,
 .bench.drop-ok {
@@ -702,34 +711,57 @@ button, input { font-family: inherit; }
 .form-slot .unit {
   width: 100%;
   max-width: 100%;
-  gap: 2px;
+  gap: 0;
+  overflow: visible;
+}
+.form-slot .unit-sprite::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 1px;
+  width: 64%;
+  height: 8px;
+  transform: translateX(-50%);
+  background: radial-gradient(ellipse, rgba(0,0,0,0.55), transparent 70%);
+  pointer-events: none;
+  z-index: 0;
 }
 .form-slot .unit .portrait {
-  width: 64px;
-  height: 64px;
-  box-shadow: 0 4px 0 rgba(0,0,0,0.35);
+  width: clamp(56px, 9vh, 88px);
+  height: clamp(56px, 9vh, 88px);
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  border-radius: 0;
+  overflow: visible;
+  -webkit-mask-image: radial-gradient(ellipse 68% 78% at 50% 46%, #000 54%, rgba(0,0,0,0.5) 70%, transparent 84%);
+  mask-image: radial-gradient(ellipse 68% 78% at 50% 46%, #000 54%, rgba(0,0,0,0.5) 70%, transparent 84%);
 }
-.form-slot .hp-bar { width: 100%; max-width: 72px; height: 6px; }
+.form-slot .unit .portrait img,
+.form-slot .unit .portrait svg,
+.form-slot .unit .portrait .portrait-img {
+  background: transparent;
+}
+.form-slot .hp-bar {
+  width: 72%;
+  max-width: 64px;
+  height: 5px;
+  border-radius: 2px;
+  margin-top: 1px;
+}
 .form-slot .unit-name {
-  font-size: 12px;
+  font-size: 11px;
   letter-spacing: 0;
-  line-height: 1.15;
+  line-height: 1.1;
   text-align: center;
   max-width: 100%;
   white-space: nowrap;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.85);
 }
-.form-slot .unit-job {
-  font-size: 10px;
-  color: #f0c14b;
-  min-height: 1em;
-}
+.form-slot .unit-job,
 .form-slot .unit-hp,
 .form-slot .unit-sub {
-  font-size: 10px;
-  color: #e8d5a8;
-  letter-spacing: 0.02em;
-  text-align: center;
-  line-height: 1.2;
+  display: none;
 }
 .unit.enemy .unit-job { color: #ffc9c9; }
 .unit.arrange { cursor: grab; user-select: none; -webkit-user-select: none; }
@@ -1593,10 +1625,10 @@ button, .trade button, .btn-open, .icon-btn { touch-action: manipulation; }
   }
   .units, .units.form-grid, .form-grid { min-height: 0; gap: 4px; }
   .form-slot.empty { min-height: 52px; }
-  .form-slot .unit .portrait { width: 44px; height: 44px; box-shadow: 0 3px 0 rgba(0,0,0,0.35); }
-  .form-slot .hp-bar { max-width: 48px; height: 5px; }
+  .form-slot .unit .portrait { width: clamp(48px, 8vh, 72px); height: clamp(48px, 8vh, 72px); box-shadow: none; border: 0; }
+  .form-slot .hp-bar { max-width: 52px; height: 4px; }
   .form-slot .unit-name { font-size: 10px; letter-spacing: 0; }
-  .form-slot .unit-job, .form-slot .unit-hp, .form-slot .unit-sub { font-size: 9px; }
+  .form-slot .unit-job, .form-slot .unit-hp, .form-slot .unit-sub { display: none; }
   .form-cols { font-size: 9px; letter-spacing: 0.1em; }
   .side-label { font-size: 11px; letter-spacing: 0.12em; }
   .vs-mark { font-size: 14px; padding: 0; align-self: center; }
@@ -1697,7 +1729,7 @@ button, .trade button, .btn-open, .icon-btn { touch-action: manipulation; }
   .unit { width: 76px; }
   .unit .portrait { width: 64px; height: 64px; }
   .form-slot .unit { width: 100%; }
-  .form-slot .unit .portrait { width: 38px; height: 38px; }
+  .form-slot .unit .portrait { width: clamp(42px, 9vh, 58px); height: clamp(42px, 9vh, 58px); box-shadow: none; border: 0; }
   .form-slot .unit-name { font-size: 10px; }
   .form-slot.empty { min-height: 44px; }
   .hp-bar { width: 64px; }
@@ -1908,7 +1940,8 @@ button, .trade button, .btn-open, .icon-btn { touch-action: manipulation; }
 .pick-choices button:hover, .choice-actions button:hover { background: var(--gold); }
 .choice-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
 .arena.hurt-pause { filter: saturate(0.85); }
-.unit.hurt { outline: 3px solid #e3503c; outline-offset: 2px; }
+.unit.hurt { outline: none; }
+.unit.hurt .unit-sprite { filter: drop-shadow(0 0 8px #e3503c); }
 
 @media (max-width: 820px) {
   .phone-tabs {
@@ -2028,8 +2061,10 @@ button, .trade button, .btn-open, .icon-btn { touch-action: manipulation; }
   }
   #app[data-tab="arena"] .form-slot {
     min-height: 0;
-    overflow: hidden;
-    padding: 2px 1px;
+    overflow: visible;
+    padding: 0;
+    border-color: transparent;
+    background: transparent;
   }
   #app[data-tab="arena"] .pit,
   #app[data-tab="arena"] .form-wrap,
@@ -2048,16 +2083,17 @@ button, .trade button, .btn-open, .icon-btn { touch-action: manipulation; }
   #app[data-tab="arena"] .form-slot.empty { min-height: 0; }
   #app[data-tab="arena"] .form-slot .unit {
     min-height: 0;
-    overflow: hidden;
-    gap: 1px;
+    overflow: visible;
+    gap: 0;
   }
   #app[data-tab="arena"] .form-slot .unit .portrait {
-    width: clamp(28px, 7vh, 40px);
-    height: clamp(28px, 7vh, 40px);
-    box-shadow: 0 2px 0 rgba(0,0,0,0.35);
+    width: clamp(40px, 10vh, 64px);
+    height: clamp(40px, 10vh, 64px);
+    box-shadow: none;
+    border: 0;
   }
   #app[data-tab="arena"] .form-slot .unit-name {
-    font-size: 10px;
+    font-size: 9px;
     letter-spacing: 0;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -2065,22 +2101,17 @@ button, .trade button, .btn-open, .icon-btn { touch-action: manipulation; }
   #app[data-tab="arena"] .form-slot .unit-job,
   #app[data-tab="arena"] .form-slot .unit-hp,
   #app[data-tab="arena"] .form-slot .unit-sub {
-    font-size: 8px;
-    line-height: 1.1;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    max-width: 100%;
+    display: none;
   }
   #app[data-tab="arena"] .form-slot .hp-bar {
-    max-width: 100%;
+    max-width: 48px;
     height: 4px;
   }
   #app[data-tab="arena"] .unit.hurt,
   #app[data-tab="arena"] .form-slot.picked,
   #app[data-tab="arena"] .unit.picked {
-    outline-width: 2px;
-    outline-offset: -2px;
+    outline: none;
+    box-shadow: none;
   }
   #app[data-tab="arena"] .market-foot {
     position: relative;
