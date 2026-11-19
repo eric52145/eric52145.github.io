@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover, user-scalable=no" />
+  <meta name="theme-color" content="#0b1020" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <title>珠落出陣 Beadfall</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='28' fill='%230b1020'/%3E%3Ccircle cx='32' cy='32' r='14' fill='%23f5f0e6' stroke='%2378d7ff' stroke-width='4'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="app">
+    <header class="topbar">
+      <div class="brand">
+        <h1>珠落出陣</h1>
+        <p class="subtitle">Beadfall</p>
+      </div>
+      <div class="run-stats">
+        <div class="stat">
+          <span class="label">層數</span>
+          <span class="value" id="stat-floor">1</span>
+        </div>
+        <div class="stat">
+          <span class="label">剩餘轉數</span>
+          <span class="value" id="stat-spins">5</span>
+        </div>
+        <div class="stat">
+          <span class="label">最佳</span>
+          <span class="value" id="stat-best">1</span>
+        </div>
+      </div>
+    </header>
+
+    <p class="hint" id="hint">轉珠出怪，合成變強，出陣打關</p>
+
+    <main class="stage">
+      <section class="recruit" id="recruit-panel" aria-label="招募轉盤">
+        <div class="wheel-wrap">
+          <div class="wheel" id="wheel" aria-hidden="false">
+            <div class="wheel-hub">
+              <span>珠落</span>
+            </div>
+            <div class="bead" id="bead"></div>
+          </div>
+          <div class="fx-layer" id="fx-layer" aria-hidden="true"></div>
+        </div>
+        <div class="roster-block">
+          <div class="roster-head">
+            <h2>出陣名冊</h2>
+            <span id="roster-count">0 / 6</span>
+          </div>
+          <div class="roster" id="roster"></div>
+        </div>
+      </section>
+
+      <section class="battle" id="battle-panel" hidden aria-label="戰場">
+        <div class="battle-banner" id="battle-banner">第 1 層 · 交戰中</div>
+        <div class="battlefield" id="battlefield">
+          <div class="side player-side" id="player-side"></div>
+          <div class="side enemy-side" id="enemy-side"></div>
+        </div>
+        <div class="battle-log" id="battle-log"></div>
+      </section>
+    </main>
+
+    <footer class="action-bar" id="action-bar">
+      <button type="button" class="btn btn-spin" id="btn-spin">轉</button>
+      <button type="button" class="btn btn-deploy" id="btn-deploy" disabled>出陣</button>
+    </footer>
+  </div>
+
+  <div class="modal" id="modal-reward" hidden>
+    <div class="modal-card">
+      <h2>勝利獎勵</h2>
+      <p class="modal-sub">揀一項強化，下層繼續爬樓</p>
+      <div class="reward-choices" id="reward-choices"></div>
+    </div>
+  </div>
+
+  <div class="modal" id="modal-over" hidden>
+    <div class="modal-card">
+      <h2>本局結束</h2>
+      <p class="modal-sub" id="over-text">抵達第 1 層</p>
+      <button type="button" class="btn btn-restart" id="btn-restart">再來一局</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" hidden></div>
+
+  <script src="game.js"></script>
+</body>
+</html>
