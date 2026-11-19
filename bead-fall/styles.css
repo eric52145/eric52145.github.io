@@ -136,70 +136,156 @@ body {
   aspect-ratio: 1;
 }
 
-.wheel {
+.roulette {
   position: relative;
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  background:
-    radial-gradient(circle at 50% 50%, #1c2744 0 28%, transparent 29%),
-    conic-gradient(from -22.5deg, #18233d, #243255, #18233d, #243255, #18233d, #243255, #18233d, #243255);
-  border: 3px solid rgba(120, 215, 255, 0.45);
+}
+
+.roulette-outer-rim {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    #6b3f1e,
+    #c9a05a,
+    #8a5528,
+    #e2c078,
+    #6b3f1e,
+    #c9a05a,
+    #8a5528,
+    #e2c078,
+    #6b3f1e
+  );
+  -webkit-mask: radial-gradient(circle, transparent 60.5%, #000 61.5%);
+  mask: radial-gradient(circle, transparent 60.5%, #000 61.5%);
   box-shadow:
-    0 0 0 6px rgba(12, 18, 34, 0.9),
-    0 0 40px rgba(120, 215, 255, 0.18),
-    inset 0 0 40px rgba(0, 0, 0, 0.45);
+    0 0 0 3px #2a180c,
+    0 0 0 7px #d4b06a,
+    0 0 0 10px #1a1008,
+    0 12px 28px rgba(0, 0, 0, 0.55);
+  z-index: 1;
+  pointer-events: none;
+}
+
+.wheel-rotor {
+  position: absolute;
+  inset: 7%;
+  border-radius: 50%;
+  z-index: 2;
+  transform: rotate(0deg);
+  will-change: transform;
+}
+
+.wheel-disk {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
   overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 50%, #1a1520 0 26%, transparent 27%),
+    conic-gradient(
+      from calc(-0.5 * var(--pocket-step, 45deg)),
+      #1a3d2c 0 calc(var(--pocket-step, 45deg)),
+      #5a1524 0 calc(2 * var(--pocket-step, 45deg)),
+      #1a3d2c 0 calc(3 * var(--pocket-step, 45deg)),
+      #5a1524 0 calc(4 * var(--pocket-step, 45deg)),
+      #1a3d2c 0 calc(5 * var(--pocket-step, 45deg)),
+      #5a1524 0 calc(6 * var(--pocket-step, 45deg)),
+      #1a3d2c 0 calc(7 * var(--pocket-step, 45deg)),
+      #5a1524 0 calc(8 * var(--pocket-step, 45deg))
+    );
+  border: 2px solid rgba(212, 176, 106, 0.65);
+  box-shadow:
+    inset 0 0 28px rgba(0, 0, 0, 0.55),
+    0 0 16px rgba(212, 176, 106, 0.15);
+}
+
+.wheel-frets {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.wheel-fret {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 3px;
+  height: 50%;
+  margin-left: -1.5px;
+  transform-origin: 50% 0;
+  transform: rotate(var(--fret-ang)) translateY(0);
+  background: linear-gradient(
+    180deg,
+    rgba(20, 12, 6, 0.15) 0%,
+    rgba(242, 220, 150, 0.95) 28%,
+    rgba(242, 220, 150, 0.75) 100%
+  );
+  box-shadow: 0 0 5px rgba(255, 220, 140, 0.45);
+  z-index: 2;
 }
 
 .wheel-hub {
   position: absolute;
   inset: 34%;
   border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, #2a3758, #10182b 70%);
-  border: 2px solid rgba(120, 215, 255, 0.55);
+  background:
+    radial-gradient(circle at 35% 30%, #3a2a18, #14100c 70%);
+  border: 3px solid #d4b06a;
   display: grid;
   place-items: center;
-  z-index: 3;
-  box-shadow: 0 0 24px rgba(120, 215, 255, 0.25);
+  z-index: 4;
+  box-shadow:
+    0 0 0 4px #2a1a0c,
+    0 0 20px rgba(212, 176, 106, 0.35),
+    inset 0 0 12px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
 }
 
 .wheel-hub span {
   font-size: 0.85rem;
   letter-spacing: 0.2em;
-  color: var(--pearl);
+  color: #f3e2b0;
+  text-shadow: 0 1px 2px #000;
 }
 
 .pocket {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 62px;
-  height: 62px;
-  margin: -31px;
-  /* radius ≈ 40% of wheel; % in translate is self-size, so use fixed responsive length */
-  transform: rotate(var(--ang)) translateY(calc(-1 * min(38vw, 148px))) rotate(calc(var(--ang) * -1));
+  width: 68px;
+  height: 68px;
+  margin: -34px;
+  transform: rotate(var(--ang)) translateY(calc(-1 * min(32vw, 118px))) rotate(calc(var(--ang) * -1));
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
-  z-index: 2;
+  gap: 1px;
+  z-index: 3;
   pointer-events: none;
 }
 
 .pocket .icon {
-  width: 40px;
-  height: 40px;
-  filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.18));
+  width: 36px;
+  height: 36px;
+  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.22));
 }
 
 .pocket .name {
-  font-size: 0.62rem;
-  font-weight: 700;
-  color: var(--pearl);
-  text-shadow: 0 1px 2px #000;
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: #fff8e8;
+  text-shadow:
+    0 0 4px rgba(0, 0, 0, 0.9),
+    0 1px 2px #000;
   white-space: nowrap;
+  letter-spacing: 0.02em;
 }
 
 .pocket.glow {
@@ -211,44 +297,81 @@ body {
   40% { filter: brightness(1.8) saturate(1.4); }
 }
 
+.ball-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+}
+
 .bead {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 22px;
-  height: 22px;
-  margin: -11px;
+  width: 20px;
+  height: 20px;
+  margin: -10px;
   border-radius: 50%;
   background:
-    radial-gradient(circle at 30% 28%, #ffffff 0%, #f5f0e6 35%, #c9e9ff 70%, #78d7ff 100%);
+    radial-gradient(circle at 30% 28%, #ffffff 0%, #f5f0e6 35%, #e8d7a0 70%, #c9a05a 100%);
   box-shadow:
-    0 0 12px rgba(255, 255, 255, 0.85),
-    0 0 24px rgba(120, 215, 255, 0.8);
-  z-index: 5;
-  --bead-r: min(42vw, 162px);
+    0 0 10px rgba(255, 255, 255, 0.9),
+    0 0 18px rgba(212, 176, 106, 0.75),
+    inset -2px -2px 4px rgba(80, 50, 10, 0.25);
+  --bead-r: min(44vw, 168px);
   transform: rotate(0deg) translateY(calc(-1 * var(--bead-r)));
   transition: none;
-  opacity: 0.95;
+  opacity: 0.98;
+  z-index: 5;
 }
 
 .bead.spinning {
-  animation: none;
+  box-shadow:
+    0 0 14px rgba(255, 255, 255, 1),
+    0 0 28px rgba(255, 220, 140, 0.9);
+}
+
+.roulette-pointer {
+  position: absolute;
+  left: 50%;
+  top: 1.5%;
+  width: 0;
+  height: 0;
+  margin-left: -9px;
+  border-left: 9px solid transparent;
+  border-right: 9px solid transparent;
+  border-top: 16px solid #f0d78a;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.55));
+  z-index: 7;
+  pointer-events: none;
+}
+
+.roulette-pointer::after {
+  content: "";
+  position: absolute;
+  left: -5px;
+  top: -16px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff2c8, #c9a05a);
+  box-shadow: 0 0 6px rgba(240, 215, 138, 0.8);
 }
 
 .fx-layer {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  z-index: 6;
+  z-index: 8;
 }
 
 .pop-burst {
   position: absolute;
   left: 50%;
-  top: 50%;
+  top: 8%;
   width: 18px;
   height: 18px;
-  margin: -9px;
+  margin: -9px 0 0 -9px;
   border-radius: 50%;
   background: radial-gradient(circle, #fff, transparent 70%);
   animation: burst 0.55s ease-out forwards;

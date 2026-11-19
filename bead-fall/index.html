@@ -39,11 +39,20 @@
     <main class="stage">
       <section class="recruit" id="recruit-panel" aria-label="招募轉盤">
         <div class="wheel-wrap">
-          <div class="wheel" id="wheel" aria-hidden="false">
-            <div class="wheel-hub">
+          <div class="roulette" id="roulette" aria-hidden="false">
+            <div class="roulette-outer-rim" aria-hidden="true"></div>
+            <div class="wheel-rotor" id="wheel-rotor">
+              <div class="wheel-disk" id="wheel">
+                <div class="wheel-frets" id="wheel-frets" aria-hidden="true"></div>
+              </div>
+            </div>
+            <div class="wheel-hub" aria-hidden="true">
               <span>珠落</span>
             </div>
-            <div class="bead" id="bead"></div>
+            <div class="ball-layer" id="ball-layer" aria-hidden="true">
+              <div class="bead" id="bead"></div>
+            </div>
+            <div class="roulette-pointer" aria-hidden="true"></div>
           </div>
           <div class="fx-layer" id="fx-layer" aria-hidden="true"></div>
         </div>

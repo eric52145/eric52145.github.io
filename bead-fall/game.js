@@ -252,6 +252,8 @@
     best: loadBest(),
     busy: false,
     unitSeq: 1,
+    wheelAngle: 0,
+    ballAngle: 0,
   };
 
   const el = {
@@ -260,7 +262,9 @@
     spins: document.getElementById("stat-spins"),
     best: document.getElementById("stat-best"),
     hint: document.getElementById("hint"),
+    rotor: document.getElementById("wheel-rotor"),
     wheel: document.getElementById("wheel"),
+    frets: document.getElementById("wheel-frets"),
     bead: document.getElementById("bead"),
     fx: document.getElementById("fx-layer"),
     roster: document.getElementById("roster"),
@@ -385,24 +389,87 @@
     toast(def.name + " 加入名冊！");
   }
 
+  function normalizeAngle(deg) {
+    const m = deg % 360;
+    return m < 0 ? m + 360 : m;
+  }
+
+  function pocketStep() {
+    return 360 / state.wheel.length;
+  }
+
+  /** Local angle of pocket center (0° = top) when rotor rotation is 0. */
+  function pocketLocalAngle(index) {
+    return index * pocketStep();
+  }
+
+  function buildDiskGradient(n) {
+    const step = 360 / n;
+    const parts = [];
+    for (let i = 0; i < n; i += 1) {
+      const color = i % 2 === 0 ? "#1a3d2c" : "#5a1524";
+      const a = i * step;
+      const b = (i + 1) * step;
+      parts.push(color + " " + a + "deg " + b + "deg");
+    }
+    return (
+      "radial-gradient(circle at 50% 50%, #1a1520 0 26%, transparent 27%)," +
+      "conic-gradient(from " +
+      -step / 2 +
+      "deg, " +
+      parts.join(", ") +
+      ")"
+    );
+  }
+
+  function applyWheelTransform(angle) {
+    if (el.rotor) el.rotor.style.transform = "rotate(" + angle + "deg)";
+  }
+
+  function applyBeadTransform(angle, radiusCss) {
+    el.bead.style.transform =
+      "rotate(" + angle + "deg) translateY(calc(-1 * " + radiusCss + "))";
+  }
+
   function renderWheel() {
     const pockets = el.wheel.querySelectorAll(".pocket");
     for (let i = 0; i < pockets.length; i += 1) pockets[i].remove();
+    if (el.frets) el.frets.innerHTML = "";
 
     const n = state.wheel.length;
     const step = 360 / n;
+    el.wheel.style.setProperty("--pocket-step", step + "deg");
+    el.wheel.style.background = buildDiskGradient(n);
+    applyWheelTransform(state.wheelAngle);
+
     for (let i = 0; i < n; i += 1) {
+      if (el.frets) {
+        const fret = document.createElement("div");
+        fret.className = "wheel-fret";
+        fret.style.setProperty("--fret-ang", i * step - step / 2 + "deg");
+        el.frets.appendChild(fret);
+      }
+
       const beastId = state.wheel[i];
       const def = BEASTS[beastId] || BEASTS.flamewolf;
-      const ang = -90 + i * step + step / 2;
+      const ang = pocketLocalAngle(i);
       const pocket = document.createElement("div");
       pocket.className = "pocket";
       pocket.style.setProperty("--ang", ang + "deg");
       pocket.dataset.index = String(i);
+      pocket.style.transform =
+        "rotate(" +
+        ang +
+        "deg) translateY(calc(-1 * min(32vw, 118px))) rotate(" +
+        (-ang - state.wheelAngle) +
+        "deg)";
       pocket.innerHTML =
         svgPortrait(def.color, def.role) + '<span class="name">' + def.name + "</span>";
       el.wheel.appendChild(pocket);
     }
+
+    // Resting bead sits in the winning pocket (under the top pointer after a spin).
+    applyBeadTransform(state.ballAngle, "min(34vw, 126px)");
   }
 
   function renderRoster(flashUid, anim) {
@@ -451,44 +518,117 @@
     updateButtons();
   }
 
-  function angleForIndex(index) {
-    return index * (360 / state.wheel.length);
+  function easeOutCubic(t) {
+    return 1 - Math.pow(1 - t, 3);
   }
 
+  function easeOutQuint(t) {
+    return 1 - Math.pow(1 - t, 5);
+  }
+
+  /**
+   * Casino-style spin: wheel turns one way, pearl the other on an outer track,
+   * then the pearl drops into the predetermined pocket under the top pointer.
+   * Result index is already chosen; this only animates.
+   */
   function animateBeadTo(index) {
     return new Promise(function (resolve) {
-      const bead = el.bead;
-      const base = angleForIndex(index);
-      const spins = 4 + randInt(0, 2);
-      const target = spins * 360 + base;
-      const duration = 2200 + randInt(0, 600);
-      const start = performance.now();
+      const fromWheel = state.wheelAngle;
+      const fromBall = state.ballAngle;
+      const local = pocketLocalAngle(index);
 
-      bead.classList.add("spinning");
+      // Bring pocket center to top (0°) under the pointer, continuing from last angle.
+      const wheelSpins = 5 + randInt(0, 2);
+      const align = normalizeAngle(-(fromWheel + local));
+      const wheelDelta = wheelSpins * 360 + align;
+      const toWheel = fromWheel + wheelDelta;
+
+      // Ball races opposite on the outer track, then settles at top (0°) in the pocket.
+      const ballSpins = 7 + randInt(0, 2);
+      const ballAlign = normalizeAngle(-fromBall);
+      const ballDelta = -(ballSpins * 360 + ballAlign);
+      const toBall = fromBall + ballDelta;
+
+      const duration = 2600 + randInt(0, 900);
+      const start = performance.now();
+      const rOuter = "min(44vw, 168px)";
+      const rPocket = "min(34vw, 126px)";
+
+      el.bead.classList.add("spinning");
 
       function frame(now) {
         const t = clamp((now - start) / duration, 0, 1);
-        const eased = 1 - Math.pow(1 - t, 3);
-        const ang = target * eased;
-        bead.style.transform =
-          "rotate(" + ang + "deg) translateY(calc(-1 * var(--bead-r)))";
+        const wheelEased = easeOutCubic(t);
+        const ballEased = easeOutQuint(t);
+        const wheelAng = fromWheel + wheelDelta * wheelEased;
+        const ballAng = fromBall + ballDelta * ballEased;
+
+        // Last portion: drop from outer track into the pocket radius.
+        let radius = rOuter;
+        if (t > 0.72) {
+          const dropT = (t - 0.72) / 0.28;
+          const dropE = easeOutCubic(dropT);
+          radius =
+            "calc(" +
+            rOuter +
+            " + (" +
+            rPocket +
+            " - " +
+            rOuter +
+            ") * " +
+            dropE.toFixed(4) +
+            ")";
+        }
+
+        applyWheelTransform(wheelAng);
+        applyBeadTransform(ballAng, radius);
+
+        // Keep pocket labels upright relative to screen while the disk spins.
+        const pockets = el.wheel.querySelectorAll(".pocket");
+        for (let i = 0; i < pockets.length; i += 1) {
+          const p = pockets[i];
+          const base = Number(p.dataset.index) * pocketStep();
+          p.style.setProperty("--ang", base + "deg");
+          p.style.transform =
+            "rotate(" +
+            base +
+            "deg) translateY(calc(-1 * min(32vw, 118px))) rotate(" +
+            (-base - wheelAng) +
+            "deg)";
+        }
+
         if (t < 1) {
           requestAnimationFrame(frame);
           return;
         }
-        bead.classList.remove("spinning");
+
+        state.wheelAngle = toWheel;
+        state.ballAngle = toBall;
+        applyWheelTransform(state.wheelAngle);
+        applyBeadTransform(state.ballAngle, rPocket);
+        el.bead.classList.remove("spinning");
+
+        // Restore upright label counter-rotation at rest.
+        for (let i = 0; i < pockets.length; i += 1) {
+          const p = pockets[i];
+          const base = Number(p.dataset.index) * pocketStep();
+          p.style.transform =
+            "rotate(" +
+            base +
+            "deg) translateY(calc(-1 * min(32vw, 118px))) rotate(" +
+            (-base - state.wheelAngle) +
+            "deg)";
+        }
+
         const pocket = el.wheel.querySelector('.pocket[data-index="' + index + '"]');
         if (pocket) {
           pocket.classList.remove("glow");
           void pocket.offsetWidth;
           pocket.classList.add("glow");
         }
+
         const burst = document.createElement("div");
         burst.className = "pop-burst";
-        const step = 360 / state.wheel.length;
-        const pang = -90 + index * step + step / 2;
-        burst.style.transform =
-          "rotate(" + pang + "deg) translateY(calc(-1 * min(38vw, 148px)))";
         el.fx.appendChild(burst);
         setTimeout(function () {
           burst.remove();
@@ -1009,7 +1149,8 @@
     el.modalOver.hidden = true;
     el.modalReward.hidden = true;
     el.hint.textContent = "轉珠出怪，合成變強，出陣打關";
-    el.bead.style.transform = "rotate(0deg) translateY(calc(-1 * var(--bead-r)))";
+    state.wheelAngle = 0;
+    state.ballAngle = 0;
     renderWheel();
     renderRoster();
     updateHud();
@@ -1045,6 +1186,9 @@
     trimWheel: trimWheel,
     doSpin: doSpin,
     runBattle: runBattle,
+    animateBeadTo: animateBeadTo,
+    pocketLocalAngle: pocketLocalAngle,
+    normalizeAngle: normalizeAngle,
   };
 
   renderWheel();
