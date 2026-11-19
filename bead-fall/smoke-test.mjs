@@ -130,6 +130,10 @@ function assert(cond, msg) {
 // --- spin → spawn ---
 BF.resetRun();
 assert(BF.state.roster.length === 0, "roster starts empty");
+assert(BF.state.wheelAngle === 0, "wheel angle resets");
+assert(typeof BF.animateBeadTo === "function", "animateBeadTo exported");
+assert(BF.normalizeAngle(-90) === 270, "normalizeAngle wraps");
+assert(BF.pocketLocalAngle(0) === 0, "pocket 0 at top");
 BF.spawnBeast("shieldstone");
 assert(BF.state.roster.length === 1, "spawn adds unit");
 assert(BF.state.roster[0].beastId === "shieldstone", "spawned shieldstone");
