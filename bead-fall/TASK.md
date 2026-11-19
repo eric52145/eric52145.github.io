@@ -3,16 +3,13 @@
 ## 目標
 在 `bead-fall/` 下交付可玩的手機網頁遊戲 demo，不改動 repo 其他路徑。
 
-## 小任務（v1）
-- [x] index.html / styles.css / game.js / README.md
-- [x] `node --check` + smoke test
-- [x] PR 合併 + live URL
+## 小任務（v1 + 輪盤）
+- [x] 遊戲本體、賭場輪盤雙向旋轉、live 上線
 
-## 小任務（輪盤賭場感）
-- [x] HTML：分離可轉輪盤層 + 外軌珠層 + 頂部指針
-- [x] CSS：木金外圈、格間、雙色格、可讀標籤
-- [x] JS：輪盤與珠反向旋轉，落地入格，延續角度
-- [ ] 測試 + PR 合併 + live 200
+## 小任務（角色立繪）
+- [x] 解壓 16 張 JPEG 到 `bead-fall/art/`（檔名對應 id）
+- [x] 輪盤／名冊／戰鬥改用圓形肖像；JPEG 失敗先退回 SVG
+- [ ] `node --check` + 瀏覽器確認 + PR 合併 + live art 200
 
 ## 完成條件
-撳「轉」時輪盤同珠都明顯喺轉，最後珠停喺中獎格；玩法不變。
+手機畫面清楚見到 chibi 立繪；玩法與輪盤動畫不變。

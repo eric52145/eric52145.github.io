@@ -134,6 +134,11 @@ assert(BF.state.wheelAngle === 0, "wheel angle resets");
 assert(typeof BF.animateBeadTo === "function", "animateBeadTo exported");
 assert(BF.normalizeAngle(-90) === 270, "normalizeAngle wraps");
 assert(BF.pocketLocalAngle(0) === 0, "pocket 0 at top");
+assert(typeof BF.unitPortrait === "function", "unitPortrait exported");
+assert(
+  BF.unitPortrait("flamewolf", "#ff7a4d", "berserk").indexOf("art/flamewolf.jpg") >= 0,
+  "portrait uses art path"
+);
 BF.spawnBeast("shieldstone");
 assert(BF.state.roster.length === 1, "spawn adds unit");
 assert(BF.state.roster[0].beastId === "shieldstone", "spawned shieldstone");
