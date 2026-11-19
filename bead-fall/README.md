@@ -37,4 +37,5 @@
 - `index.html` — 頁面結構
 - `styles.css` — 深色街機／寶石盤風格
 - `game.js` — 遊戲邏輯
+- `art/` — 角色立繪 JPEG（輪盤／名冊／戰鬥用）
 - `TASK.md` — 開發任務清單

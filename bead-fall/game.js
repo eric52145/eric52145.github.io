@@ -152,7 +152,7 @@
 
   const ROLE_ORDER = { tank: 0, berserk: 1, rare: 1, mage: 2, healer: 2, utility: 3 };
 
-  function svgPortrait(color, role) {
+  function svgPortrait(color, role, className) {
     const shapes = {
       tank:
         `<rect x="18" y="14" width="28" height="34" rx="6" fill="${color}"/>` +
@@ -183,10 +183,27 @@
         `<circle cx="32" cy="32" r="7" fill="#eafff8"/>`,
     };
     const body = shapes[role] || shapes.berserk;
+    const cls = className || "icon sprite port-fallback";
     return (
-      `<svg class="icon sprite" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">` +
+      `<svg class="${cls}" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">` +
       body +
       `</svg>`
+    );
+  }
+
+  /** Painted portrait with circular frame; SVG used only if the JPEG fails. */
+  function unitPortrait(id, color, role) {
+    const safeId = String(id || "flamewolf").replace(/[^a-z0-9_]/gi, "");
+    const src = "art/" + safeId + ".jpg";
+    return (
+      '<span class="portrait">' +
+      '<img class="icon sprite port-img" src="' +
+      src +
+      '" alt="" decoding="async" draggable="false" ' +
+      'onerror="this.onerror=null;this.classList.add(\'is-broken\');' +
+      "var f=this.nextElementSibling;if(f)f.classList.add('is-shown');\" />" +
+      svgPortrait(color, role, "icon sprite port-fallback") +
+      "</span>"
     );
   }
 
@@ -464,7 +481,10 @@
         (-ang - state.wheelAngle) +
         "deg)";
       pocket.innerHTML =
-        svgPortrait(def.color, def.role) + '<span class="name">' + def.name + "</span>";
+        unitPortrait(def.id, def.color, def.role) +
+        '<span class="name">' +
+        def.name +
+        "</span>";
       el.wheel.appendChild(pocket);
     }
 
@@ -481,7 +501,7 @@
       if (unit) {
         const def = BEASTS[unit.beastId];
         slot.innerHTML =
-          svgPortrait(def.color, def.role) +
+          unitPortrait(def.id, def.color, def.role) +
           '<div class="stars">' +
           starsText(unit.star) +
           "</div>" +
@@ -764,9 +784,10 @@
         const name = u.name || (BEASTS[u.beastId] && BEASTS[u.beastId].name) || "?";
         const color = u.color || (BEASTS[u.beastId] && BEASTS[u.beastId].color) || "#aaa";
         const role = u.role || (BEASTS[u.beastId] && BEASTS[u.beastId].role) || "berserk";
+        const artId = u.beastId || "flamewolf";
         const pct = Math.round((u.hp / u.maxHp) * 100);
         node.innerHTML =
-          svgPortrait(color, role) +
+          unitPortrait(artId, color, role) +
           '<div class="hpbar"><div class="hpfill" style="width:' +
           pct +
           '%"></div></div>' +
@@ -1189,6 +1210,7 @@
     animateBeadTo: animateBeadTo,
     pocketLocalAngle: pocketLocalAngle,
     normalizeAngle: normalizeAngle,
+    unitPortrait: unitPortrait,
   };
 
   renderWheel();
