@@ -7,7 +7,7 @@
 - **線上：** [https://eric52145.github.io/bead-fall/](https://eric52145.github.io/bead-fall/)
 - **本機：** 用瀏覽器直接打開 `bead-fall/index.html`（或任意靜態伺服器指向呢個資料夾）
 
-建議用手機直向，或桌面瀏覽器縮到約 390×844 預覽。
+建議用**電腦／筆電瀏覽器全螢幕或寬視窗**作為主要體驗；手機直向仍然可以玩（次要 fallback）。
 
 ## 點玩
 
