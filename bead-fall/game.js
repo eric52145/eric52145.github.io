@@ -443,9 +443,26 @@
     if (el.rotor) el.rotor.style.transform = "rotate(" + angle + "deg)";
   }
 
+  // Layout-scaled radii (defined on .wheel-wrap in CSS) so desktop + phone stay aligned.
+  const POCKET_R = "var(--pocket-r)";
+  const BEAD_R_OUTER = "var(--bead-r-outer)";
+  const BEAD_R_POCKET = "var(--bead-r-pocket)";
+
   function applyBeadTransform(angle, radiusCss) {
     el.bead.style.transform =
       "rotate(" + angle + "deg) translateY(calc(-1 * " + radiusCss + "))";
+  }
+
+  function pocketTransform(localAng, wheelAng) {
+    return (
+      "rotate(" +
+      localAng +
+      "deg) translateY(calc(-1 * " +
+      POCKET_R +
+      ")) rotate(" +
+      (-localAng - wheelAng) +
+      "deg)"
+    );
   }
 
   function renderWheel() {
@@ -474,12 +491,7 @@
       pocket.className = "pocket";
       pocket.style.setProperty("--ang", ang + "deg");
       pocket.dataset.index = String(i);
-      pocket.style.transform =
-        "rotate(" +
-        ang +
-        "deg) translateY(calc(-1 * min(32vw, 118px))) rotate(" +
-        (-ang - state.wheelAngle) +
-        "deg)";
+      pocket.style.transform = pocketTransform(ang, state.wheelAngle);
       pocket.innerHTML =
         unitPortrait(def.id, def.color, def.role) +
         '<span class="name">' +
@@ -489,7 +501,7 @@
     }
 
     // Resting bead sits in the winning pocket (under the top pointer after a spin).
-    applyBeadTransform(state.ballAngle, "min(34vw, 126px)");
+    applyBeadTransform(state.ballAngle, BEAD_R_POCKET);
   }
 
   function renderRoster(flashUid, anim) {
@@ -571,8 +583,8 @@
 
       const duration = 2600 + randInt(0, 900);
       const start = performance.now();
-      const rOuter = "min(44vw, 168px)";
-      const rPocket = "min(34vw, 126px)";
+      const rOuter = BEAD_R_OUTER;
+      const rPocket = BEAD_R_POCKET;
 
       el.bead.classList.add("spinning");
 
@@ -609,12 +621,7 @@
           const p = pockets[i];
           const base = Number(p.dataset.index) * pocketStep();
           p.style.setProperty("--ang", base + "deg");
-          p.style.transform =
-            "rotate(" +
-            base +
-            "deg) translateY(calc(-1 * min(32vw, 118px))) rotate(" +
-            (-base - wheelAng) +
-            "deg)";
+          p.style.transform = pocketTransform(base, wheelAng);
         }
 
         if (t < 1) {
@@ -632,12 +639,7 @@
         for (let i = 0; i < pockets.length; i += 1) {
           const p = pockets[i];
           const base = Number(p.dataset.index) * pocketStep();
-          p.style.transform =
-            "rotate(" +
-            base +
-            "deg) translateY(calc(-1 * min(32vw, 118px))) rotate(" +
-            (-base - state.wheelAngle) +
-            "deg)";
+          p.style.transform = pocketTransform(base, state.wheelAngle);
         }
 
         const pocket = el.wheel.querySelector('.pocket[data-index="' + index + '"]');
