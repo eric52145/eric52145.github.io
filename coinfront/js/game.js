@@ -607,6 +607,18 @@
       const btnCloseCamp = document.getElementById('btnCloseCamp');
       const btnCloseCamp2 = document.getElementById('btnCloseCamp2');
       const btnRerollShop = document.getElementById('btnRerollShop');
+      const btnToggleShop = document.getElementById('btnToggleShop');
+      const shopPanel = document.getElementById('shopPanel');
+      function setShopOpen(open) {
+        if (!btnToggleShop || !shopPanel) return;
+        btnToggleShop.setAttribute('aria-expanded', open ? 'true' : 'false');
+        shopPanel.hidden = !open;
+        const lab = btnToggleShop.querySelector('.shop-toggle-label');
+        if (lab) lab.textContent = open ? '收起商店' : '商店';
+      }
+      function isShopOpen() {
+        return btnToggleShop && btnToggleShop.getAttribute('aria-expanded') === 'true';
+      }
 
       let W = 1280, H = 720;
       let BED_TOP = 16;
@@ -630,24 +642,23 @@
         H = stageWrap.clientHeight || (mobile ? 540 : 720);
         const divider = mobile ? 18 : 22;
         if (mobile) {
-          // Stacked cabinet, but leave the majority of the stage to the vertical field
-          PUSHER_PANEL_H = Math.round(H * 0.38);
+          // Roomier tray after the shop drawer freed footer space, without swallowing the field.
+          PUSHER_PANEL_H = Math.round(H * 0.44);
         } else {
-          // Compact wide tray: native 1440x240 art. Keep the battlefield
-          // as the larger pane so the pusher no longer dominates the window.
+          // Deeper tray than the earlier 32–36% compact pass, but the battlefield stays the larger pane.
           let pusherH = Math.round(W / PUSHER_ART_ASPECT);
-          const minBattle = Math.round(H * 0.46);
-          const maxPusher = Math.round(H * 0.36);
-          const minPusher = Math.round(H * 0.24);
+          const minBattle = Math.round(H * 0.40);
+          const maxPusher = Math.round(H * 0.42);
+          const minPusher = Math.round(H * 0.32);
           if (H - divider - pusherH < minBattle) pusherH = H - divider - minBattle;
           PUSHER_PANEL_H = Math.max(minPusher, Math.min(maxPusher, pusherH));
         }
         BED_TOP = Math.round(PUSHER_PANEL_H * 0.04);
-        BED_BOTTOM = Math.round(PUSHER_PANEL_H * 0.785);
+        BED_BOTTOM = Math.round(PUSHER_PANEL_H * 0.81);
         BED_LEFT = Math.round(W * 0.10);
         BED_RIGHT = Math.round(W * 0.90);
         PUSHER_MIN_Y = Math.round(PUSHER_PANEL_H * 0.22);
-        PUSHER_MAX_Y = Math.round(PUSHER_PANEL_H * 0.45);
+        PUSHER_MAX_Y = Math.round(PUSHER_PANEL_H * 0.42);
         BATTLE_TOP = PUSHER_PANEL_H + divider;
         BATTLE_BOTTOM = H;
       }
@@ -739,13 +750,16 @@
         const span = Math.max(40, getRailRight(midY) - getRailLeft(midY) - 36);
         // Width-aware packing: a busy tray on 1440, not a jammed phone cabinet.
         // Desktop trays are very wide: a 15-column cap left ~70px gaps and looked sparse.
-        const colPitch = isMobileLayout() ? 34 : 40;
-        const cols = Math.max(6, Math.min(isMobileLayout() ? 10 : 22, Math.floor(span / colPitch)));
-        const rows = isMobileLayout() ? 3 : 2;
-        const y0 = PUSHER_MAX_Y + 10;
-        // Leave a real empty slot in front of the lip so the first strokes
-        // shove the pack but cannot auto-dump wave 1 without aiming.
-        const y1 = PUSHER_MAX_Y + Math.max(24, (BED_BOTTOM - PUSHER_MAX_Y) * 0.42);
+        const colPitch = isMobileLayout() ? 32 : 36;
+        const cols = Math.max(6, Math.min(isMobileLayout() ? 11 : 24, Math.floor(span / colPitch)));
+        const rows = isMobileLayout() ? 4 : 4;
+        const y0 = PUSHER_MAX_Y + 8;
+        // Fill the deeper bed, but keep a clear lip so wave 1 cannot auto-dump.
+        const lipGuard = 48;
+        const y1 = Math.min(
+          BED_BOTTOM - lipGuard,
+          PUSHER_MAX_Y + Math.max(28, (BED_BOTTOM - PUSHER_MAX_Y) * 0.78)
+        );
         let n = 0;
         for (let row = 0; row < rows; row++) {
           const fy = rows === 1 ? 0.5 : row / (rows - 1);
@@ -756,7 +770,7 @@
           // Odd rows are staggered, and a few cells are skipped for a settled look.
           const xOff = (row % 2 === 1) ? (rowW / cols) * 0.5 : 0;
           for (let col = 0; col < cols; col++) {
-            if (Math.random() < 0.12) continue;
+            if (Math.random() < 0.07) continue;
             const cx = rl + xOff + (col + 0.5) / cols * (rowW - xOff)
               + (Math.random() - 0.5) * 8;
             const jy = cy + (Math.random() - 0.5) * 6;
@@ -766,7 +780,7 @@
         }
         // A sparse gold-only row still well short of the lip — decoration, not a free first dump.
         const frontTypes = ['gold', 'gold', 'gold', 'gold', 'gold', 'gold'];
-        const frontCount = isMobileLayout() ? 3 : 4;
+        const frontCount = isMobileLayout() ? 4 : 7;
         const frontY = y1 + Math.max(16, (BED_BOTTOM - y1) * 0.28);
         for (let i = 0; i < frontCount; i++) {
           const fy = frontY + (Math.random() - 0.5) * 6;
@@ -777,7 +791,7 @@
           spawnBoardCoin(frontTypes[i % frontTypes.length], cx, fy, 0, 'lower');
         }
         // Upper shelf: a short occupied line, not just a handful of coins.
-        const upperCount = isMobileLayout() ? 5 : 8;
+        const upperCount = isMobileLayout() ? 7 : 12;
         const upperTypes = ['knight', 'gold', 'gold', 'archer', 'gold', 'shield', 'gold', 'hound'];
         for (let i = 0; i < upperCount; i++) {
           const cy = BED_TOP + 18 + Math.random() * 12;
@@ -829,7 +843,6 @@
         const landTier = dropY <= state.pusherY - 4 ? 'upper' : 'lower';
         spawnBoardCoin(typeKey, targetX, dropY, 55, landTier);
         SFX.gateX2();
-        showToast(`投入 ${COIN_TYPES[typeKey].icon} ${COIN_TYPES[typeKey].name} 到推幣機！`);
         updateUI();
       }
 
@@ -2434,13 +2447,20 @@
         btnBuySkill.disabled = blocked || state.gold < 50;
         btnBuyAmmo.disabled = blocked || state.gold < 16;
         if (btnRerollShop) btnRerollShop.disabled = blocked || state.gold < 8;
-        buySoldierLabel.textContent = `${COIN_TYPES[state.nextShopSoldier].icon} 買${SOLDIER_STATS[state.nextShopSoldier].name}幣`;
-        buySkillLabel.textContent = `${COIN_TYPES[state.nextShopSkill].icon} 買大招幣`;
+        const coinThumb = (type) => {
+          const src = ASSET_URIS['c_' + type] || (imgReady(ASSETS['c_' + type]) ? ASSETS['c_' + type].src : '');
+          if (src) return `<img src="${src}" alt="" class="px-icon shop-coin-ic" width="20" height="20">`;
+          return COIN_TYPES[type].icon;
+        };
+        buySoldierLabel.innerHTML = `${coinThumb(state.nextShopSoldier)} 買${SOLDIER_STATS[state.nextShopSoldier].name}幣`;
+        buySkillLabel.innerHTML = `${coinThumb(state.nextShopSkill)} 買大招幣`;
+        const buyAmmoLabel = document.getElementById('buyAmmoLabel');
+        if (buyAmmoLabel) buyAmmoLabel.innerHTML = `${coinThumb('gold')} +8普通幣`;
 
         refillQueue();
         nextCoinQueue.innerHTML = state.queue.slice(0, 3).map((k, idx) => {
           const def = COIN_TYPES[k];
-          const uri = ASSET_URIS['c_' + k];
+          const uri = ASSET_URIS['c_' + k] || (imgReady(ASSETS['c_' + k]) ? ASSETS['c_' + k].src : '');
           const inner = uri ? `<img src="${uri}" alt="${def.name}" class="px-icon queue-coin-img" />` : def.icon;
           return `<span class="queue-coin${idx === 0 ? ' is-next' : ''}" title="${def.name}">${inner}</span>`;
         }).join('');
@@ -2466,6 +2486,9 @@
 
       function resizeCanvas() {
         computeLayout();
+        if (stageWrap && stageWrap.style && typeof stageWrap.style.setProperty === 'function') {
+          stageWrap.style.setProperty('--battle-top', BATTLE_TOP + 'px');
+        }
         const dpr = Math.min(window.devicePixelRatio || 1, 2);
         canvas.width = Math.max(1, Math.floor(W * dpr));
         canvas.height = Math.max(1, Math.floor(H * dpr));
@@ -2607,6 +2630,19 @@
         updateUI();
       });
       if (btnRerollShop) btnRerollShop.addEventListener('click', rerollShop);
+      if (btnToggleShop) {
+        btnToggleShop.addEventListener('click', (ev) => {
+          ev.stopPropagation();
+          setShopOpen(!isShopOpen());
+        });
+      }
+      document.addEventListener('pointerdown', (ev) => {
+        if (!isShopOpen()) return;
+        const t = ev.target;
+        if (shopPanel && shopPanel.contains(t)) return;
+        if (btnToggleShop && btnToggleShop.contains(t)) return;
+        setShopOpen(false);
+      });
 
       btnMute.addEventListener('click', () => {
         SFX.muted = !SFX.muted;
@@ -2667,6 +2703,7 @@
         else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') { state.dropXRatio = Math.min(0.9, state.dropXRatio + 0.08); }
         else if (e.key === 's' || e.key === 'S') { triggerMachineShake(); }
         else if (e.key === 'p' || e.key === 'P') { btnPause.click(); }
+        else if (e.key === 'Escape') { setShopOpen(false); }
       });
 
       let rafId = null;
