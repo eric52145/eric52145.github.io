@@ -66,23 +66,31 @@
         </div>
       </div>
 
-      <div class="shop-row">
-        <button id="btnBuySoldier" class="shop-btn soldier" type="button">
-          <span id="buySoldierLabel">⚔️ 買兵幣</span>
-          <span class="price">$20</span>
+      <div class="shop-dock">
+        <button id="btnToggleShop" class="shop-toggle" type="button" aria-expanded="false" aria-controls="shopPanel">
+          <span class="shop-toggle-label">商店</span>
+          <span class="shop-chevron" aria-hidden="true">▴</span>
         </button>
-        <button id="btnBuySkill" class="shop-btn skill" type="button">
-          <span id="buySkillLabel">☄️ 買大招幣</span>
-          <span class="price">$50</span>
-        </button>
-        <button id="btnBuyAmmo" class="shop-btn ammo" type="button">
-          <span>🪙 +8普通幣</span>
-          <span class="price">$16</span>
-        </button>
-        <button id="btnRerollShop" class="shop-btn reroll" type="button">
-          <span>刷新貨單</span>
-          <span class="price">$8</span>
-        </button>
+        <div id="shopPanel" class="shop-panel" hidden>
+          <div class="shop-row">
+            <button id="btnBuySoldier" class="shop-btn soldier" type="button">
+              <span id="buySoldierLabel">買兵幣</span>
+              <span class="price">$20</span>
+            </button>
+            <button id="btnBuySkill" class="shop-btn skill" type="button">
+              <span id="buySkillLabel">買大招幣</span>
+              <span class="price">$50</span>
+            </button>
+            <button id="btnBuyAmmo" class="shop-btn ammo" type="button">
+              <span id="buyAmmoLabel">+8普通幣</span>
+              <span class="price">$16</span>
+            </button>
+            <button id="btnRerollShop" class="shop-btn reroll" type="button">
+              <span>刷新貨單</span>
+              <span class="price">$8</span>
+            </button>
+          </div>
+        </div>
       </div>
 
       <div class="action-row">
@@ -140,7 +148,7 @@
         <li><strong class="c-gold">1. 上方推幣機：</strong>點擊、拖曳或撳空白鍵（每次投幣有短間隔），將硬幣掉上瞄準柱所對嘅位置。推進板會把幣推落下方戰場。我方沿戰場上方全闊列陣，敵軍由下方湧上。左右漏口會漏幣；底邊緩緩移動嘅 <strong>x2 黃金門</strong>會令效果加倍。</li>
         <li><strong class="c-green">2. 跌落效果：</strong>幣由推盤前緣跌入場內，彈地一兩下，<strong>落地後</strong>先生效：兵幣喺落點召喚士兵加入大軍；🪙 金幣獲得 <strong>$6</strong>；若穿過黃金門則獲得 <strong>$12</strong> 並額外 <strong>+1 投幣額度</strong>。</li>
         <li><strong class="c-sky">3. 地圖砲與士兵大技：</strong>☄️ 隕石幣＝全場轟炸、❄️ 暴風雪幣＝全敵冰凍、⚡ 號角幣＝全體在場士兵進入狂暴＋回血＋集體放劍氣。</li>
-        <li><strong class="c-pink">4. 合成、滿員同拍機台：</strong>2.8 秒內連續跌落同類型兵幣會合成 2★／3★。軍團滿員後再召兵，會為場上隨機一隻同類型（否則隨機）士兵升星。能量 100% 可撳「拍機台」，將盤面硬幣一齊推落。</li>
+        <li><strong class="c-pink">4. 合成、滿員同拍機台：</strong>2.8 秒內連續跌落同類型兵幣會合成 2★／3★。軍團滿員後再召兵，會為場上隨機一隻同類型（否則隨機）士兵升星。能量 100% 可撳「拍機台」，將盤面硬幣一齊推落。下方「商店」按鈕可展開，用金幣買兵幣、大招幣、補幣或刷新貨單。</li>
         <li><strong class="c-stone">5. 波次：</strong>守住一波後，1★ 士兵退役換金幣（另有過關賞金），2★／3★ 留守。選完升級有 3 秒整軍時間先開下一波。戰役共 12 波（之後可無盡），每 3 波換一種 BOSS。城堡血量 100，歸零即完。營地可解鎖下一局的開場加成，第一次玩唔使解鎖都完整。</li>
       </ul>
       <button id="btnCloseHelp2" class="primary-btn" type="button">開打！</button>
