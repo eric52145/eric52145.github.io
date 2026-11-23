@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-HK">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>推幣軍團 — COINFRONT</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="top-bar">
+      <div class="brand">
+        <div class="brand-title">推幣軍團</div>
+        <div class="brand-sub">COINFRONT</div>
+        <div id="hudBest" class="brand-best">最高：第 1 波</div>
+      </div>
+
+      <div class="hud-cluster">
+        <div class="hud-pill">
+          <span class="lbl">波</span>
+          <span id="hudWave" class="val">1</span>
+        </div>
+        <div class="hud-pill chapter" title="章節">
+          <span id="hudChapter" class="val">邊關試鋒</span>
+        </div>
+        <div class="hud-pill hp" title="城堡血量">
+          <span class="lbl">♥</span>
+          <span id="hudHp" class="val">100</span>
+        </div>
+        <div class="hud-pill ammo" title="可投普通幣">
+          <span class="lbl">🪙</span>
+          <span id="hudAmmo" class="val">20</span>
+        </div>
+        <div class="hud-pill gold" title="商店金幣">
+          <span class="lbl">$</span>
+          <span id="hudGold" class="val">30</span>
+        </div>
+      </div>
+
+      <div class="top-actions">
+        <button id="btnCamp" class="icon-btn" title="營地進度" type="button">🏕️</button>
+        <button id="btnMute" class="icon-btn" title="音效" type="button">🔊</button>
+        <button id="btnPause" class="icon-btn" title="暫停" type="button">⏸</button>
+        <button id="btnHelp" class="icon-btn" title="玩法" type="button">?</button>
+      </div>
+    </header>
+
+    <div id="stageWrap" class="stage-wrap">
+      <canvas id="gameCanvas"></canvas>
+      <div id="comboBadge">連召 x2!</div>
+      <div id="toastMsg">提示</div>
+    </div>
+
+    <footer class="control-deck">
+      <div class="queue-block">
+        <div class="queue-row">
+          <span class="queue-label">下一枚：</span>
+          <div id="nextCoinQueue"></div>
+        </div>
+        <div id="relicSummary" class="relic-line">我方軍團：0</div>
+        <div class="hint-line">
+          鍵盤：<kbd>空白鍵</kbd> 投幣　<kbd>←</kbd><kbd>→</kbd> 瞄準　<kbd>S</kbd> 拍機台　<kbd>P</kbd> 暫停
+        </div>
+      </div>
+
+      <div class="shop-row">
+        <button id="btnBuySoldier" class="shop-btn soldier" type="button">
+          <span id="buySoldierLabel">⚔️ 買兵幣</span>
+          <span class="price">$20</span>
+        </button>
+        <button id="btnBuySkill" class="shop-btn skill" type="button">
+          <span id="buySkillLabel">☄️ 買大招幣</span>
+          <span class="price">$50</span>
+        </button>
+        <button id="btnBuyAmmo" class="shop-btn ammo" type="button">
+          <span>🪙 +8普通幣</span>
+          <span class="price">$16</span>
+        </button>
+        <button id="btnRerollShop" class="shop-btn reroll" type="button">
+          <span>刷新貨單</span>
+          <span class="price">$8</span>
+        </button>
+      </div>
+
+      <div class="action-row">
+        <button id="btnDropCenter" class="action-btn drop" type="button">
+          🪙 投普通幣推盤
+          <span id="dropHintSub" class="drop-sub">可拖曳上方</span>
+        </button>
+        <button id="btnShake" class="action-btn shake" type="button">
+          <span>💥 拍機台!</span>
+          <span id="shakeMeterText" class="meter">0%</span>
+        </button>
+      </div>
+    </footer>
+  </div>
+
+  <div id="upgradeModal" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-card upgrade">
+      <div class="modal-hero">
+        <span class="modal-kicker">波次過關！</span>
+        <h3>強化推幣機與軍團幣袋</h3>
+        <p class="modal-lead">3 選 1 升級，並立即補充 +6 枚投幣額度</p>
+      </div>
+      <div id="upgradeChoices"></div>
+    </div>
+  </div>
+
+  <div id="gameOverModal" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-card over">
+      <div class="over-emoji">💥</div>
+      <h3 class="over-title">城堡防線被攻破！</h3>
+      <p id="gameOverText"></p>
+      <button id="btnRestart" class="primary-btn" type="button">🔄 再嚟一局</button>
+    </div>
+  </div>
+
+  <div id="campModal" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-card help">
+      <div class="help-head">
+        <h3>營地進度</h3>
+        <button id="btnCloseCamp" class="icon-btn" type="button" title="關閉">✕</button>
+      </div>
+      <p class="modal-lead">局外成長係可選的。第一次玩唔使解鎖都係完整一局；打得越遠，下一局開場會稍微豐厚。唔會鎖內容硬逼重複刷。</p>
+      <ul id="campList" class="help-list camp-list"></ul>
+      <button id="btnCloseCamp2" class="primary-btn" type="button">返回</button>
+    </div>
+  </div>
+
+  <div id="helpModal" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-card help">
+      <div class="help-head">
+        <h3>推幣軍團 玩法說明</h3>
+        <button id="btnCloseHelp" class="icon-btn" type="button" title="關閉">✕</button>
+      </div>
+      <ul class="help-list">
+        <li><strong class="c-gold">1. 上方推幣機：</strong>點擊、拖曳或撳空白鍵（每次投幣有短間隔），將硬幣掉上瞄準柱所對嘅位置。推進板會把幣推落下方戰場。我方沿戰場上方全闊列陣，敵軍由下方湧上。左右漏口會漏幣；底邊緩緩移動嘅 <strong>x2 黃金門</strong>會令效果加倍。</li>
+        <li><strong class="c-green">2. 跌落效果：</strong>幣由推盤前緣跌入場內，彈地一兩下，<strong>落地後</strong>先生效：兵幣喺落點召喚士兵加入大軍；🪙 金幣獲得 <strong>$6</strong>；若穿過黃金門則獲得 <strong>$12</strong> 並額外 <strong>+1 投幣額度</strong>。</li>
+        <li><strong class="c-sky">3. 地圖砲與士兵大技：</strong>☄️ 隕石幣＝全場轟炸、❄️ 暴風雪幣＝全敵冰凍、⚡ 號角幣＝全體在場士兵進入狂暴＋回血＋集體放劍氣。</li>
+        <li><strong class="c-pink">4. 合成、滿員同拍機台：</strong>2.8 秒內連續跌落同類型兵幣會合成 2★／3★。軍團滿員後再召兵，會為場上隨機一隻同類型（否則隨機）士兵升星。能量 100% 可撳「拍機台」，將盤面硬幣一齊推落。</li>
+        <li><strong class="c-stone">5. 波次：</strong>守住一波後，1★ 士兵退役換金幣（另有過關賞金），2★／3★ 留守。選完升級有 3 秒整軍時間先開下一波。戰役共 12 波（之後可無盡），每 3 波換一種 BOSS。城堡血量 100，歸零即完。營地可解鎖下一局的開場加成，第一次玩唔使解鎖都完整。</li>
+      </ul>
+      <button id="btnCloseHelp2" class="primary-btn" type="button">開打！</button>
+    </div>
+  </div>
+
+  <script src="js/assets.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>
