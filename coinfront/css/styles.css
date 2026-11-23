@@ -59,11 +59,16 @@ img.px-icon {
   display: flex;
   flex-direction: column;
   background: var(--panel);
-  border-left: 1px solid var(--line);
-  border-right: 1px solid var(--line);
+  /* Side lines are inset shadows so a 1440px viewport keeps a 1440px stage
+     (a 1px border + border-box would shrink the canvas to 1438 and break
+     a 48px battlefield grid). */
+  border-left: 0;
+  border-right: 0;
   box-shadow:
     0 0 48px rgba(176, 138, 62, 0.16),
-    inset 0 0 24px rgba(0, 0, 0, 0.55);
+    inset 0 0 24px rgba(0, 0, 0, 0.55),
+    inset 1px 0 0 var(--line),
+    inset -1px 0 0 var(--line);
 }
 
 .top-bar {
