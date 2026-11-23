@@ -47,8 +47,10 @@ canvas {
   cursor: crosshair;
 }
 
-img.px-icon {
+img.px-icon, svg.px-svg {
   image-rendering: pixelated;
+  display: inline-block;
+  vertical-align: middle;
 }
 
 /* Wide desktop stage */
@@ -208,7 +210,7 @@ img.px-icon {
 #toastMsg {
   pointer-events: none;
   position: absolute;
-  top: calc(var(--battle-top, 42%) - 16px);
+  top: calc(var(--battle-top, 42%) + 8px);
   left: 50%;
   transform: translateX(-50%);
   padding: 6px 12px;
@@ -379,8 +381,150 @@ img.px-icon {
 
 .shop-row {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 8px;
+}
+.shop-btn.giant { border-color: rgba(245, 197, 66, 0.85); color: #fde68a; background: #22180c; }
+
+/* PC 16:9 Wide-Screen Steam Dual-Sidebar Layout */
+.main-workspace {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  overflow: hidden;
+}
+.pc-sidebar {
+  display: none;
+}
+@media (min-width: 1120px) {
+  .pc-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 248px;
+    flex-shrink: 0;
+    padding: 10px;
+    background: linear-gradient(180deg, #13100b 0%, #0d121b 100%);
+    overflow-y: auto;
+  }
+  .pc-left { border-right: 1px solid var(--brass-dim); }
+  .pc-right { border-left: 1px solid var(--brass-dim); }
+  .shop-dock { display: none; }
+}
+.side-card {
+  background: #14100b;
+  border: 1px solid rgba(176, 138, 62, 0.38);
+  border-radius: 6px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.side-grow { flex: 1 1 auto; min-height: 80px; }
+.side-title {
+  font-size: 12px;
+  font-weight: 900;
+  color: var(--gold);
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid rgba(176, 138, 62, 0.25);
+  padding-bottom: 5px;
+}
+.side-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 11px;
+}
+.syn-item {
+  padding: 6px 8px;
+  border-radius: 4px;
+  background: #0e0b07;
+  border: 1px solid rgba(120, 90, 40, 0.35);
+  color: #a89f8c;
+  line-height: 1.35;
+}
+.syn-item.active {
+  background: rgba(176, 138, 62, 0.16);
+  border-color: var(--gold);
+  color: #fef3c7;
+}
+.syn-head {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 800;
+  margin-bottom: 2px;
+}
+.terrain-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 11px;
+  color: #d6cbb4;
+}
+.t-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+.t-dot.left { background: #38bdf8; }
+.t-dot.mid { background: #f97316; }
+.t-dot.right { background: #fde047; }
+.side-relics {
+  font-size: 12px;
+  color: #d6cbb4;
+  line-height: 1.5;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.relic-chip {
+  padding: 3px 6px;
+  border-radius: 4px;
+  background: #1c160f;
+  border: 1px solid rgba(176, 138, 62, 0.4);
+  font-size: 11px;
+  color: #fde68a;
+}
+.side-shop-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.side-shop-grid .shop-btn {
+  justify-content: space-between;
+  padding: 8px 10px;
+}
+.dps-board {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 11px;
+  color: #d6cbb4;
+}
+.dps-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.dps-row-head {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 700;
+}
+.dps-bar-bg {
+  height: 5px;
+  border-radius: 3px;
+  background: #1f1a14;
+  overflow: hidden;
+}
+.dps-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #f59e0b, #fde047);
 }
 .shop-coin-ic {
   width: 20px;

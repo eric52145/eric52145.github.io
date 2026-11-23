@@ -19,7 +19,7 @@
       ['goblin','slime','wolf','imp','orc','troll','caster','skel','shaman','bomber','brute','boss','bat','beetle','wraith','stoneboss','witch','colossus'].forEach(k => {
         EXTRA_SPRITES.push(['unit_' + k + '_north', 'assets/units/' + k + '_north.png']);
       });
-      ['banner','frost','alchemist'].forEach(k => {
+      ['banner','frost','alchemist','spear','priest','hound','bombard','rogue','giant'].forEach(k => {
         EXTRA_SPRITES.push(['c_' + k, 'assets/units/c_' + k + '.png']);
       });
       EXTRA_SPRITES.forEach(([k, url]) => {
@@ -449,8 +449,16 @@
         banner:  { id: 'banner',  kind: 'soldier', name: '軍旗手', icon: '🚩', fill: '#b45309', stroke: '#fed7aa', r: 15 },
         frost:   { id: 'frost',   kind: 'soldier', name: '霜法師', icon: '🧊', fill: '#0369a1', stroke: '#bae6fd', r: 15 },
         alchemist:{ id: 'alchemist',kind:'soldier',name: '煉金術士', icon: '🧪', fill: '#4d7c0f', stroke: '#bef264', r: 15 },
+        giant:   { id: 'giant',   kind: 'giant',   name: '超重巨幣', icon: '🪨', fill: '#b45309', stroke: '#fde047', r: 22, mass: 2.5 },
         stone:   { id: 'stone',   kind: 'hazard',  name: '詛咒石',   icon: '🪨', fill: '#475569', stroke: '#94a3b8', r: 17 }
       };
+
+      const SYNERGY_DEFS = [
+        { id: 'pyro',  name: '🔥 烈焰砲火', need: 3, types: ['mage', 'bombard', 'alchemist'], desc: '遠程／爆破傷害 +25%' },
+        { id: 'holy',  name: '✨ 聖光結界', need: 3, types: ['shield', 'priest', 'banner'],   desc: '每4秒城牆+3HP · 減傷15%' },
+        { id: 'melee', name: '⚔️ 鐵騎衝陣', need: 4, types: ['knight', 'spear', 'hound', 'rogue'], desc: '全體近戰攻速 +25%' },
+        { id: 'frost', name: '❄️ 極寒獵手', need: 3, types: ['archer', 'frost'],              desc: '遠程射程 +25% · 附帶緩速' }
+      ];
 
       const SOLDIER_STATS = {
         gold:    { name: '斥候', icon: '🗡️', hp: 46,  atk: 11, range: 48,  speed: 0, cd: 0.78, color: '#fbbf24', r: 11, proj: null },
@@ -524,6 +532,8 @@
         { id: 'twin_drop',    icon: '🪙', name: '雙幣連投', desc: '每次投幣額外多掉 1 枚金幣到盤上。', tag: '推盤' },
         { id: 'wide_gate',    icon: '🚪', name: '加寬 x2 黃金門 (+45%)', desc: '黃金門加寬，更容易瞄中雙倍。', tag: '推盤' },
         { id: 'gate_slow',    icon: '⏳', name: '黃金門緩行', desc: '黃金門再慢一截，瞄準更從容。', tag: '推盤', unique: true },
+        { id: 'magnet_zone',  icon: '🧲', name: '中央磁力線圈', desc: '推盤中央產生磁場，自動將兵幣向中間黃金門聚攏，避開兩側漏幣！', tag: '推盤', unique: true },
+        { id: 'add_giant',    icon: '🪨', name: '超重攻城巨幣 (+2 枚)', desc: '幣袋加入 2 枚超重巨幣，在推盤上重壓推開整排硬幣，落地震波＋空降 2★ 盾衛！', tag: '推盤' },
         { id: 'army_buff',    icon: '💪', name: '精銳訓練 (+25% 全兵戰力)', desc: '以後召喚的士兵血量與攻擊永久提升 25%。', tag: '軍團' },
         { id: 'veterans',    icon: '🎖️', name: '老兵契約', desc: '超過人口上限整編時，本應退下嘅 1★ 有 40% 機會繼續留守。', tag: '軍團', unique: true },
         { id: 'wall_repair',  icon: '🏰', name: '搶修城牆 (+30 HP)', desc: '立即修復 30 點城堡血量（不超過上限）。', tag: '城防' },
@@ -555,8 +565,15 @@
         ammoRegenTimer: 0,
         shakeMeter: 35,
         paused: false,
+        modalPaused: false,
         gameOver: false,
         drafting: false,
+        magnetZone: false,
+        pusherChillTimer: 0,
+        bossHazardTimer: 6.5,
+        holyHealTimer: 0,
+        activeSynergies: {},
+        dmgStats: {},
         relics: [],
         armyMult: 1,
         pusherSpeedMult: 1,
@@ -580,6 +597,7 @@
         projectiles: [],
         enemyProjectiles: [],
         meteors: [],
+        slashes: [],
         particles: [],
         floatTexts: [],
 
@@ -673,6 +691,20 @@
       const btnBuySoldier = document.getElementById('btnBuySoldier');
       const btnBuySkill = document.getElementById('btnBuySkill');
       const btnBuyAmmo = document.getElementById('btnBuyAmmo');
+      const btnBuyGiant = document.getElementById('btnBuyGiant');
+      const pcBuySoldier = document.getElementById('pcBuySoldier');
+      const pcBuySkill = document.getElementById('pcBuySkill');
+      const pcBuyGiant = document.getElementById('pcBuyGiant');
+      const pcBuyAmmo = document.getElementById('pcBuyAmmo');
+      const pcRerollShop = document.getElementById('pcRerollShop');
+      const pcBuySoldierLabel = document.getElementById('pcBuySoldierLabel');
+      const pcBuySkillLabel = document.getElementById('pcBuySkillLabel');
+      const pcBuyAmmoLabel = document.getElementById('pcBuyAmmoLabel');
+      const buyGiantLabel = document.getElementById('buyGiantLabel');
+      const pcBuyGiantLabel = document.getElementById('pcBuyGiantLabel');
+      const synergyList = document.getElementById('synergyList');
+      const sideRelics = document.getElementById('sideRelics');
+      const dpsBoard = document.getElementById('dpsBoard');
       const buySoldierLabel = document.getElementById('buySoldierLabel');
       const buySkillLabel = document.getElementById('buySkillLabel');
       const hudBest = document.getElementById('hudBest');
@@ -1084,6 +1116,22 @@
             const oy = n === 0 ? 0 : (Math.random() < 0.5 ? -14 : 14);
             spawnSoldier(drop.type, drop.tx + ox, drop.ty + oy, star);
           }
+        } else if (drop.type === 'giant') {
+          SFX.meteor();
+          state.screenShake = Math.max(state.screenShake, 9);
+          const dmg = Math.round(45 * state.armyMult * x2);
+          state.meteors.push({ x: drop.tx, y: drop.ty + 40, r: 68, life: 0.45, maxLife: 0.45 });
+          addParticles(drop.tx, drop.ty, '#fde047', 18);
+          for (const e of [...state.enemies]) {
+            if (Math.hypot(e.x - drop.tx, e.y - drop.ty) <= 165) {
+              e.y = Math.min(BATTLE_BOTTOM - 16, e.y + 42);
+              hurtEnemy(e, dmg, '#fde047', { source: 'giant' });
+            }
+          }
+          for (let n = 0; n < x2; n++) {
+            spawnSoldier('shield', drop.tx + (n ? 18 : 0), drop.ty, 2);
+          }
+          addFloatText(drop.tx, drop.ty - 16, `${x2 > 1 ? '★x2 ' : ''}🪨 巨幣震擊＋2★盾衛!`, '#fde047');
         } else if (drop.type === 'meteor') {
           SFX.meteor();
           state.screenShake = Math.max(state.screenShake, 10);
@@ -1225,15 +1273,64 @@
           lootGold: !!st.lootGold,
           auraMul: 1,
           frenzyTimer: stars >= 2 ? 2.5 : 0,
-          flash: 0
+          flash: 0,
+          lunge: 0,
+          recoil: 0
         });
         addParticles(pos.x, pos.y, stars >= 2 ? '#fde047' : st.color, stars >= 2 ? 14 : 8);
         addFloatText(pos.x, pos.y - 16, stars >= 2 ? `${'★'.repeat(stars)}精英${st.name}!` : `+${st.name}`, stars >= 2 ? '#fde047' : '#f8fafc');
+        checkAutoTripleMerge(typeKey);
+      }
+
+      function checkAutoTripleMerge(typeKey) {
+        for (const starLvl of [1, 2]) {
+          const matches = state.soldiers.filter(s => s.type === typeKey && (s.stars || 1) === starLvl);
+          if (matches.length >= 3) {
+            const keep = matches[0];
+            const removeIds = new Set([matches[1].id, matches[2].id]);
+            state.soldiers = state.soldiers.filter(s => !removeIds.has(s.id));
+            const nextStar = starLvl + 1;
+            const st = SOLDIER_STATS[typeKey];
+            const starScale = nextStar === 3 ? 2.9 : 1.85;
+            keep.stars = nextStar;
+            keep.maxHp = Math.round(st.hp * state.armyMult * starScale);
+            keep.hp = keep.maxHp;
+            keep.atk = Math.round(st.atk * state.armyMult * starScale);
+            keep.r = st.r + (nextStar - 1) * 3.5;
+            keep.range = st.range + (nextStar - 1) * 10;
+            keep.cd = st.cd * (nextStar === 3 ? 0.8 : 0.9);
+            if (nextStar === 3) keep.aoe = true;
+            keep.frenzyTimer = Math.max(keep.frenzyTimer, 3.0);
+            SFX.elite();
+            addParticles(keep.x, keep.y, '#fde047', 16);
+            addFloatText(keep.x, keep.y - 20, `✨ 三合一 ${'★'.repeat(nextStar)}${st.name}!`, '#fde047');
+          }
+        }
+      }
+
+      function computeSynergies() {
+        const res = {};
+        for (const def of SYNERGY_DEFS) {
+          const cnt = state.soldiers.filter(s => def.types.includes(s.type)).length;
+          res[def.id] = { count: cnt, active: cnt >= def.need };
+        }
+        state.activeSynergies = res;
+      }
+
+      function getTerrainBuff(s) {
+        const ratio = s.x / Math.max(1, W);
+        if (ratio < 0.333) return { zone: 'left', rangeMul: s.proj ? 1.25 : 1, dmgMul: 1, spdMul: 1 };
+        if (ratio < 0.666) return { zone: 'mid',  rangeMul: 1, dmgMul: 1.25, spdMul: 1 };
+        return { zone: 'right', rangeMul: 1, dmgMul: 1, spdMul: 1.25 };
       }
 
       function hurtEnemy(e, dmg, color = '#ffffff', opts = {}) {
+        if (opts && opts.source) {
+          state.dmgStats[opts.source] = (state.dmgStats[opts.source] || 0) + dmg;
+        }
         e.hp -= dmg;
-        e.flash = 0.12;
+        e.flash = 0.14;
+        e.recoil = 1.0;
         if (opts.chill) e.freezeTimer = Math.max(e.freezeTimer || 0, opts.chill);
         addFloatText(e.x, e.y - e.r - 5, `-${dmg}`, color);
         if (e.hp <= 0) {
@@ -1474,6 +1571,8 @@
         else if (u.id === 'army_buff') state.armyMult += 0.25;
         else if (u.id === 'wide_gate') state.gateWidthMult += 0.45;
         else if (u.id === 'gate_slow') state.gateSpeedMult *= 0.55;
+        else if (u.id === 'magnet_zone') state.magnetZone = true;
+        else if (u.id === 'add_giant') state.bag.push('giant', 'giant');
         else if (u.id === 'veterans') state.veteransChance = 0.4;
         else if (u.id === 'wall_repair') state.baseHp = Math.min(state.maxBaseHp, state.baseHp + 30);
         else if (u.id === 'gold_cache') state.gold += 28;
@@ -1529,7 +1628,37 @@
       // 8. MAIN UPDATE LOOP (PUSHER + FALLING COINS + SOLDIER WAR)
       // ==========================================
       function update(dt) {
-        if (state.paused || state.gameOver || state.drafting) return;
+        if (state.paused || state.modalPaused || state.gameOver || state.drafting) return;
+        computeSynergies();
+        if (state.pusherChillTimer > 0) state.pusherChillTimer = Math.max(0, state.pusherChillTimer - dt);
+
+        // Holy Synergy: restore +3 Castle HP every 4s
+        if (state.activeSynergies.holy && state.activeSynergies.holy.active) {
+          state.holyHealTimer += dt;
+          if (state.holyHealTimer >= 4.0) {
+            state.holyHealTimer = 0;
+            if (state.baseHp < state.maxBaseHp) {
+              state.baseHp = Math.min(state.maxBaseHp, state.baseHp + 3);
+              addFloatText(W * 0.5, BATTLE_TOP + 22, '✨ 聖光修復 +3 城堡', '#fde68a');
+            }
+          }
+        }
+
+        // Boss Pusher Interaction: active Bosses periodically chill the pusher & drop a stone!
+        const hasBoss = state.enemies.some(e => e.isBoss);
+        if (hasBoss) {
+          state.bossHazardTimer -= dt;
+          if (state.bossHazardTimer <= 0) {
+            state.bossHazardTimer = 8.5;
+            state.pusherChillTimer = 2.2;
+            state.screenShake = Math.max(state.screenShake, 6);
+            if (state.coins.filter(c => c.type === 'stone').length < 3) {
+              const sx = BED_LEFT + 36 + Math.random() * Math.max(40, BED_RIGHT - BED_LEFT - 72);
+              spawnBoardCoin('stone', sx, PUSHER_MAX_Y + 12, 35, 'lower');
+            }
+            showToast('❄️ BOSS 干擾推幣機！推板緩速並掉落詛咒石！');
+          }
+        }
 
         state.openingElapsed = (state.openingElapsed || 0) + dt;
         if (state.dropCooldown > 0) state.dropCooldown -= dt;
@@ -1577,7 +1706,8 @@
         state.gateX = minGX + ((Math.sin(state.gatePhase) + 1) / 2) * Math.max(10, maxGX - minGX);
 
         // --- A. TOP COIN PUSHER PHYSICS ---
-        state.pusherPhase += dt * 2.35 * state.pusherSpeedMult;
+        const chillMul = state.pusherChillTimer > 0 ? 0.42 : 1;
+        state.pusherPhase += dt * 2.35 * state.pusherSpeedMult * chillMul;
         const osc = (Math.sin(state.pusherPhase) + 1) / 2;
         const nextPusherY = PUSHER_MIN_Y + osc * (PUSHER_MAX_Y - PUSHER_MIN_Y);
         // If the plate was never posed (pusherY starts at 0) or this is a zero-dt boot
@@ -1647,19 +1777,32 @@
               const dist = Math.hypot(dx, dy) || 0.001;
               const minD = a.r + b.r;
               if (dist < minD) {
-                const overlap = (minD - dist) * 0.52;
+                const ma = (COIN_TYPES[a.type] && COIN_TYPES[a.type].mass) || 1;
+                const mb = (COIN_TYPES[b.type] && COIN_TYPES[b.type].mass) || 1;
+                const totM = ma + mb;
+                const overlap = (minD - dist) * 0.54;
                 const nx = dx / dist;
                 const ny = dy / dist;
-                a.x -= nx * overlap; a.y -= ny * overlap;
-                b.x += nx * overlap; b.y += ny * overlap;
+                a.x -= nx * overlap * (mb / totM) * 2; a.y -= ny * overlap * (mb / totM) * 2;
+                b.x += nx * overlap * (ma / totM) * 2; b.y += ny * overlap * (ma / totM) * 2;
                 const relVy = (a.vy - b.vy) * ny;
                 if (relVy > 0) {
-                  const imp = relVy * 0.65;
-                  a.vy -= imp * ny * 0.4;
-                  b.vy += imp * ny * 0.9;
+                  const imp = relVy * 0.72;
+                  a.vy -= imp * ny * (mb / totM);
+                  b.vy += imp * ny * (ma / totM) * 1.4;
                   if (imp > 28 && iter === 0) SFX.clink();
                 }
               }
+            }
+          }
+        }
+
+        // Magnet Zone upgrade: pull soldier/skill coins gently toward center x2 gate
+        if (state.magnetZone) {
+          for (const c of state.coins) {
+            if (c.tier === 'lower' && c.type !== 'gold' && c.type !== 'stone') {
+              const dxM = state.gateX - c.x;
+              c.vx += Math.sign(dxM) * Math.min(28, Math.abs(dxM) * 0.35) * dt;
             }
           }
         }
@@ -1747,11 +1890,18 @@
           }
         }
 
-        // Soldiers AI
+        // Soldiers AI (with Synergy + Battlefield Terrain Buffs!)
+        const synPyro = state.activeSynergies.pyro && state.activeSynergies.pyro.active;
+        const synMelee = state.activeSynergies.melee && state.activeSynergies.melee.active;
+        const synFrost = state.activeSynergies.frost && state.activeSynergies.frost.active;
         for (const s of state.soldiers) {
           if (s.flash > 0) s.flash -= dt;
+          if (s.lunge > 0) s.lunge = Math.max(0, s.lunge - dt * 6.5);
+          if (s.recoil > 0) s.recoil = Math.max(0, s.recoil - dt * 7.5);
           if (s.frenzyTimer > 0) s.frenzyTimer -= dt;
-          s.cdTimer -= dt * (s.frenzyTimer > 0 ? 1.85 : 1);
+          const tb = getTerrainBuff(s);
+          const spdBonus = (s.frenzyTimer > 0 ? 1.85 : 1) * tb.spdMul * (!s.proj && synMelee ? 1.25 : 1);
+          s.cdTimer -= dt * spdBonus;
 
           // Find nearest enemy
           let target = null;
@@ -1782,9 +1932,14 @@
           }
 
           if (target) {
-            if (bestD <= s.range + target.r) {
+            const effRange = s.range * tb.rangeMul * (s.proj && synFrost ? 1.25 : 1);
+            if (bestD <= effRange + target.r) {
               if (s.cdTimer <= 0) {
                 s.cdTimer = s.cd;
+                const dmgMul = (s.auraMul || 1) * tb.dmgMul * (s.proj && synPyro ? 1.25 : 1);
+                const finalDmg = Math.round(s.atk * dmgMul);
+                const effChill = Math.max(s.chill || 0, (s.proj && synFrost) ? 0.55 : 0);
+                s.lunge = 1.0;
                 if (s.proj) {
                   const dx = target.x - s.x;
                   const dy = target.y - s.y;
@@ -1793,18 +1948,28 @@
                     x: s.x, y: s.y,
                     vx: (dx / len) * 260,
                     vy: (dy / len) * 260,
-                    dmg: Math.round(s.atk * (s.auraMul || 1)),
+                    dmg: finalDmg,
                     color: s.proj,
                     r: s.aoe ? 5.5 : 3.5,
                     aoe: s.aoe,
                     pierce: false,
-                    chill: s.chill || 0,
+                    chill: effChill,
                     lootGold: !!s.lootGold,
+                    source: s.type,
                     hitIds: new Set()
                   });
                 } else {
                   SFX.hit();
-                  hurtEnemy(target, Math.round(s.atk * (s.auraMul || 1)), '#fca5a5', { lootGold: !!s.lootGold, chill: s.chill || 0 });
+                  state.slashes.push({
+                    x: (s.x + target.x) * 0.5,
+                    y: (s.y + target.y) * 0.5,
+                    ang: Math.atan2(target.y - s.y, target.x - s.x),
+                    r: s.stars >= 2 ? 22 : 16,
+                    color: s.stars >= 2 ? '#fde047' : '#fef3c7',
+                    life: 0.16,
+                    maxLife: 0.16
+                  });
+                  hurtEnemy(target, finalDmg, '#fca5a5', { lootGold: !!s.lootGold, chill: effChill, source: s.type });
                 }
               }
             }
@@ -1858,11 +2023,11 @@
                 addParticles(p.x, p.y, '#fb923c', 8);
                 for (const other of [...state.enemies]) {
                   if (Math.hypot(other.x - p.x, other.y - p.y) <= 48) {
-                    hurtEnemy(other, p.dmg, '#fb923c', { chill: p.chill || 0, lootGold: !!p.lootGold });
+                    hurtEnemy(other, p.dmg, '#fb923c', { chill: p.chill || 0, lootGold: !!p.lootGold, source: p.source });
                   }
                 }
               } else {
-                hurtEnemy(e, p.dmg, p.color, { chill: p.chill || 0, lootGold: !!p.lootGold });
+                hurtEnemy(e, p.dmg, p.color, { chill: p.chill || 0, lootGold: !!p.lootGold, source: p.source });
               }
               if (!p.pierce) { consumed = true; break; }
             }
@@ -1874,6 +2039,8 @@
         const gateY = castleBreakY();
         for (const e of state.enemies) {
           if (e.flash > 0) e.flash -= dt;
+          if (e.lunge > 0) e.lunge = Math.max(0, e.lunge - dt * 6.0);
+          if (e.recoil > 0) e.recoil = Math.max(0, e.recoil - dt * 7.5);
           if (e.freezeTimer > 0) { e.freezeTimer -= dt; continue; }
 
           // Check nearest soldier within enemy attack range (ranged casters shoot from afar!)
@@ -1888,6 +2055,7 @@
             e.atkTimer -= dt;
             if (e.atkTimer <= 0) {
               e.atkTimer = e.isBoss ? 1.05 : (e.isCaster ? 1.35 : 0.95);
+              e.lunge = 1.0;
               if (e.isCaster) {
                 const dx = blocker.x - e.x;
                 const dy = blocker.y - e.y;
@@ -1932,8 +2100,10 @@
                 }
                 updateUI();
               } else {
-                blocker.hp -= e.atk;
+                const holyDef = (state.activeSynergies.holy && state.activeSynergies.holy.active) ? 0.85 : 1;
+                blocker.hp -= Math.round(e.atk * holyDef);
                 blocker.flash = 0.14;
+                blocker.recoil = 1.0;
                 if (blocker.hp <= 0) {
                   addParticles(blocker.x, blocker.y, blocker.color, 8);
                   state.soldiers = state.soldiers.filter(s => s.id !== blocker.id);
@@ -1991,7 +2161,11 @@
           if (hit) state.enemyProjectiles.splice(i, 1);
         }
 
-        // Meteors, Particles, Floating Texts
+        // Slashes, Meteors, Particles, Floating Texts
+        for (let i = state.slashes.length - 1; i >= 0; i--) {
+          state.slashes[i].life -= dt;
+          if (state.slashes[i].life <= 0) state.slashes.splice(i, 1);
+        }
         for (let i = state.meteors.length - 1; i >= 0; i--) {
           state.meteors[i].life -= dt;
           if (state.meteors[i].life <= 0) state.meteors.splice(i, 1);
@@ -2337,6 +2511,27 @@
         ctx.fillStyle = '#f5c542';
         ctx.fill();
 
+        // Visual Magnet Zone aura if upgraded
+        if (state.magnetZone) {
+          ctx.save();
+          const mgY = (PUSHER_MAX_Y + BED_BOTTOM) * 0.52;
+          ctx.beginPath();
+          ctx.ellipse(state.gateX, mgY, 46, 22, 0, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(56, 189, 248, 0.14)';
+          ctx.fill();
+          ctx.strokeStyle = 'rgba(56, 189, 248, 0.45)';
+          ctx.setLineDash([3, 3]);
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+          ctx.setLineDash([]);
+          ctx.restore();
+        }
+        // Visual frost tint on pusher if chilled by Boss
+        if (state.pusherChillTimer > 0) {
+          ctx.fillStyle = 'rgba(56, 189, 248, 0.22)';
+          ctx.fillRect(getRailLeft(state.pusherY), BED_TOP, getRailRight(state.pusherY) - getRailLeft(state.pusherY), Math.max(10, state.pusherY - BED_TOP));
+        }
+
         // Subtle highlight right along the wooden cliff drop edge
         ctx.strokeStyle = 'rgba(250, 204, 21, 0.55)';
         ctx.lineWidth = 2;
@@ -2410,6 +2605,34 @@
           ctx.fillRect(0, BATTLE_TOP, W, BATTLE_BOTTOM - BATTLE_TOP);
         }
 
+        // Subtle 3-Lane Terrain Buff Zones on the allied courtyard
+        {
+          const ybT = battleYBounds();
+          const zh = Math.max(24, ybT.bot - ybT.top);
+          const zw = W / 3;
+          const zones = [
+            { x: 0,      col: 'rgba(56, 189, 248, 0.08)',  bd: 'rgba(56, 189, 248, 0.25)',  lbl: '🏹 高地+射程' },
+            { x: zw,     col: 'rgba(249, 115, 22, 0.08)',  bd: 'rgba(249, 115, 22, 0.25)',  lbl: '🔥 焦油+傷害' },
+            { x: zw * 2, col: 'rgba(250, 204, 21, 0.08)',  bd: 'rgba(250, 204, 21, 0.25)',  lbl: '✨ 聖壇+攻速' }
+          ];
+          ctx.save();
+          ctx.font = isMobileLayout() ? '700 9px "Noto Sans TC", sans-serif' : '700 10px "Noto Sans TC", sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'top';
+          for (const z of zones) {
+            ctx.fillStyle = z.col;
+            ctx.fillRect(z.x + 3, ybT.top, zw - 6, zh);
+            ctx.strokeStyle = z.bd;
+            ctx.setLineDash([4, 4]);
+            ctx.lineWidth = 1;
+            ctx.strokeRect(z.x + 3, ybT.top, zw - 6, zh);
+            ctx.setLineDash([]);
+            ctx.fillStyle = 'rgba(243, 238, 227, 0.58)';
+            ctx.fillText(z.lbl, z.x + zw / 2, ybT.top + 3);
+          }
+          ctx.restore();
+        }
+
         // Allied-zone landing preview so aim on the tray maps to a place on the field.
         {
           const battleH = Math.max(100, BATTLE_BOTTOM - BATTLE_TOP);
@@ -2449,7 +2672,7 @@
         const unitScale = crowdScale();
         const sortedSoldiers = [...state.soldiers].sort((a, b) => a.y - b.y);
         for (const s of sortedSoldiers) {
-          const bob = Math.sin(nowSec * 5 + s.id) * 1.4;
+          const bob = Math.sin(nowSec * 5 + s.id) * 1.4 + (s.lunge || 0) * 6 - (s.recoil || 0) * 4;
           const spr = pickUnitSprite(s.type, 'south');
           const hasSpr = imgReady(spr);
           const drawH = ((s.r * 2.5) + (s.stars >= 2 ? 6 : 0)) * unitScale;
@@ -2494,7 +2717,7 @@
         // Draw Enemies (16-bit Pixel Art Monster Horde!)
         const sortedEnemies = [...state.enemies].sort((a, b) => a.y - b.y);
         for (const e of sortedEnemies) {
-          const bob = e.freezeTimer > 0 ? 0 : Math.abs(Math.sin(nowSec * 7 + e.id)) * 2.2;
+          const bob = (e.freezeTimer > 0 ? 0 : Math.abs(Math.sin(nowSec * 7 + e.id)) * 2.2) + (e.lunge || 0) * 6 - (e.recoil || 0) * 4;
           const spr = pickUnitSprite(e.kind, 'north') || (e.spriteKey && imgReady(ASSETS[e.spriteKey]) ? ASSETS[e.spriteKey] : null);
           const hasSpr = imgReady(spr);
           const drawH = (e.drawH || (e.isBoss ? 58 : (e.isHeavy ? 40 : 32))) * unitScale;
@@ -2532,8 +2755,32 @@
           ctx.fillRect(e.x - bw / 2, hpY, bw * Math.max(0, e.hp / e.maxHp), 4);
         }
 
-        // Projectiles
+        // Melee Slash Arcs
+        for (const sl of state.slashes) {
+          const a = Math.max(0, sl.life / sl.maxLife);
+          ctx.save();
+          ctx.translate(sl.x, sl.y);
+          ctx.rotate(sl.ang);
+          ctx.globalAlpha = a;
+          ctx.strokeStyle = sl.color;
+          ctx.lineWidth = 3.5;
+          ctx.beginPath();
+          ctx.arc(0, 0, sl.r * (1.2 - a * 0.25), -0.9, 0.9);
+          ctx.stroke();
+          ctx.restore();
+        }
+        ctx.globalAlpha = 1;
+
+        // Projectiles with crisp motion tails
         for (const p of state.projectiles) {
+          ctx.strokeStyle = p.color;
+          ctx.globalAlpha = 0.55;
+          ctx.lineWidth = Math.max(2, p.r * 0.9);
+          ctx.beginPath();
+          ctx.moveTo(p.x, p.y);
+          ctx.lineTo(p.x - (p.vx || 0) * 0.035, p.y - (p.vy || 0) * 0.035);
+          ctx.stroke();
+          ctx.globalAlpha = 1;
           ctx.beginPath();
           ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
           ctx.fillStyle = p.color;
@@ -2606,20 +2853,66 @@
         hudAmmo.textContent = state.ammo;
         hudGold.textContent = state.gold;
         if (hudBest) hudBest.textContent = `最高：第 ${state.bestWave} 波`;
-        const blocked = state.paused || state.gameOver || state.drafting;
+        const blocked = state.paused || state.modalPaused || state.gameOver || state.drafting;
         btnBuySoldier.disabled = blocked || state.gold < 20;
         btnBuySkill.disabled = blocked || state.gold < 50;
+        if (btnBuyGiant) btnBuyGiant.disabled = blocked || state.gold < 45;
         btnBuyAmmo.disabled = blocked || state.gold < 16;
         if (btnRerollShop) btnRerollShop.disabled = blocked || state.gold < 8;
+        if (pcBuySoldier) pcBuySoldier.disabled = btnBuySoldier.disabled;
+        if (pcBuySkill) pcBuySkill.disabled = btnBuySkill.disabled;
+        if (pcBuyGiant) pcBuyGiant.disabled = blocked || state.gold < 45;
+        if (pcBuyAmmo) pcBuyAmmo.disabled = btnBuyAmmo.disabled;
+        if (pcRerollShop) pcRerollShop.disabled = blocked || state.gold < 8;
         const coinThumb = (type) => {
           const src = ASSET_URIS['c_' + type] || (imgReady(ASSETS['c_' + type]) ? ASSETS['c_' + type].src : '');
           if (src) return `<img src="${src}" alt="" class="px-icon shop-coin-ic" width="20" height="20">`;
           return COIN_TYPES[type].icon;
         };
-        buySoldierLabel.innerHTML = `${coinThumb(state.nextShopSoldier)} 買${SOLDIER_STATS[state.nextShopSoldier].name}幣`;
-        buySkillLabel.innerHTML = `${coinThumb(state.nextShopSkill)} 買大招幣`;
+        const sHtml = `${coinThumb(state.nextShopSoldier)} 買${SOLDIER_STATS[state.nextShopSoldier].name}幣`;
+        const kHtml = `${coinThumb(state.nextShopSkill)} 買大招幣`;
+        const aHtml = `${coinThumb('gold')} +8普通幣`;
+        buySoldierLabel.innerHTML = sHtml;
+        buySkillLabel.innerHTML = kHtml;
         const buyAmmoLabel = document.getElementById('buyAmmoLabel');
-        if (buyAmmoLabel) buyAmmoLabel.innerHTML = `${coinThumb('gold')} +8普通幣`;
+        if (buyAmmoLabel) buyAmmoLabel.innerHTML = aHtml;
+        if (pcBuySoldierLabel) pcBuySoldierLabel.innerHTML = sHtml;
+        if (pcBuySkillLabel) pcBuySkillLabel.innerHTML = kHtml;
+        if (pcBuyAmmoLabel) pcBuyAmmoLabel.innerHTML = aHtml;
+        const gHtml = `${coinThumb('giant')} 超重巨幣`;
+        if (buyGiantLabel) buyGiantLabel.innerHTML = gHtml;
+        if (pcBuyGiantLabel) pcBuyGiantLabel.innerHTML = gHtml;
+
+        // PC Left Sidebar: Synergies & Relics
+        if (synergyList) {
+          computeSynergies();
+          synergyList.innerHTML = SYNERGY_DEFS.map(d => {
+            const st = state.activeSynergies[d.id] || { count: 0, active: false };
+            return `<div class="syn-item${st.active ? ' active' : ''}"><div class="syn-head"><span>${d.name}</span><span>${st.count}/${d.need}</span></div><div>${d.desc}</div></div>`;
+          }).join('');
+        }
+        if (sideRelics) {
+          sideRelics.innerHTML = state.relicIds.length
+            ? state.relicIds.map(id => {
+                const u = UPGRADE_POOL.find(x => x.id === id);
+                return u ? `<span class="relic-chip" title="${u.desc}">${u.icon} ${u.name.split(' ')[0]}</span>` : '';
+              }).join('')
+            : '<span style="color:#8a7f6c">通關波次後 3 選 1 獲得升級</span>';
+        }
+        // PC Right Sidebar: Live Damage Board
+        if (dpsBoard) {
+          const entries = Object.entries(state.dmgStats).sort((a, b) => b[1] - a[1]).slice(0, 6);
+          if (!entries.length) {
+            dpsBoard.textContent = '開戰後顯示各兵種輸出…';
+          } else {
+            const topDmg = Math.max(1, entries[0][1]);
+            dpsBoard.innerHTML = entries.map(([k, val]) => {
+              const name = k === 'giant' ? '🪨 超重巨幣' : (SOLDIER_STATS[k] ? `${SOLDIER_STATS[k].icon} ${SOLDIER_STATS[k].name}` : k);
+              const pctW = Math.round((val / topDmg) * 100);
+              return `<div class="dps-row"><div class="dps-row-head"><span>${name}</span><span>${val}</span></div><div class="dps-bar-bg"><div class="dps-bar-fill" style="width:${pctW}%"></div></div></div>`;
+            }).join('');
+          }
+        }
 
         refillQueue();
         nextCoinQueue.innerHTML = state.queue.slice(0, 3).map((k, idx) => {
@@ -2671,6 +2964,13 @@
         state.nextShopSkill = 'meteor';
         state.shakeMeter = 35;
         state.paused = false;
+        state.modalPaused = false;
+        state.magnetZone = false;
+        state.pusherChillTimer = 0;
+        state.bossHazardTimer = 6.5;
+        state.holyHealTimer = 0;
+        state.activeSynergies = {};
+        state.dmgStats = {};
         state.gameOver = false;
         state.drafting = false;
         state.relics = [];
@@ -2697,6 +2997,7 @@
         state.projectiles = [];
         state.enemyProjectiles = [];
         state.meteors = [];
+        state.slashes = [];
         state.particles = [];
         state.floatTexts = [];
         state.comboCount = 0;
@@ -2787,8 +3088,15 @@
         state.nextShopSkill = shopSkills[Math.floor(Math.random() * shopSkills.length)];
         updateUI();
       });
+      const buyGiant = () => {
+        if (state.gold < 45 || state.paused || state.modalPaused || state.gameOver || state.drafting) return;
+        state.gold -= 45;
+        dropSpecialCoin('giant');
+        updateUI();
+      };
+      if (btnBuyGiant) btnBuyGiant.addEventListener('click', buyGiant);
       btnBuyAmmo.addEventListener('click', () => {
-        if (state.gold < 16 || state.paused || state.gameOver || state.drafting) return;
+        if (state.gold < 16 || state.paused || state.modalPaused || state.gameOver || state.drafting) return;
         state.gold -= 16;
         state.ammo += 8;
         SFX.coinDrop();
@@ -2796,6 +3104,11 @@
         updateUI();
       });
       if (btnRerollShop) btnRerollShop.addEventListener('click', rerollShop);
+      if (pcBuySoldier) pcBuySoldier.addEventListener('click', () => btnBuySoldier.click());
+      if (pcBuySkill) pcBuySkill.addEventListener('click', () => btnBuySkill.click());
+      if (pcBuyGiant) pcBuyGiant.addEventListener('click', buyGiant);
+      if (pcBuyAmmo) pcBuyAmmo.addEventListener('click', () => btnBuyAmmo.click());
+      if (pcRerollShop) pcRerollShop.addEventListener('click', rerollShop);
       if (btnToggleShop) {
         btnToggleShop.addEventListener('click', (ev) => {
           ev.stopPropagation();
@@ -2832,16 +3145,24 @@
         ];
         campList.innerHTML = items.join('');
       }
+      const syncModalPause = () => {
+        const campOpen = campModal && !campModal.classList.contains('hidden');
+        const helpOpen = helpModal && !helpModal.classList.contains('hidden');
+        state.modalPaused = !!(campOpen || helpOpen);
+        updateUI();
+      };
       const openCamp = () => {
         renderCamp();
         if (!campModal) return;
         campModal.classList.remove('hidden');
         campModal.classList.add('flex');
+        syncModalPause();
       };
       const closeCamp = () => {
         if (!campModal) return;
         campModal.classList.add('hidden');
         campModal.classList.remove('flex');
+        syncModalPause();
       };
       if (btnCamp) btnCamp.addEventListener('click', openCamp);
       if (btnCloseCamp) btnCloseCamp.addEventListener('click', closeCamp);
@@ -2850,10 +3171,12 @@
       btnHelp.addEventListener('click', () => {
         helpModal.classList.remove('hidden');
         helpModal.classList.add('flex');
+        syncModalPause();
       });
       const closeHelp = () => {
         helpModal.classList.add('hidden');
         helpModal.classList.remove('flex');
+        syncModalPause();
       };
       btnCloseHelp.addEventListener('click', closeHelp);
       btnCloseHelp2.addEventListener('click', closeHelp);
