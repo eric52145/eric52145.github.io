@@ -54,6 +54,14 @@
       }
 
       const PUSHER_ART_ASPECT = 1440 / 240;
+      const PUSHER_ART_W = 1440;
+      const PUSHER_ART_H = 240;
+      // Felt bed in the 1440×240 cabinet art ends just above the painted lip / drop pit.
+      const PUSHER_ART_LIP_SRC_Y = 176;
+      const PUSHER_PIT_BASE = 46;
+      // Existing phone cover zoom (258/240). Keep this zoom; extra panel height extends the bed,
+      // and is not used to vertically stretch the wood grain.
+      const PUSHER_PHONE_ZOOM = 258 / 240;
       const BATTLE_ART_ASPECT = 1440 / 400;
 
       // Battlefield bitmap is 1440×400: 88px wall, 6×48px grass tiles, 24px footer.
@@ -191,7 +199,7 @@
       function drawPusherFace(pLeft, frontY, pW) {
         const bar = pickPusherBar();
         // Constant-height front lip (does not stretch with pusher travel)
-        const faceH = Math.max(16, Math.round(26 * (PUSHER_PANEL_H / 240)));
+        const faceH = Math.max(16, Math.round(26 * getPusherArtScale()));
         const prev = ctx.imageSmoothingEnabled;
         ctx.imageSmoothingEnabled = false;
         if (bar) {
@@ -228,6 +236,53 @@
         }
         ctx.imageSmoothingEnabled = prev;
         return faceH;
+      }
+
+      function drawPusherBackground() {
+        ctx.fillStyle = '#141218';
+        ctx.fillRect(0, 0, W, PUSHER_PANEL_H);
+        const pusherBg = (!isMobileLayout() && imgReady(ASSETS.bg_pusher_wide))
+          ? ASSETS.bg_pusher_wide
+          : ASSETS.bg_pusher;
+        if (!imgReady(pusherBg)) {
+          ctx.fillStyle = '#3b2414';
+          ctx.fillRect(0, 0, W, PUSHER_PANEL_H);
+          return;
+        }
+        const scale = getPusherArtScale();
+        const iw = pusherBg.naturalWidth || PUSHER_ART_W;
+        const ih = pusherBg.naturalHeight || PUSHER_ART_H;
+        const lipSrc = Math.max(1, Math.min(PUSHER_ART_LIP_SRC_Y, ih));
+        const srcW = Math.max(1, Math.min(iw, W / scale));
+        const sx = Math.max(0, (iw - srcW) / 2);
+        const destW = srcW * scale;
+        const destH = lipSrc * scale;
+        const dx = Math.round((W - destW) / 2);
+        const prev = ctx.imageSmoothingEnabled;
+        ctx.imageSmoothingEnabled = false;
+        // Uniform scale, top-aligned crop — never stretch the cabinet / wood grain to the new height.
+        ctx.drawImage(pusherBg, sx, 0, srcW, lipSrc, dx, 0, destW, destH);
+        // Tile a felt strip from the existing bed down to the new lip.
+        const feltSrcY = Math.max(0, lipSrc - 28);
+        const feltSrcH = Math.max(8, lipSrc - feltSrcY);
+        const feltTileH = feltSrcH * scale;
+        let fy = destH;
+        while (fy < BED_BOTTOM) {
+          const dh = Math.min(feltTileH, BED_BOTTOM - fy);
+          const sh = Math.max(1, dh / scale);
+          ctx.drawImage(pusherBg, sx, feltSrcY, srcW, sh, dx, fy, destW, dh);
+          fy += dh;
+        }
+        ctx.imageSmoothingEnabled = prev;
+        // Continue the diagonal rails over the extended bed.
+        ctx.strokeStyle = 'rgba(120, 82, 36, 0.85)';
+        ctx.lineWidth = Math.max(2, Math.round(3 * scale));
+        ctx.beginPath();
+        ctx.moveTo(getRailLeft(destH), destH);
+        ctx.lineTo(getRailLeft(BED_BOTTOM), BED_BOTTOM);
+        ctx.moveTo(getRailRight(destH), destH);
+        ctx.lineTo(getRailRight(BED_BOTTOM), BED_BOTTOM);
+        ctx.stroke();
       }
 
       function drawPusherPlate() {
@@ -768,48 +823,62 @@
         return window.innerWidth <= 820;
       }
 
+      function getPusherArtScale() {
+        if (isMobileLayout()) return PUSHER_PHONE_ZOOM;
+        return Math.max(0.5, W / PUSHER_ART_W);
+      }
+
       function computeLayout() {
         const mobile = isMobileLayout();
         W = stageWrap.clientWidth || (mobile ? 400 : 1280);
         H = stageWrap.clientHeight || (mobile ? 540 : 720);
         const divider = mobile ? 18 : 22;
         if (mobile) {
-          // Roomier tray after the shop drawer freed footer space, without swallowing the field.
-          PUSHER_PANEL_H = Math.round(H * 0.44);
+          // Deeper stacked cabinet (was 0.44, then 0.54). A little extra depth
+          // lets 6 coin rows stand at a pitch that matches their effective diameter.
+          PUSHER_PANEL_H = Math.round(H * 0.58);
         } else {
-          // Deeper tray than the earlier 32–36% compact pass, but the battlefield stays the larger pane.
-          let pusherH = Math.round(W / PUSHER_ART_ASPECT);
-          const minBattle = Math.round(H * 0.40);
-          const maxPusher = Math.round(H * 0.42);
-          const minPusher = Math.round(H * 0.32);
+          // Longer tray along the push axis. Do not lock panel height to the 1440×240
+          // art aspect — that cap left only ~2–3 visible coin rows.
+          const minBattle = Math.round(H * 0.36);
+          const maxPusher = Math.round(H * 0.50);
+          const minPusher = Math.round(H * 0.42);
+          let pusherH = Math.round(H * 0.48);
           if (H - divider - pusherH < minBattle) pusherH = H - divider - minBattle;
           PUSHER_PANEL_H = Math.max(minPusher, Math.min(maxPusher, pusherH));
         }
-        BED_TOP = Math.round(PUSHER_PANEL_H * 0.04);
-        BED_BOTTOM = Math.round(PUSHER_PANEL_H * 0.81);
+        const artScale = getPusherArtScale();
+        // Shelf and stroke stay at the 240px-art proportions (uniform scale).
+        // Extra panel height all goes into the lower bed + a same-size catch pit.
+        BED_TOP = Math.round(PUSHER_ART_H * 0.04 * artScale);
+        PUSHER_MIN_Y = Math.round(PUSHER_ART_H * 0.22 * artScale);
+        PUSHER_MAX_Y = Math.round(PUSHER_ART_H * 0.42 * artScale);
+        const pitH = Math.max(22, Math.round(PUSHER_PIT_BASE * artScale));
+        BED_BOTTOM = Math.max(PUSHER_MAX_Y + 64, PUSHER_PANEL_H - pitH);
         BED_LEFT = Math.round(W * 0.10);
         BED_RIGHT = Math.round(W * 0.90);
-        PUSHER_MIN_Y = Math.round(PUSHER_PANEL_H * 0.22);
-        PUSHER_MAX_Y = Math.round(PUSHER_PANEL_H * 0.42);
         BATTLE_TOP = PUSHER_PANEL_H + divider;
         BATTLE_BOTTOM = H;
       }
 
-      // Trapezoid perspective helpers matching the diagonal brass rails of bg_pusher!
+      // Trapezoid rails stay aligned to the cabinet art (t=1 at the painted lip).
+      // Below that, t may exceed 1 so the extended bed continues the same flare, then clamps.
+      function getArtRailSpan() {
+        return Math.max(1, PUSHER_ART_H * 0.81 * getPusherArtScale() - BED_TOP);
+      }
       function getDepthT(y) {
-        return Math.max(0, Math.min(1, (y - BED_TOP) / Math.max(1, BED_BOTTOM - BED_TOP)));
+        return Math.max(0, (y - BED_TOP) / getArtRailSpan());
       }
       function getRailLeft(y) {
         const t = getDepthT(y);
-        // Narrower at top (23% of W), wider at front drop edge (9.5% of W)
-        return W * (0.23 - 0.135 * t);
+        return W * Math.max(0.06, 0.23 - 0.135 * t);
       }
       function getRailRight(y) {
         const t = getDepthT(y);
-        return W * (0.77 + 0.135 * t);
+        return W * Math.min(0.94, 0.77 + 0.135 * t);
       }
       function getDepthScale(y) {
-        return 0.80 + 0.28 * getDepthT(y);
+        return 0.80 + 0.28 * Math.min(1, getDepthT(y));
       }
 
       let toastTimer = null;
@@ -857,6 +926,15 @@
         }
       }
 
+      // Phone cabinet is much narrower than the 1440 art; unscaled 13–16px radii
+      // become ~30–34px at the lip and collapse a 4–6 row seed into ~3 heaps.
+      // Tray-only (display + collision). Battlefield soldiers are unchanged.
+      const PHONE_TRAY_RADIUS_SCALE = 0.70;
+      function trayCoinRadius(baseR) {
+        if (!isMobileLayout()) return baseR;
+        return Math.max(8, baseR * PHONE_TRAY_RADIUS_SCALE);
+      }
+
       function spawnBoardCoin(typeKey, x, y, vy = 0, tier = 'lower') {
         const t = COIN_TYPES[typeKey];
         state.coins.push({
@@ -864,9 +942,10 @@
           type: typeKey,
           tier,
           x, y,
-          vx: (Math.random() - 0.5) * 14,
+          // Phone seeds start still so the pack does not immediately walk toward the lip.
+          vx: (isMobileLayout() && vy === 0) ? 0 : (Math.random() - 0.5) * 14,
           vy,
-          r: t.r,
+          r: trayCoinRadius(t.r),
           glow: 0.35
         });
       }
@@ -891,9 +970,6 @@
         const span = Math.max(40, getRailRight(midY) - getRailLeft(midY) - 36);
         // Width-aware packing: a busy tray on 1440, not a jammed phone cabinet.
         // Desktop trays are very wide: a 15-column cap left ~70px gaps and looked sparse.
-        const colPitch = isMobileLayout() ? 32 : 36;
-        const cols = Math.max(6, Math.min(isMobileLayout() ? 11 : 24, Math.floor(span / colPitch)));
-        const rows = isMobileLayout() ? 4 : 4;
         const y0 = PUSHER_MAX_Y + 8;
         // Fill the deeper bed, but keep a clear lip so the opening stroke cannot auto-dump.
         const lipGuard = 48;
@@ -901,6 +977,20 @@
           BED_BOTTOM - lipGuard,
           PUSHER_MAX_Y + Math.max(28, (BED_BOTTOM - PUSHER_MAX_Y) * 0.78)
         );
+        // Phone pitch must match the effective (radius × depthScale) diameter so
+        // rows stand instead of overlapping and collapsing toward the lip.
+        const phonePitch = (() => {
+          if (!isMobileLayout()) return 28;
+          const typR = trayCoinRadius(16);
+          const frontD = typR * 2 * getDepthScale(y1);
+          return Math.max(22, Math.round(frontD + 1));
+        })();
+        const colPitch = isMobileLayout() ? phonePitch : 36;
+        const cols = Math.max(6, Math.min(isMobileLayout() ? 11 : 24, Math.floor(span / colPitch)));
+        const rowPitch = isMobileLayout() ? phonePitch : 28;
+        const rows = Math.max(4, Math.min(isMobileLayout() ? 6 : 7, Math.floor(Math.max(8, y1 - y0) / rowPitch) + 1));
+        const jitX = isMobileLayout() ? 2 : 8;
+        const jitY = isMobileLayout() ? 1.5 : 6;
         let n = 0;
         for (let row = 0; row < rows; row++) {
           const fy = rows === 1 ? 0.5 : row / (rows - 1);
@@ -913,8 +1003,8 @@
           for (let col = 0; col < cols; col++) {
             if (Math.random() < 0.07) continue;
             const cx = rl + xOff + (col + 0.5) / cols * (rowW - xOff)
-              + (Math.random() - 0.5) * 8;
-            const jy = cy + (Math.random() - 0.5) * 6;
+              + (Math.random() - 0.5) * jitX;
+            const jy = cy + (Math.random() - 0.5) * jitY;
             spawnBoardCoin(starterPool[n % starterPool.length], cx, jy, 0, 'lower');
             n += 1;
           }
@@ -940,6 +1030,47 @@
           const rr = getRailRight(cy) - 18;
           const cx = rl + ((i + 0.5) / upperCount) * Math.max(10, rr - rl) + (Math.random() - 0.5) * 10;
           spawnBoardCoin(upperTypes[i % upperTypes.length], cx, cy, 0, 'upper');
+        }
+        // Phone only: resolve leftover overlaps sideways / toward the plate, and
+        // clamp to the seeded band so the pack cannot jump to the lip at t=0.
+        if (isMobileLayout()) {
+          const yMin = PUSHER_MAX_Y + 4;
+          const yMax = y1;
+          for (let iter = 0; iter < 6; iter++) {
+            for (let i = 0; i < state.coins.length; i++) {
+              const a = state.coins[i];
+              if (a.tier !== 'lower') continue;
+              for (let j = i + 1; j < state.coins.length; j++) {
+                const b = state.coins[j];
+                if (b.tier !== 'lower') continue;
+                const dx = b.x - a.x;
+                const dy = b.y - a.y;
+                const dist = Math.hypot(dx, dy) || 0.001;
+                const minD = a.r * getDepthScale(a.y) + b.r * getDepthScale(b.y);
+                if (dist < minD) {
+                  const overlap = (minD - dist) * 0.5;
+                  const nx = dx / dist;
+                  const ny = dy / dist;
+                  a.x -= nx * overlap;
+                  b.x += nx * overlap;
+                  // Prefer not to send coins toward the lip.
+                  if (ny > 0) { a.y -= overlap; b.y += overlap * 0.15; }
+                  else { a.y -= overlap * 0.15; b.y += overlap; }
+                }
+              }
+            }
+            for (const c of state.coins) {
+              if (c.tier !== 'lower') continue;
+              if (c.y > yMax) c.y = yMax;
+              if (c.y < yMin) c.y = yMin;
+              const rl = getRailLeft(c.y) + 12;
+              const rr = getRailRight(c.y) - 12;
+              if (c.x < rl) c.x = rl;
+              if (c.x > rr) c.x = rr;
+              c.vx = 0;
+              c.vy = 0;
+            }
+          }
         }
       }
 
@@ -2435,15 +2566,7 @@
         const nowSec = performance.now() * 0.001;
 
         // --- A. TOP COIN PUSHER MACHINE (native-wide on desktop, original on phone) ---
-        ctx.fillStyle = '#141218';
-        ctx.fillRect(0, 0, W, PUSHER_PANEL_H);
-        const pusherBg = (!isMobileLayout() && imgReady(ASSETS.bg_pusher_wide))
-          ? ASSETS.bg_pusher_wide
-          : ASSETS.bg_pusher;
-        if (!drawImageCover(pusherBg, 0, 0, W, PUSHER_PANEL_H, 'top')) {
-          ctx.fillStyle = '#3b2414';
-          ctx.fillRect(0, 0, W, PUSHER_PANEL_H);
-        }
+        drawPusherBackground();
 
         // Side Walls glow along diagonal rails if upgraded
         if (state.sideWalls) {
@@ -2956,12 +3079,14 @@
       function resetGame() {
         state.wave = 1;
         state.baseHp = 100;
+        state.maxBaseHp = 100;
         const bonus = metaBonuses(loadMeta());
         state.ammo = 20 + bonus.ammo;
         state.gold = 30 + bonus.gold;
         state.metaVanguardStar = !!bonus.vanguardStar;
         state.nextShopSoldier = 'knight';
         state.nextShopSkill = 'meteor';
+        state.ammoRegenTimer = 0;
         state.shakeMeter = 35;
         state.paused = false;
         state.modalPaused = false;
@@ -2986,11 +3111,22 @@
         state.relicIds = [];
         state.campaignWon = false;
         state.gateWidthMult = 1;
+        state.gatePhase = 0;
+        state.gateX = 200;
+        state.dropXRatio = 0.5;
+        state.isDragging = false;
+        state.dragDropCooldown = 0;
         state.lastSoldierType = null;
         state.sameChainCount = 0;
         state.sameChainTimer = 0;
+        state.comboCount = 0;
+        state.comboTimer = 0;
+        state.screenShake = 0;
+        state.blizzardFlash = 0;
+        state.nextId = 1;
         state.bag = START_BAG.concat(bonus.bag);
         state.queue = [];
+        state.coins = [];
         state.fallingDrops = [];
         state.soldiers = [];
         state.enemies = [];
@@ -3000,13 +3136,25 @@
         state.slashes = [];
         state.particles = [];
         state.floatTexts = [];
-        state.comboCount = 0;
+        state.spawnLeft = 0;
+        state.spawnTimer = 0;
+        state.waveActive = false;
 
         btnPause.textContent = '⏸';
-        gameOverModal.classList.add('hidden');
-        gameOverModal.classList.remove('flex');
-        upgradeModal.classList.add('hidden');
-        upgradeModal.classList.remove('flex');
+        if (gameOverModal) {
+          gameOverModal.classList.add('hidden');
+          gameOverModal.classList.remove('flex');
+        }
+        if (upgradeModal) {
+          upgradeModal.classList.add('hidden');
+          upgradeModal.classList.remove('flex');
+        }
+        if (typeof setShopOpen === 'function') setShopOpen(false);
+        if (toastMsg) {
+          toastMsg.textContent = '';
+          toastMsg.style.opacity = '0';
+        }
+        if (typeof toastTimer !== 'undefined') clearTimeout(toastTimer);
 
         refillQueue();
         resetPusherPose();
