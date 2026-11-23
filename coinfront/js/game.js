@@ -611,10 +611,16 @@
       const shopPanel = document.getElementById('shopPanel');
       function setShopOpen(open) {
         if (!btnToggleShop || !shopPanel) return;
-        btnToggleShop.setAttribute('aria-expanded', open ? 'true' : 'false');
-        shopPanel.hidden = !open;
-        const lab = btnToggleShop.querySelector('.shop-toggle-label');
-        if (lab) lab.textContent = open ? '收起商店' : '商店';
+        try {
+          if (typeof btnToggleShop.setAttribute === 'function') {
+            btnToggleShop.setAttribute('aria-expanded', open ? 'true' : 'false');
+          }
+          shopPanel.hidden = !open;
+          const lab = typeof btnToggleShop.querySelector === 'function'
+            ? btnToggleShop.querySelector('.shop-toggle-label')
+            : null;
+          if (lab) lab.textContent = open ? '收起商店' : '商店';
+        } catch (_) {}
       }
       function isShopOpen() {
         return btnToggleShop && btnToggleShop.getAttribute('aria-expanded') === 'true';
@@ -1274,19 +1280,31 @@
           saveMeta(m);
           showToast('🏰 守住第十二波！邊關暫時穩固，可繼續無盡守城。');
         }
+        if (typeof setShopOpen === 'function') setShopOpen(false);
         const taken = new Set(state.relicIds);
         let pool = UPGRADE_POOL.filter(u => !(u.unique && taken.has(u.id)) && !(u.id === 'side_walls' && state.sideWalls));
         pool = pool.sort(() => Math.random() - 0.5);
-        // After a boss, try to include one rare/economy pick so the 3-choice stays distinct
+        // After a boss, try to include one rare/economy/defense pick so the 3-choice stays distinct
         if (isBossClear) {
           const rare = pool.filter(u => u.tag === '稀有兵' || u.tag === '經濟' || u.tag === '城防');
           const rest = pool.filter(u => !rare.includes(u));
-          pool = [...rare.slice(0, 1), ...rest].slice(0, 3);
-          if (pool.length < 3) pool = UPGRADE_POOL.slice().sort(() => Math.random() - 0.5).slice(0, 3);
-        } else {
-          pool = pool.slice(0, 3);
+          pool = [...rare.slice(0, 1), ...rest];
+        }
+        pool = pool.slice(0, 3);
+        // Never open a frozen draft with fewer than 3 tappable choices
+        if (pool.length < 3) {
+          const extra = UPGRADE_POOL.filter(u => !pool.some(p => p.id === u.id))
+            .sort(() => Math.random() - 0.5);
+          pool = pool.concat(extra).slice(0, 3);
         }
 
+        if (!upgradeChoices || !upgradeModal) {
+          state.drafting = false;
+          showToast('三選一開啟失敗，自動繼續下一波。');
+          state.wave += 1;
+          state.rearmTimer = 2.4;
+          return;
+        }
         upgradeChoices.innerHTML = '';
         pool.forEach(u => {
           const btn = document.createElement('button');
@@ -1300,6 +1318,13 @@
           btn.addEventListener('click', () => applyUpgrade(u));
           upgradeChoices.appendChild(btn);
         });
+        if (!upgradeChoices.children || upgradeChoices.children.length === 0) {
+          state.drafting = false;
+          showToast('沒有可選升級，自動繼續下一波。');
+          state.wave += 1;
+          state.rearmTimer = 2.4;
+          return;
+        }
 
         upgradeModal.classList.remove('hidden');
         upgradeModal.classList.add('flex');
@@ -2724,7 +2749,36 @@
         if (rafId) cancelAnimationFrame(rafId);
         lastTs = 0;
         rafId = requestAnimationFrame(loop);
+        // Hidden screenshot/self-check hook. Normal play never sets ?qa=.
+        try {
+          const qa = new URLSearchParams(location.search).get('qa');
+          if (qa === 'draft2') {
+            state.wave = 2;
+            state.spawnLeft = 0;
+            state.enemies = [];
+            state.waveActive = true;
+            state.drafting = false;
+            openUpgradeDraft();
+          } else if (qa === 'preview') {
+            state.paused = true;
+          }
+        } catch (_) {}
       }
       if (document.readyState === 'complete') boot();
       else window.addEventListener('load', boot);
+
+      // Hidden QA hook for self-checks (no effect on a normal play session).
+      try {
+        window.__coinfrontQa = {
+          get state() { return state; },
+          openUpgradeDraft,
+          applyUpgrade,
+          startWave,
+          update,
+          spawnEnemy,
+          UPGRADE_POOL,
+          pickBossKind,
+          waveRosterCount
+        };
+      } catch (_) {}
     })();
