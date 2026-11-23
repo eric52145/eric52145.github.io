@@ -56,6 +56,91 @@
       const PUSHER_ART_ASPECT = 1440 / 240;
       const BATTLE_ART_ASPECT = 1440 / 400;
 
+      // Battlefield bitmap is 1440×400: 88px wall, 6×48px grass tiles, 24px footer.
+      const BATTLE_ART_W = 1440;
+      const BATTLE_ART_H = 400;
+      const BATTLE_TILE = 48;
+      const BATTLE_WALL_H = 88;
+      const BATTLE_FOOT_H = 24;
+
+      function chooseBattleTileOut(dw, dh) {
+        if (Math.abs(dw - BATTLE_ART_W) <= 2) return BATTLE_TILE; // 1:1 on the 1440 desktop stage
+        const raw = Math.max(dw / BATTLE_ART_W, dh / BATTLE_ART_H);
+        const target = BATTLE_TILE * raw;
+        let best = Math.max(1, Math.round(target));
+        let bestScore = -1e9;
+        const lo = Math.max(1, Math.floor(target) - 16);
+        const hi = Math.ceil(target) + 16;
+        for (let t = lo; t <= hi; t++) {
+          const pad = dw % t;
+          const wallD = Math.round(BATTLE_WALL_H * t / BATTLE_TILE);
+          const footD = Math.round(BATTLE_FOOT_H * t / BATTLE_TILE);
+          const grass = dh - wallD - footD;
+          if (grass < t) continue;
+          let s = -Math.abs(t - target) * 2;
+          if (pad === 0) s += 80;
+          else s -= Math.min(pad, t - pad) * 0.6;
+          s -= (grass % t) * 0.3;
+          if (s > bestScore) { bestScore = s; best = t; }
+        }
+        return best;
+      }
+
+      function drawBattleBackground(dx, dy, dw, dh) {
+        const img = imgReady(ASSETS.bg_battle_wide) ? ASSETS.bg_battle_wide
+          : (imgReady(ASSETS.bg_battle) ? ASSETS.bg_battle : null);
+        if (!img || dw < 1 || dh < 1) return false;
+        const iw = img.naturalWidth || BATTLE_ART_W;
+        const ih = img.naturalHeight || BATTLE_ART_H;
+        const TILE = (iw === BATTLE_ART_W && ih === BATTLE_ART_H) ? BATTLE_TILE : null;
+        const prev = ctx.imageSmoothingEnabled;
+        ctx.imageSmoothingEnabled = false;
+        if (!TILE) {
+          const scale = Math.max(dw / iw, dh / ih);
+          const sw = dw / scale, sh = dh / scale;
+          const sx = (iw - sw) / 2;
+          ctx.drawImage(img, sx, 0, sw, sh, dx, dy, dw, dh);
+          ctx.imageSmoothingEnabled = prev;
+          return true;
+        }
+        const tileOut = chooseBattleTileOut(dw, dh);
+        const nSrcCols = Math.floor(iw / TILE);
+        const nCols = Math.max(1, Math.floor(dw / tileOut));
+        const x0 = Math.floor((dw - nCols * tileOut) / 2);
+        let startCol = Math.round((nSrcCols - nCols) / 2);
+        startCol = Math.max(0, Math.min(nSrcCols - nCols, startCol));
+        const wallD = Math.round(BATTLE_WALL_H * tileOut / TILE);
+        const footD = Math.round(BATTLE_FOOT_H * tileOut / TILE);
+        const grassD = Math.max(0, dh - wallD - footD);
+        const nRows = Math.max(1, Math.floor(grassD / tileOut));
+        const nSrcRows = Math.floor((ih - BATTLE_WALL_H - BATTLE_FOOT_H) / TILE);
+        const srcX = startCol * TILE;
+        const srcW = nCols * TILE;
+        const destX = dx + x0;
+        const destW = nCols * tileOut;
+        if (x0 > 0 || destX + destW < dx + dw) {
+          ctx.fillStyle = '#5e9337';
+          ctx.fillRect(dx, dy, dw, dh);
+        }
+        ctx.drawImage(img, srcX, 0, srcW, BATTLE_WALL_H, destX, dy, destW, wallD);
+        const emptyCol = 12, emptyRow = 1;
+        for (let r = 0; r < nRows; r++) {
+          const srcRow = (r < nSrcRows) ? r : emptyRow;
+          const sy = BATTLE_WALL_H + srcRow * TILE;
+          const dyR = dy + wallD + r * tileOut;
+          ctx.drawImage(img, srcX, sy, srcW, TILE, destX, dyR, destW, tileOut);
+        }
+        const usedGrass = nRows * tileOut;
+        if (usedGrass < grassD) {
+          ctx.fillStyle = '#5e9337';
+          ctx.fillRect(destX, dy + wallD + usedGrass, destW, grassD - usedGrass);
+        }
+        const footY = dy + dh - footD;
+        ctx.drawImage(img, srcX, ih - BATTLE_FOOT_H, srcW, BATTLE_FOOT_H, destX, footY, destW, footD);
+        ctx.imageSmoothingEnabled = prev;
+        return true;
+      }
+
       function drawImageCover(img, dx, dy, dw, dh, alignY) {
         if (!imgReady(img) || dw < 1 || dh < 1) return false;
         const iw = img.naturalWidth;
@@ -2259,8 +2344,7 @@
           const battleH = BATTLE_BOTTOM - BATTLE_TOP;
           ctx.fillStyle = '#2d4c2b';
           ctx.fillRect(0, BATTLE_TOP, W, battleH);
-          const battleBg = imgReady(ASSETS.bg_battle_wide) ? ASSETS.bg_battle_wide : ASSETS.bg_battle;
-          if (!drawImageCover(battleBg, 0, BATTLE_TOP, W, battleH, 'top')) {
+          if (!drawBattleBackground(0, BATTLE_TOP, W, battleH)) {
             ctx.fillStyle = '#2d4c2b';
             ctx.fillRect(0, BATTLE_TOP, W, battleH);
           }
@@ -2743,6 +2827,13 @@
       }
 
       window.addEventListener('resize', resizeCanvas);
+      if (typeof ResizeObserver === 'function' && stageWrap) {
+        const stageRo = new ResizeObserver(() => resizeCanvas());
+        stageRo.observe(stageWrap);
+      }
+      if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(() => resizeCanvas());
+      }
       function boot() {
         resizeCanvas();
         resetGame();
