@@ -423,6 +423,14 @@
       const MAX_LIVE_ENEMIES = 100;
       const PARTICLE_CAP = 280;
       const FLOAT_TEXT_CAP = 90;
+      // Click / drag / Space share this interval. Faster than 0.32, not a machine-gun.
+      const COIN_DROP_INTERVAL = 0.21;
+      // All enemy march speeds (minions, siege beasts, bosses) are scaled together.
+      const ENEMY_SPEED_MULT = 0.8;
+      // First seconds: the plate still travels fully, but seeded coins only
+      // follow a fraction of the stroke so the opening tray cannot free-dump.
+      const OPENING_PUSH_GRACE = 6.5;
+      const OPENING_PUSH_SCALE = 0.25;
 
       const COIN_TYPES = {
         gold:    { id: 'gold',    kind: 'currency', name: '普通金幣', icon: '🪙', fill: '#f59e0b', stroke: '#fef08a', r: 14 },
@@ -517,7 +525,7 @@
         { id: 'wide_gate',    icon: '🚪', name: '加寬 x2 黃金門 (+45%)', desc: '黃金門加寬，更容易瞄中雙倍。', tag: '推盤' },
         { id: 'gate_slow',    icon: '⏳', name: '黃金門緩行', desc: '黃金門再慢一截，瞄準更從容。', tag: '推盤', unique: true },
         { id: 'army_buff',    icon: '💪', name: '精銳訓練 (+25% 全兵戰力)', desc: '以後召喚的士兵血量與攻擊永久提升 25%。', tag: '軍團' },
-        { id: 'veterans',    icon: '🎖️', name: '老兵契約', desc: '之後每波退役時，1★ 有 40% 機會留守。', tag: '軍團', unique: true },
+        { id: 'veterans',    icon: '🎖️', name: '老兵契約', desc: '超過人口上限整編時，本應退下嘅 1★ 有 40% 機會繼續留守。', tag: '軍團', unique: true },
         { id: 'wall_repair',  icon: '🏰', name: '搶修城牆 (+30 HP)', desc: '立即修復 30 點城堡血量（不超過上限）。', tag: '城防' },
         { id: 'gold_cache',   icon: '💰', name: '軍餉箱 (+$28)', desc: '立即獲得 $28，方便買兵或補幣。', tag: '經濟' },
         { id: 'ammo_crate',   icon: '📦', name: '投幣木箱 (+10)', desc: '額外再得 10 枚投幣額度（另加常規 +6）。', tag: '經濟' },
@@ -555,6 +563,7 @@
         sideWalls: false,
         twinDrop: 0,
         dropCooldown: 0,
+        openingElapsed: 0,
         rearmTimer: 0,
         veteransChance: 0,
         gateSpeedMult: 1,
@@ -830,6 +839,15 @@
         });
       }
 
+      function resetPusherPose() {
+        // Mid-stroke and already consistent with phase. The old default was
+        // pusherY=0 with phase=0, so the first frame jumped the plate to mid
+        // travel and slammed upper-shelf coins into the lower pack.
+        state.pusherPhase = 0;
+        state.pusherY = PUSHER_MIN_Y + 0.5 * (PUSHER_MAX_Y - PUSHER_MIN_Y);
+        state.prevPusherY = state.pusherY;
+      }
+
       function seedInitialCoins() {
         state.coins = [];
         const starterPool = [
@@ -845,7 +863,7 @@
         const cols = Math.max(6, Math.min(isMobileLayout() ? 11 : 24, Math.floor(span / colPitch)));
         const rows = isMobileLayout() ? 4 : 4;
         const y0 = PUSHER_MAX_Y + 8;
-        // Fill the deeper bed, but keep a clear lip so wave 1 cannot auto-dump.
+        // Fill the deeper bed, but keep a clear lip so the opening stroke cannot auto-dump.
         const lipGuard = 48;
         const y1 = Math.min(
           BED_BOTTOM - lipGuard,
@@ -901,7 +919,7 @@
           return;
         }
         SFX.init();
-        state.dropCooldown = 0.32;
+        state.dropCooldown = COIN_DROP_INTERVAL;
         state.ammo -= 1;
         refillQueue();
         const nextType = state.queue.shift();
@@ -1301,7 +1319,7 @@
         const kind = pickEnemyKind(state.wave, isBoss);
         const def = ENEMY_TYPES[kind] || ENEMY_TYPES.goblin;
         const scale = waveHpScale(state.wave);
-        const spd = def.speed[0] + Math.random() * Math.max(0, def.speed[1] - def.speed[0]);
+        const spd = (def.speed[0] + Math.random() * Math.max(0, def.speed[1] - def.speed[0])) * ENEMY_SPEED_MULT;
 
         state.enemies.push({
           id: state.nextId++,
@@ -1330,22 +1348,43 @@
         });
       }
 
+      function retireOverflowSoldiers() {
+        if (state.soldiers.length <= ARMY_CAP) return;
+        const elites = [];
+        const ones = [];
+        for (const s of state.soldiers) {
+          if ((s.stars || 1) >= 2) elites.push(s);
+          else ones.push(s);
+        }
+        // Never retire 2★/3★, even if elites alone exceed the cap.
+        const oneSlots = Math.max(0, ARMY_CAP - elites.length);
+        if (ones.length <= oneSlots) return;
+        const weakestFirst = ones.slice().sort((a, b) => {
+          const ra = a.hp / Math.max(1, a.maxHp);
+          const rb = b.hp / Math.max(1, b.maxHp);
+          return ra - rb || a.hp - b.hp || a.id - b.id;
+        });
+        const overflowN = ones.length - oneSlots;
+        const overflow = weakestFirst.slice(0, overflowN);
+        const keepIds = new Set(state.soldiers.map(s => s.id));
+        let retiredCount = 0;
+        for (const s of overflow) {
+          if (state.veteransChance > 0 && Math.random() < state.veteransChance) continue;
+          keepIds.delete(s.id);
+          retiredCount += 1;
+        }
+        if (retiredCount <= 0) return;
+        state.soldiers = state.soldiers.filter(s => keepIds.has(s.id));
+        state.gold += retiredCount * 3;
+        showToast(`軍團超出上限，${retiredCount} 名 1★ 整編換回 +$${retiredCount * 3}，${state.soldiers.length} 名留守！`);
+      }
+
       function openUpgradeDraft() {
         state.drafting = true;
         SFX.waveClear();
-        // Retire 1★ soldiers into bonus coins so waves never infinitely snowball; 2★/3★ Elites stay as Champions!
-        const kept = [];
-        let retiredCount = 0;
-        for (const s of state.soldiers) {
-          if ((s.stars || 1) >= 2) kept.push(s);
-          else if (state.veteransChance > 0 && Math.random() < state.veteransChance) kept.push(s);
-          else retiredCount += 1;
-        }
-        state.soldiers = kept;
-        if (retiredCount > 0) {
-          state.gold += retiredCount * 3;
-          showToast(`🎖️ ${retiredCount} 名 1★ 士兵凱旋換回 +$${retiredCount * 3}，${kept.length} 名留守！`);
-        }
+        // Keep the army between waves. Only a gentle overflow trim at the population cap
+        // (all 2★/3★ stay; excess 1★ may be reorganized). This must not empty wave 2.
+        retireOverflowSoldiers();
         // Clear between-wave carry that used to snowball (combo badge, shake slam, merge chain)
         state.comboCount = 0;
         state.comboTimer = 0;
@@ -1492,12 +1531,13 @@
       function update(dt) {
         if (state.paused || state.gameOver || state.drafting) return;
 
+        state.openingElapsed = (state.openingElapsed || 0) + dt;
         if (state.dropCooldown > 0) state.dropCooldown -= dt;
         // Drag-to-drop with the same interval as Space — cannot dump the bag in one second.
         if (state.dragDropCooldown > 0) state.dragDropCooldown -= dt;
         if (state.isDragging && state.dragDropCooldown <= 0 && state.ammo > 0 && state.dropCooldown <= 0) {
           dropPlayerCoin(state.dropXRatio * W);
-          state.dragDropCooldown = 0.32;
+          state.dragDropCooldown = COIN_DROP_INTERVAL;
         }
 
         if (state.rearmTimer > 0) {
@@ -1537,12 +1577,20 @@
         state.gateX = minGX + ((Math.sin(state.gatePhase) + 1) / 2) * Math.max(10, maxGX - minGX);
 
         // --- A. TOP COIN PUSHER PHYSICS ---
-        state.prevPusherY = state.pusherY;
         state.pusherPhase += dt * 2.35 * state.pusherSpeedMult;
         const osc = (Math.sin(state.pusherPhase) + 1) / 2;
-        state.pusherY = PUSHER_MIN_Y + osc * (PUSHER_MAX_Y - PUSHER_MIN_Y);
+        const nextPusherY = PUSHER_MIN_Y + osc * (PUSHER_MAX_Y - PUSHER_MIN_Y);
+        // If the plate was never posed (pusherY starts at 0) or this is a zero-dt boot
+        // frame, snap without a phantom shove that used to dump the opening tray.
+        if (dt <= 0 || state.prevPusherY < PUSHER_MIN_Y - 0.5) {
+          state.pusherY = nextPusherY;
+          state.prevPusherY = nextPusherY;
+        } else {
+          state.prevPusherY = state.pusherY;
+          state.pusherY = nextPusherY;
+        }
         const pusherDeltaY = state.pusherY - state.prevPusherY;
-        const pusherVelY = pusherDeltaY / Math.max(0.001, dt);
+        const pusherVelY = dt > 0 ? pusherDeltaY / dt : 0;
 
         for (const c of state.coins) {
           if (c.glow > 0) c.glow -= dt;
@@ -1552,10 +1600,11 @@
           c.vx *= damp;
           c.vy *= damp;
 
+          const openingScale = (state.openingElapsed < OPENING_PUSH_GRACE) ? OPENING_PUSH_SCALE : 1;
           if (c.tier === 'upper') {
             // Ride forward with the moving shelf; when shelf retracts, back wall scrapes coins forward off the lip!
             if (pusherDeltaY > 0) {
-              c.y += pusherDeltaY * 0.92;
+              c.y += pusherDeltaY * 0.92 * openingScale;
             } else {
               c.y += pusherDeltaY * 0.25;
             }
@@ -1567,15 +1616,21 @@
             if (c.y > state.pusherY - 2) {
               c.tier = 'lower';
               c.y = state.pusherY + c.r * 0.85;
-              c.vy = Math.max(c.vy, 95);
+              c.vy = Math.max(c.vy, 95 * openingScale);
               SFX.clink();
             }
           } else {
             // Lower deck coins get shoved forward by the front brass edge of the pusher shelf!
             const effR = c.r * getDepthScale(c.y);
             if (c.y - effR < state.pusherY) {
-              c.y = state.pusherY + effR;
-              if (pusherVelY > 0) c.vy = Math.max(c.vy, pusherVelY * 1.12);
+              const fullY = state.pusherY + effR;
+              if (openingScale >= 1) {
+                c.y = fullY;
+                if (pusherVelY > 0) c.vy = Math.max(c.vy, pusherVelY * 1.12);
+              } else if (c.y < fullY) {
+                c.y += (fullY - c.y) * openingScale;
+                if (pusherVelY > 0) c.vy = Math.max(c.vy, pusherVelY * 1.12 * openingScale);
+              }
             }
             if (c.y - effR < BED_TOP) c.y = BED_TOP + effR;
           }
@@ -2624,6 +2679,7 @@
         state.sideWalls = false;
         state.twinDrop = 0;
         state.dropCooldown = 0;
+        state.openingElapsed = 0;
         state.rearmTimer = 0;
         state.veteransChance = 0;
         state.gateSpeedMult = 1;
@@ -2652,6 +2708,7 @@
         upgradeModal.classList.remove('flex');
 
         refillQueue();
+        resetPusherPose();
         seedInitialCoins();
         // Opening garrison: 2 ranks across the FULL width, just under the rear wall.
         const yb0 = BATTLE_TOP;
@@ -2687,7 +2744,7 @@
         const x = ev.clientX - rect.left;
         state.dropXRatio = Math.max(0.08, Math.min(0.92, x / rect.width));
         state.isDragging = true;
-        state.dragDropCooldown = 0.32;
+        state.dragDropCooldown = COIN_DROP_INTERVAL;
         dropPlayerCoin(x);
       });
       canvas.addEventListener('pointermove', (ev) => {
@@ -2867,9 +2924,14 @@
           startWave,
           update,
           spawnEnemy,
+          spawnSoldier,
           UPGRADE_POOL,
           pickBossKind,
-          waveRosterCount
+          waveRosterCount,
+          ARMY_CAP,
+          COIN_DROP_INTERVAL,
+          ENEMY_SPEED_MULT,
+          OPENING_PUSH_GRACE
         };
       } catch (_) {}
     })();
