@@ -27,11 +27,11 @@
           <span id="hudChapter" class="val">邊關試鋒</span>
         </div>
         <div class="hud-pill hp" title="城堡血量">
-          <span class="lbl">♥</span>
+          <span class="lbl"><svg class="px-svg" viewBox="0 0 12 12" width="14" height="14" shape-rendering="crispEdges"><path fill="#e05656" d="M2 2h3v1h2V2h3v1h1v3h-1v1H9v1H8v1H7v1H5V9H4V8H3V7H2V6H1V3h1z"/><path fill="#fca5a5" d="M2 3h2v1H2z"/></svg></span>
           <span id="hudHp" class="val">100</span>
         </div>
         <div class="hud-pill ammo" title="可投普通幣">
-          <span class="lbl">🪙</span>
+          <span class="lbl"><svg class="px-svg" viewBox="0 0 12 12" width="14" height="14" shape-rendering="crispEdges"><path fill="#b45309" d="M3 1h6v1h2v2h1v4h-1v2H9v1H3v-1H1V8H0V4h1V2h2z"/><path fill="#f5c542" d="M3 2h6v1h1v6H9v1H3V9H2V3h1z"/><path fill="#fef08a" d="M4 3h2v5H4z"/></svg></span>
           <span id="hudAmmo" class="val">20</span>
         </div>
         <div class="hud-pill gold" title="商店金幣">
@@ -41,17 +41,70 @@
       </div>
 
       <div class="top-actions">
-        <button id="btnCamp" class="icon-btn" title="營地進度" type="button">🏕️</button>
-        <button id="btnMute" class="icon-btn" title="音效" type="button">🔊</button>
-        <button id="btnPause" class="icon-btn" title="暫停" type="button">⏸</button>
+        <button id="btnCamp" class="icon-btn" title="營地進度" type="button"><svg class="px-svg" viewBox="0 0 16 16" width="18" height="18" shape-rendering="crispEdges"><path fill="#d97706" d="M7 2h2v2h1v2h1v2h1v2h1v3H3v-3h1V8h1V6h1V4h1z"/><path fill="#fbbf24" d="M7 4h2v3H7z"/><path fill="#1c140c" d="M6 9h4v4H6z"/><path fill="#e05656" d="M8 1h3v2H8z"/></svg></button>
+        <button id="btnMute" class="icon-btn" title="音效" type="button"><svg class="px-svg" viewBox="0 0 16 16" width="18" height="18" shape-rendering="crispEdges"><path fill="#f3eee3" d="M2 6h3v4H2zm3-1h2v6H5zm2-2h2v10H7z"/><path fill="#f5c542" d="M11 5h1v6h-1zm2-2h1v10h-1z"/></svg></button>
+        <button id="btnPause" class="icon-btn" title="暫停" type="button"><svg class="px-svg" viewBox="0 0 16 16" width="16" height="16" shape-rendering="crispEdges"><path fill="#f3eee3" d="M3 3h3v10H3zm7 0h3v10h-3z"/></svg></button>
         <button id="btnHelp" class="icon-btn" title="玩法" type="button">?</button>
       </div>
     </header>
 
-    <div id="stageWrap" class="stage-wrap">
-      <canvas id="gameCanvas"></canvas>
-      <div id="comboBadge">連召 x2!</div>
-      <div id="toastMsg">提示</div>
+    <div class="main-workspace">
+      <aside class="pc-sidebar pc-left" aria-label="羈絆與營地">
+        <div class="side-card">
+          <div class="side-title">⚔️ 兵種羈絆</div>
+          <div id="synergyList" class="side-list"></div>
+        </div>
+        <div class="side-card">
+          <div class="side-title">🏛️ 戰場地形加成</div>
+          <div class="terrain-legend">
+            <div><span class="t-dot left"></span>左路高地：遠程射程 +25%</div>
+            <div><span class="t-dot mid"></span>中路焦油：全兵傷害 +25%</div>
+            <div><span class="t-dot right"></span>右路聖壇：全兵攻速 +25%</div>
+          </div>
+        </div>
+        <div class="side-card side-grow">
+          <div class="side-title">✨ 已拎升級</div>
+          <div id="sideRelics" class="side-relics">尚未獲得升級</div>
+        </div>
+      </aside>
+
+      <div id="stageWrap" class="stage-wrap">
+        <canvas id="gameCanvas"></canvas>
+        <div id="comboBadge">連召 x2!</div>
+        <div id="toastMsg">提示</div>
+      </div>
+
+      <aside class="pc-sidebar pc-right" aria-label="即時商店與戰報">
+        <div class="side-card">
+          <div class="side-title">🛒 即時商店</div>
+          <div class="side-shop-grid">
+            <button id="pcBuySoldier" class="shop-btn soldier" type="button">
+              <span id="pcBuySoldierLabel">買兵幣</span>
+              <span class="price">$20</span>
+            </button>
+            <button id="pcBuySkill" class="shop-btn skill" type="button">
+              <span id="pcBuySkillLabel">買大招幣</span>
+              <span class="price">$50</span>
+            </button>
+            <button id="pcBuyGiant" class="shop-btn giant" type="button">
+              <span id="pcBuyGiantLabel">超重巨幣</span>
+              <span class="price">$45</span>
+            </button>
+            <button id="pcBuyAmmo" class="shop-btn ammo" type="button">
+              <span id="pcBuyAmmoLabel">+8普通幣</span>
+              <span class="price">$16</span>
+            </button>
+            <button id="pcRerollShop" class="shop-btn reroll" type="button">
+              <span>刷新貨單</span>
+              <span class="price">$8</span>
+            </button>
+          </div>
+        </div>
+        <div class="side-card side-grow">
+          <div class="side-title">📊 傷害統計 (本局)</div>
+          <div id="dpsBoard" class="dps-board">開戰後顯示各兵種輸出…</div>
+        </div>
+      </aside>
     </div>
 
     <footer class="control-deck">
@@ -80,6 +133,10 @@
             <button id="btnBuySkill" class="shop-btn skill" type="button">
               <span id="buySkillLabel">買大招幣</span>
               <span class="price">$50</span>
+            </button>
+            <button id="btnBuyGiant" class="shop-btn giant" type="button">
+              <span id="buyGiantLabel">超重巨幣</span>
+              <span class="price">$45</span>
             </button>
             <button id="btnBuyAmmo" class="shop-btn ammo" type="button">
               <span id="buyAmmoLabel">+8普通幣</span>
@@ -148,7 +205,7 @@
         <li><strong class="c-gold">1. 上方推幣機：</strong>點擊、拖曳或撳空白鍵（每次投幣有短間隔），將硬幣掉上瞄準柱所對嘅位置。推進板會把幣推落下方戰場。我方沿戰場上方全闊列陣，敵軍由下方湧上。左右漏口會漏幣；底邊緩緩移動嘅 <strong>x2 黃金門</strong>會令效果加倍。</li>
         <li><strong class="c-green">2. 跌落效果：</strong>幣由推盤前緣跌入場內，彈地一兩下，<strong>落地後</strong>先生效：兵幣喺落點召喚士兵加入大軍；🪙 金幣獲得 <strong>$6</strong>；若穿過黃金門則獲得 <strong>$12</strong> 並額外 <strong>+1 投幣額度</strong>。</li>
         <li><strong class="c-sky">3. 地圖砲與士兵大技：</strong>☄️ 隕石幣＝全場轟炸、❄️ 暴風雪幣＝全敵冰凍、⚡ 號角幣＝全體在場士兵進入狂暴＋回血＋集體放劍氣。</li>
-        <li><strong class="c-pink">4. 合成、滿員同拍機台：</strong>2.8 秒內連續跌落同類型兵幣會合成 2★／3★。軍團滿員後再召兵，會為場上隨機一隻同類型（否則隨機）士兵升星。能量 100% 可撳「拍機台」，將盤面硬幣一齊推落。下方「商店」按鈕可展開，用金幣買兵幣、大招幣、補幣或刷新貨單。</li>
+        <li><strong class="c-pink">4. 三合一升星、羈絆與巨幣：</strong>除了 2.8 秒連跌合成外，場上同款 1★ 滿 3 隻（或 2★ 滿 3 隻）會<strong>自動三合一升星</strong>！湊齊同系兵種可觸發<strong>兵種羈絆</strong>（烈焰砲火／聖光結界／鐵騎衝陣／極寒獵手）；商店更可買 <strong>🪨 超重巨幣 ($45)</strong> 一次推郁成堆幣並空降 2★ 盾衛＋震波！</li>
         <li><strong class="c-stone">5. 波次：</strong>守住一波後，己方士兵基本留守（2★／3★ 必定留，1★ 亦留），另有過關賞金。只有軍團超過人口上限時，多餘嘅 1★ 先會溫和整編換少量金幣。選完升級有 3 秒整軍時間先開下一波。戰役共 12 波（之後可無盡），每 3 波換一種 BOSS。城堡血量 100，歸零即完。營地可解鎖下一局的開場加成，第一次玩唔使解鎖都完整。</li>
       </ul>
       <button id="btnCloseHelp2" class="primary-btn" type="button">開打！</button>
