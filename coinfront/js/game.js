@@ -479,19 +479,19 @@
       // Y bands as a fraction of battlefield height (0 = top / castle wall).
       // Melee holds the front (closer to enemies marching up); ranged sit behind near the wall.
       const RANK_BAND = {
-        shield:  [0.30, 0.42],
-        knight:  [0.30, 0.42],
-        spear:   [0.32, 0.44],
-        hound:   [0.34, 0.46],
-        rogue:   [0.30, 0.42],
-        archer:  [0.18, 0.28],
-        mage:    [0.18, 0.28],
-        priest:  [0.17, 0.27],
-        bombard: [0.17, 0.26],
-        banner:  [0.20, 0.32],
-        frost:   [0.18, 0.28],
-        alchemist:[0.18, 0.28],
-        gold:    [0.24, 0.38]
+        shield:   [0.55, 0.66],
+        knight:   [0.55, 0.66],
+        spear:    [0.57, 0.68],
+        hound:    [0.58, 0.69],
+        rogue:    [0.55, 0.66],
+        archer:   [0.44, 0.52],
+        mage:     [0.44, 0.52],
+        priest:   [0.43, 0.51],
+        bombard:  [0.43, 0.51],
+        banner:   [0.46, 0.55],
+        frost:    [0.44, 0.52],
+        alchemist:[0.44, 0.52],
+        gold:     [0.48, 0.60]
       };
 
       const ENEMY_TYPES = {
@@ -1045,7 +1045,7 @@
         const minX = Math.round(W * 0.06);
         const maxX = Math.round(W * 0.94);
         const landX = minX + normX * Math.max(30, maxX - minX);
-        const landY = BATTLE_TOP + Math.round(battleH * (0.22 + Math.random() * 0.18));
+        const landY = BATTLE_TOP + Math.round(battleH * (0.45 + Math.random() * 0.18));
         const def = COIN_TYPES[coin.type];
         const fallH = Math.max(40, landY - BED_BOTTOM);
         const flight = Math.sqrt(2 * fallH / 1850) || 0.35;
@@ -1182,14 +1182,14 @@
 
       function battleYBounds() {
         const h = BATTLE_BOTTOM - BATTLE_TOP;
-        // Allied hold-line: just under the rear wall, down to the front rank
-        const top = BATTLE_TOP + Math.round(h * 0.17);
-        const bot = BATTLE_TOP + Math.round(h * 0.48);
+        // Strictly on the open grassy courtyard BELOW the castle wall, gate, and watchtowers
+        const top = BATTLE_TOP + Math.round(h * 0.43);
+        const bot = BATTLE_TOP + Math.round(h * 0.70);
         return { top, bot };
       }
 
       function castleBreakY() {
-        return BATTLE_TOP + Math.round((BATTLE_BOTTOM - BATTLE_TOP) * 0.16) + 6;
+        return BATTLE_TOP + Math.round((BATTLE_BOTTOM - BATTLE_TOP) * 0.37);
       }
 
       function placeInRank(typeKey, preferredX, preferredY) {
@@ -1580,9 +1580,9 @@
         else if (u.id === 'rally') {
           const yb0 = BATTLE_TOP;
           const yh = BATTLE_BOTTOM - BATTLE_TOP;
-          spawnSoldier('shield', Math.round(W * 0.3), yb0 + Math.round(yh * 0.36));
-          spawnSoldier('knight', Math.round(W * 0.5), yb0 + Math.round(yh * 0.36));
-          spawnSoldier('archer', Math.round(W * 0.7), yb0 + Math.round(yh * 0.22));
+          spawnSoldier('shield', Math.round(W * 0.3), yb0 + Math.round(yh * 0.60));
+          spawnSoldier('knight', Math.round(W * 0.5), yb0 + Math.round(yh * 0.60));
+          spawnSoldier('archer', Math.round(W * 0.7), yb0 + Math.round(yh * 0.47));
         } else if (u.id === 'keep_elite') {
           const ones = state.soldiers.filter(s => (s.stars || 1) === 1);
           if (ones.length) {
@@ -1616,8 +1616,8 @@
         if (state.soldiers.length > 0) return;
         const yb0 = BATTLE_TOP;
         const yh = BATTLE_BOTTOM - BATTLE_TOP;
-        const frontY = yb0 + Math.round(yh * 0.36);
-        const backY = yb0 + Math.round(yh * 0.22);
+        const frontY = yb0 + Math.round(yh * 0.60);
+        const backY = yb0 + Math.round(yh * 0.47);
         spawnSoldier('shield', Math.round(W * 0.28), frontY);
         spawnSoldier('knight', Math.round(W * 0.50), frontY);
         spawnSoldier('archer', Math.round(W * 0.72), backY);
@@ -2638,7 +2638,7 @@
           const battleH = Math.max(100, BATTLE_BOTTOM - BATTLE_TOP);
           const normX = Math.max(0, Math.min(1, (aimX - BED_LEFT) / Math.max(1, BED_RIGHT - BED_LEFT)));
           const landX = Math.round(W * 0.06 + normX * W * 0.88);
-          const landY = BATTLE_TOP + Math.round(battleH * 0.30);
+          const landY = BATTLE_TOP + Math.round(battleH * 0.52);
           ctx.save();
           ctx.strokeStyle = 'rgba(250, 204, 21, 0.55)';
           ctx.setLineDash([3, 4]);
@@ -3011,12 +3011,12 @@
         refillQueue();
         resetPusherPose();
         seedInitialCoins();
-        // Opening garrison: 2 ranks across the FULL width, just under the rear wall.
+        // Opening garrison: 2 ranks across the open grass courtyard BELOW the castle walls & towers.
         const yb0 = BATTLE_TOP;
         const yh = BATTLE_BOTTOM - BATTLE_TOP;
-        const frontY = yb0 + Math.round(yh * 0.36);
-        const midY   = yb0 + Math.round(yh * 0.30);
-        const backY  = yb0 + Math.round(yh * 0.22);
+        const frontY = yb0 + Math.round(yh * 0.60);
+        const midY   = yb0 + Math.round(yh * 0.54);
+        const backY  = yb0 + Math.round(yh * 0.46);
         const edgeL = isMobileLayout() ? 0.16 : 0.14;
         const edgeR = isMobileLayout() ? 0.80 : 0.82;
         const lerpX = (t) => Math.round(W * (edgeL + t * (edgeR - edgeL)));
